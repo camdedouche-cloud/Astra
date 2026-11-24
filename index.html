@@ -126,7 +126,7 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .card{position:relative;text-align:left;padding:10px 10px 12px;display:grid;gap:6px;transition:border-color .15s,transform .15s}
 .card:hover{transform:translateY(-2px)}
 .card.sel{border-color:var(--gold);box-shadow:0 0 0 2px #04060b,0 0 20px rgba(255,209,102,.25)}
-.card canvas{width:96px;height:120px;image-rendering:pixelated;justify-self:center;background:radial-gradient(circle at 50% 70%,#1e2c48,transparent 70%)}
+.card canvas{width:108px;height:120px;image-rendering:pixelated;justify-self:center;background:radial-gradient(circle at 50% 70%,#1e2c48,transparent 70%)}
 .card b{font-size:20px}
 .card small{color:var(--dim);font-size:14px;line-height:1.3;min-height:2.6em}
 .stat{display:grid;grid-template-columns:3.2em 1fr;align-items:center;gap:6px;font-size:13px;color:var(--dim)}
@@ -186,7 +186,7 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .qrow.sel{background:rgba(143,224,255,.1);box-shadow:inset 0 0 0 1px rgba(143,224,255,.5)}
 .qrow.done{opacity:.45}.qrow .trk{margin-left:auto;font-size:12px;color:#8fe0ff}
 .qi{width:12px;height:12px;flex:none;transform:rotate(45deg)}.qi.qm{background:#ffd166}.qi.qs{background:#8fe0ff}
-.cport{display:flex;align-items:center;gap:14px;margin-bottom:12px}.cport canvas{width:96px;height:120px;image-rendering:pixelated;background:radial-gradient(circle at 50% 70%,#1e2c48,transparent 70%)}
+.cport{display:flex;align-items:center;gap:14px;margin-bottom:12px}.cport canvas{width:108px;height:120px;image-rendering:pixelated;background:radial-gradient(circle at 50% 70%,#1e2c48,transparent 70%)}
 .cstats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 16px}.cstats div{display:flex;justify-content:space-between;border-bottom:1px solid rgba(236,231,212,.12);padding:4px 0}.cstats span{color:rgba(236,231,212,.6)}
 .mbot{display:flex;align-items:center;gap:14px;border-top:1px solid rgba(236,231,212,.22);padding-top:6px;width:min(1100px,100%);justify-self:center}
 .mhint{color:rgba(236,231,212,.5);font-size:13px;flex:1}
@@ -817,6 +817,7 @@ const FAM={
   arbalete:{n:'Arbalète',w:'xbow',kind:'xbolt',cd:.75,desc:'Lente à recharger, mais ses carreaux traversent tous les ennemis.'}
 };
 const AFF={chevalier:['epee','lance'],bretteur:['katana','rapiere','dagues'],mage:['baton','tome','sceptre'],archer:['arc','arbalete','dagues'],berserker:['hache','marteau','epee'],pretre:['sceptre','baton','tome']};
+function wKey(w){return FAM[famOf(w)].w+'#'+((w&&w.rar)|0);}
 function famOf(w){if(!w)return 'epee';if(w.type&&FAM[w.type])return w.type;if(w.name==='Raikiri')return 'katana';for(const k of ['arbalete','arc','tome','rapiere','dagues','katana','lance','hache','marteau','baton','sceptre','epee'])if(w.name.startsWith(FAM[k].n))return k;return 'epee';}
 const affOK=()=>AFF[player.c.key].includes(famOf(player.weapon));
 function makeWeapon(cls,lvl,rar,fam){fam=fam||(Math.random()<.65?pick(AFF[cls]):pick(Object.keys(FAM)));const base=2+lvl*1.3;return {name:FAM[fam].n+' '+SUF[rar],type:fam,rar,atk:Math.round(base*RAR[rar].m)};}
@@ -856,14 +857,14 @@ function release(A){const p=player,F=A.F,ca=Math.cos(A.ang),sa=Math.sin(A.ang),a
     else projs.push({o:'p',k:ch?'carrow':'arrow',x:p.x+ca*8,y:p.y-9+sa*5,vx:ca*(ch?350:270),vy:sa*(ch?350:270),life:.75,mult:(ch?2.3:1)*aff,r:3,pierce:ch?1:0,hit:new Set()});
     if(ch)shake=Math.max(shake,2);sfx(ch||F.kind==='xbolt'?'crit':'shoot');}
 }
-function weaponPose(p){const fk=famOf(p.weapon),F=FAM[fk],t=F.w,A=p.act;
+function weaponPose(p){const fk=famOf(p.weapon),F=FAM[fk],rs='#'+(p.weapon.rar|0),t=F.w+rs,A=p.act;
   if(p.spin>0){const a=time*24;return {t,a,x:p.x+Math.cos(a)*4,y:p.y-9+Math.sin(a)*3};}
   if(!A)return null;const u=Math.min(1,A.t/A.dur);
   if(A.k==='swing'){let a;const back=A.a0-A.dir*.35;if(u<.28)a=lerp(A.a0,back,u/.28);else if(u<.6)a=lerp(back,A.a1,1-Math.pow(1-(u-.28)/.32,3));else a=A.a1+A.dir*.08*Math.sin((u-.6)*12);return {t,a,x:p.x+Math.cos(a)*3,y:p.y-9+Math.sin(a)*2};}
   if(A.k==='thrust'){const r=u<.3?3-6*(u/.3):u<.5?lerp(-3,11,(u-.3)/.2):lerp(11,3,(u-.5)/.5);return {t,a:A.ang,x:p.x+Math.cos(A.ang)*r,y:p.y-9+Math.sin(A.ang)*r*.7};}
   if(A.k==='cast'){if(t==='tome')return {t,a:A.ang,x:p.x+Math.cos(A.ang)*6,y:p.y-10+Math.sin(A.ang)*3,glow:u>.3};const r=u<.42?3-2*(u/.42):lerp(1,6,Math.min(1,(u-.42)/.12));const a=A.ang-(u<.42?.5*(u/.42):0);return {t,a,x:p.x+Math.cos(a)*r,y:p.y-9+Math.sin(a)*r*.7};}
   const pull=A.done?Math.max(0,1-(u-.42)*6):Math.min(1,u/.42);
-  return {t:F.kind==='xbolt'?'xbow':'bow',a:A.ang,x:p.x+Math.cos(A.ang)*6,y:p.y-9+Math.sin(A.ang)*3,pull,arrow:!A.done,glow:A.charge>.6&&!A.done};
+  return {t:(F.kind==='xbolt'?'xbow':'bow')+rs,a:A.ang,x:p.x+Math.cos(A.ang)*6,y:p.y-9+Math.sin(A.ang)*3,pull,arrow:!A.done,glow:A.charge>.6&&!A.done};
 }
 
 function enemyPose(e){const C=CHAR[e.type];if(!C)return null;const w=C.w,ang=Math.atan2(player.y-e.y,player.x-e.x),sh=Math.sin(time*60)*.06;
@@ -1188,8 +1189,174 @@ function drawWeaponSide(t,hx,hy){
     case 'xbow':P(hx-1,hy-1,9,2,'#5a3a22');P(hx+6,hy-6,2,11,'#3a2a1e');P(hx+5,hy-5,1,9,'#c8d0dc');break;
   }
 }
+/* ================= ARMES : DESIGNS PIXEL ================= */
+const WPAL=[
+ {A:'#dfe5ee',B:'#aab3c0',C:'#868f9e',D:'#5d6573',E:'#3c4250',G:'#a89070',H:'#7a6450',I:'#4c3c2e',J:'#8a5a38',K:'#563420',W:'#9a7048',X:'#734f30',Y:'#4a3220',R:'#7a6450',r:'#a89070',L:'#868f9e',F:'#7a4a3a',f:'#4e2c22',S:'#d8d0c0',P:'#e8dcc0',p:'#b8a888'},
+ {A:'#eef3f8',B:'#bcc6d2',C:'#95a0b0',D:'#66717f',E:'#424a56',G:'#e0c070',H:'#b08a3a',I:'#6e5420',J:'#3e6a3a',K:'#24402a',W:'#a07850',X:'#7a5634',Y:'#4e3420',R:'#3fcf6a',r:'#b8ffc8',L:'#6ae08a',F:'#2e7a46',f:'#1a4a2a',S:'#e8e0d0',P:'#efe4c8',p:'#c0b090'},
+ {A:'#f6faff',B:'#c6d4ea',C:'#98aacb',D:'#61739a',E:'#3a4868',G:'#e6eef8',H:'#a8b8d0',I:'#5e6e8a',J:'#2e4a8a',K:'#1a2a56',W:'#8a6a50',X:'#64482e',Y:'#3e2c1c',R:'#3a8aff',r:'#bfe0ff',L:'#6ab8ff',F:'#2a5ab0',f:'#16306a',S:'#e8f0ff',P:'#f0e8d0',p:'#c4b494'},
+ {A:'#efe6ff',B:'#a79cc4',C:'#766a98',D:'#4a3f6a',E:'#2a2244',G:'#d8b860',H:'#9a7a34',I:'#5a4420',J:'#4a2a6a',K:'#2a1440',W:'#5a3e3a',X:'#3e2a2a',Y:'#261818',R:'#c060ff',r:'#f0c8ff',L:'#d080ff',F:'#6a2aa0',f:'#3e1666',S:'#efe0ff',P:'#ece0d4',p:'#b0a0a0'},
+ {A:'#fffdf0',B:'#efe7cf',C:'#cdbf98',D:'#9a8a64',E:'#5e5236',G:'#fff0a0',H:'#e0b040',I:'#8a6418',J:'#8a2a1a',K:'#541410',W:'#a06a3a',X:'#7a4a24',Y:'#4a2c14',R:'#ff9a2a',r:'#ffe0a0',L:'#ffc04a',F:'#b02a1a',f:'#6a1a10',S:'#fff0d0',P:'#fff4dc',p:'#d8c49c'},
+ {A:'#ff9ab0',B:'#7a4258',C:'#5a2a3e',D:'#3e1a2a',E:'#241018',G:'#b0b0c0',H:'#6a6a7a',I:'#34343e',J:'#8a2232',K:'#4e0e1a',W:'#7a4a44',X:'#563230',Y:'#341c1c',R:'#ff3a5a',r:'#ffc0cc',L:'#ff5470',F:'#a01830',f:'#5a0a1a',S:'#ffd0d8',P:'#e8d8d8',p:'#a88888'},
+ {A:'#ffffff',B:'#fff8e6',C:'#ece0b8',D:'#c8b47a',E:'#8a7640',G:'#fffbd0',H:'#f0d060',I:'#a8862a',J:'#f4f0e6',K:'#c8bea0',W:'#f0e6d0',X:'#d8c8a0',Y:'#a89868',R:'#fff07a',r:'#ffffff',L:'#fff3a0',F:'#f8f0e0',f:'#c8b890',S:'#ffffff',P:'#ffffff',p:'#e0d8c0'},
+ {A:'#f0ffff',B:'#a8f2ff',C:'#62cfee',D:'#2c82b4',E:'#16406e',G:'#d8e4ff',H:'#7080cc',I:'#3a428a',J:'#3a3a8a',K:'#20205a',W:'#7a8ad8',X:'#5464b4',Y:'#343c80',R:'#7ff6ff',r:'#ffffff',L:'#9ffcff',F:'#3a3aa0',f:'#20206a',S:'#d0ffff',P:'#e8f4ff',p:'#a8c0dc'}];
+/* lettres : A-E lame (clair→sombre) · G/H/I garde · J/K poignée · W/X/Y bois · R/r gemme · L rune · F/f tissu · S corde · P/p pages
+   o/O = ornement (Épique+) · v/V = ornement (Légendaire+) · + = point de prise (main) */
+const WG={
+ sword:[
+  ".....OG..............",
+  "......H..............",
+  ".G....HAAAAAAAAAAA...",
+  "HRJK+JRBCLCCLCCLCBBA.",
+  ".I....HDDDDDDDDDDD...",
+  "......I..............",
+  ".....OI.............."],
+ katana:[
+  "......................A",
+  "....................AAD",
+  ".................AAABD.",
+  "........HO..AAAAABBDD..",
+  "FKJKJ+JKHGAABBBBDDD....",
+  "f.......IHBDDDDD.......",
+  "........IO............."],
+ rapier:[
+  "....HHHHG.................",
+  "...H.....G................",
+  "..H......O................",
+  "GRJK+JKHGBAAAAAAAAAAAA",
+  "..I......HDDDDDDDDDD..",
+  "...I.....O................",
+  "....IIIII................."],
+ dagger:[
+  "....O...........",
+  "....H.AAAA......",
+  "....HABBBBAA....",
+  "RJ+JHBCLCCBBAA..",
+  "....HDDDDDDDD...",
+  "....I...........",
+  "....O..........."],
+ spear:[
+  "..........................AA......",
+  ".........................ABBA.....",
+  "........................HABCBBA...",
+  "YXXXXXXXXK+JXXXXXXXXXXXGHBCLCBBAAA",
+  "YYYYYYYYYKJKYYYYYYYYYYYIIDCLCDDDD.",
+  "........................IDDCDD....",
+  ".......................F.vDDD.....",
+  ".......................f.........."],
+ axe:[
+  ".............AAAAA...",
+  "...........AABBBBBAA.",
+  "...........ABCCCCCBA.",
+  "............DDCCCDD..",
+  "KJ+JKXXXXXXXHHRHHXXW",
+  "KJKJKYYYYYYYIIIIIYYY",
+  "............ODDDDO...",
+  "...........OBCCCCBO..",
+  "............OAAAAO..."],
+ hammer:[
+  ".............IHHHHHI..",
+  ".............HGGGGGH..",
+  ".............HBBBBBHv.",
+  "...........O.HBCRCBHV.",
+  "KJ+JKXXXXXXXIHBCrCBHHv",
+  "KJKJKYYYYYYYIHBCCCBHHv",
+  "...........O.HBDDDBHV.",
+  ".............HDDDDDHv.",
+  ".............HGGGGGH..",
+  ".............IHHHHHI.."],
+ staff:[
+  ".........................H.......",
+  "........................H..RRR...",
+  "........................H.RrrRRq.",
+  "XWXXXXXXXXXX+XXWXXXXXXXHHHRrRRRq.",
+  "YYYYXYYYYYYYKYYYYYXYYYYIIHRRRRqq.",
+  "........................I.qRRqq..",
+  "........................I..qqq...",
+  ".........................I......."],
+ sceptre:[
+  "................G.....",
+  "..............GHHHG...",
+  ".............H.qRq.H..",
+  "...........OHHqRrRqHHv",
+  "GHH+HIHHHHHIIHRRRRRHHG",
+  "IIIIIIIIIIII.HqRRRqHHv",
+  "...........O.H.qqq.H..",
+  "..............IHHHI...",
+  "................I....."],
+ tome:[
+  ".GHFFHG.",
+  "GHFFFFHp",
+  "HFFHRHFp",
+  "+FHRrRHp",
+  "FFFHRHFp",
+  "IHFOFOHp",
+  ".IHffHIP",
+  "..PPPPP."],
+ bow:[
+  "vXW......",
+  "S.XW.....",
+  "S..XW....",
+  "S...XW...",
+  "S....XW..",
+  "S....XW..",
+  "S.....XW.",
+  "S.....HG.",
+  "S.....JK.",
+  "S.....+K.",
+  "S.....JK.",
+  "S.....HG.",
+  "S.....XY.",
+  "S....XY..",
+  "S....XY..",
+  "S...XY...",
+  "S..XY....",
+  "S.XY.....",
+  "vXY......"],
+ xbow:[
+  ".............HG..",
+  "............S.HG.",
+  "...........S..HG.",
+  "..........S...XW.",
+  ".........S....XW.",
+  "........S.AAAAXWB",
+  "WXXXXXXXHXXXXXIXA",
+  "YYYYYYYYHYYYYYIYY",
+  ".YY+K...S....XY..",
+  "..YJK....S...XY..",
+  "...........S.XY..",
+  "............SHI..",
+  ".............HI.."]
+};
+const WSPR={};
+function wDesign(name,rar,str){const id=name+'#'+rar+(str?'s':'');if(WSPR[id])return WSPR[id];
+  const grid=WG[name],pal=WPAL[Math.max(0,Math.min(7,rar|0))],[c,g]=mk(48,48);let px=0,py=0;
+  grid.forEach((row,y)=>{const i=row.indexOf('+');if(i>=0){px=i;py=y;}});
+  const ox=24-px,oy=24-py;
+  grid.forEach((row,y)=>{for(let x=0;x<row.length;x++){let ch=row[x];
+    if(ch==='.')continue;
+    if(ch==='+')ch='K';
+    else if(ch==='o'||ch==='O'){if(rar<3)continue;ch=ch==='o'?'H':'G';}
+    else if(ch==='v'||ch==='V'){if(rar<4)continue;ch=ch==='v'?'R':'G';}
+    else if(ch==='S'&&!str&&name==='bow')continue;
+    else if(ch==='L'&&rar<3)ch='C';
+    else if((ch==='R'||ch==='r'||ch==='q')&&rar===0)ch=ch==='R'?'H':ch==='r'?'G':'I';
+    g.fillStyle=ch==='S'?shadeHex(pal.S,.8):ch==='q'?shadeHex(pal.R,.55):ch==='Z'?pal.L:(pal[ch]||'#f0f');g.fillRect(x+ox,y+oy,1,1);}});
+  return WSPR[id]=c;}
+function wParse(t){const i=t.indexOf('#');return i<0?[t,0]:[t.slice(0,i),+t.slice(i+1)];}
+function shadeHex(h,k){const n=parseInt(h.slice(1),16);return 'rgb('+((n>>16)*k|0)+','+((n>>8&255)*k|0)+','+((n&255)*k|0)+')';}
+
+const HOLD={sword:[-1.35,-.8,-1.8,0,0],katana:[-1.3,-.65,-1.85],rapier:[-1.45,-.4,-1.75],dagger:[1.35,.45,1.8],spear:[-1.57,-.95,-1.57],axe:[-1.25,-1.1,-1.9,1,1],hammer:[-1.25,-1.05,-1.9,1,1],staff:[-1.57,-1.45,-1.62],sceptre:[-1.3,-1.05,-1.85,1,1],tome:[0,0,0],bow:[Math.PI,0,0],xbow:[-1.25,-.35,-1.9,1,1]};
+const WRAW={};
+function wRotRaw(t,a,flip){const id=t+'|'+a.toFixed(3)+(flip?'f':'');if(WRAW[id])return WRAW[id];
+  const [nm,rr]=wParse(t),src=wDesign(nm,rr,1),sd=src.getContext('2d').getImageData(0,0,48,48).data,ca=Math.cos(a),sa=Math.sin(a);
+  const [c,g]=mk(48,48),im=g.createImageData(48,48),d=im.data;
+  for(let y=0;y<48;y++)for(let x=0;x<48;x++){const dx=x-24+.5,dy=y-24+.5;let sx=dx*ca+dy*sa,sy=-dx*sa+dy*ca;if(flip)sy=-sy;sx=Math.floor(24+sx);sy=Math.floor(24+sy);if(sx<0||sy<0||sx>47||sy>47)continue;const j=(sy*48+sx)*4;if(!sd[j+3])continue;const i=(y*48+x)*4;d[i]=sd[j];d[i+1]=sd[j+1];d[i+2]=sd[j+2];d[i+3]=255;}
+  g.putImageData(im,0,0);return WRAW[id]=c;}
+const HANDC={};
+function handCol(key){if(HANDC[key])return HANDC[key];const pal=Object.assign({},BASEPAL,CP[key]||{}),gr=charGrid(key,0,0),a=pal[gr[22][12]]||pal.S||'#e8b890',b=pal[gr[22][13]]||pal.s||'#b07a5a';return HANDC[key]=[a,b];}
+function drawFist(x,y,hc){P(x-1,y-1,2,1,hc[0]);P(x-1,y,2,1,hc[1]);}
 const WBASE={},WROT={};
-function wBase(t){if(WBASE[t])return WBASE[t];const [c,g]=mk(48,48);const pg=G;G=g;const x=24,y=24;
+function wBase(t){if(WBASE[t])return WBASE[t];const [nm,rr]=wParse(t);if(WG[nm])return WBASE[t]=wDesign(nm,rr,0);const [c,g]=mk(48,48);const pg=G;G=g;const x=24,y=24;
   switch(t){
     case 'sword':P(x-4,y,1,2,'#e0b84a');P(x-3,y,3,2,'#4a3020');P(x,y-2,1,6,'#e0b84a');P(x+1,y,11,1,'#eef4fa');P(x+1,y+1,11,1,'#8494ac');P(x+12,y,1,1,'#eef4fa');break;
     case 'katana':P(x-4,y,4,2,'#8c2f3a');P(x,y-1,1,4,'#c9a24a');P(x+1,y,13,1,'#f6f9fc');P(x+1,y+1,12,1,'#98a6bc');break;
@@ -1214,11 +1381,12 @@ function wRot(t,k){const id=t+k;if(WROT[id])return WROT[id];
   g.putImageData(im,0,0);postFX(g,48,48);return WROT[id]=c;}
 function lineP(x0,y0,x1,y1,c){const n=Math.max(1,Math.round(Math.max(Math.abs(x1-x0),Math.abs(y1-y0))));for(let i=0;i<=n;i++)P(lerp(x0,x1,i/n),lerp(y0,y1,i/n),1,1,c);}
 function drawPose(w){
-  const k=Math.round(((w.a%TAU+TAU)%TAU)/TAU*32)%32;G.drawImage(wRot(w.t,k),Math.round(w.x)-24,Math.round(w.y)-24);
-  if(w.t==='bow'){const ca=Math.cos(w.a),sa=Math.sin(w.a),L=(lx,ly)=>[w.x+lx*ca-ly*sa,w.y+lx*sa+ly*ca];const pl=(w.pull||0)*5,t1=L(0,-9),t2=L(0,9),pp=L(-pl,0);
+  const nm=wParse(w.t)[0],k=nm==='tome'?0:Math.round(((w.a%TAU+TAU)%TAU)/TAU*32)%32;G.drawImage(wRot(w.t,k),Math.round(w.x)-24,Math.round(w.y)-24);
+  if(nm==='bow'){const ca=Math.cos(w.a),sa=Math.sin(w.a),L=(lx,ly)=>[w.x+lx*ca-ly*sa,w.y+lx*sa+ly*ca];const pl=(w.pull||0)*5,t1=L(-6,-9),t2=L(-6,9),pp=L(-6-pl,0);
     lineP(t1[0],t1[1],pp[0],pp[1],'#d8e0ec');lineP(pp[0],pp[1],t2[0],t2[1],'#d8e0ec');
-    if(w.arrow){const a2=L(-pl+13,0);lineP(pp[0],pp[1],a2[0],a2[1],w.glow?'#fff3b0':'#c8a070');P(a2[0],a2[1],1,1,'#ffffff');if(w.glow){const s=Math.floor(time*20)%2;P(a2[0]-1-s,a2[1]-1,3+s*2,1,'#ffffff');P(a2[0],a2[1]-2-s,1,3+s*2,'#ffffff');}}}
-  if(w.t==='tome'&&w.glow)for(let i=0;i<3;i++)P(w.x+rnd(-4,10),w.y-rnd(4,12),1,1,'#fff3c0');
+    if(w.arrow){const a2=L(-pl+8,0);lineP(pp[0],pp[1],a2[0],a2[1],w.glow?'#fff3b0':'#c8a070');P(a2[0],a2[1],1,1,'#ffffff');if(w.glow){const s=Math.floor(time*20)%2;P(a2[0]-1-s,a2[1]-1,3+s*2,1,'#ffffff');P(a2[0],a2[1]-2-s,1,3+s*2,'#ffffff');}}}
+  if(nm==='tome'&&w.glow)for(let i=0;i<3;i++)P(w.x+rnd(-4,10),w.y-rnd(4,12),1,1,'#fff3c0');
+  if(w.hc)drawFist(Math.round(w.x),Math.round(w.y),w.hc);
 }
 function postFX(g,w,h){
   const id=g.getImageData(0,0,w,h),d=id.data,src=new Uint8ClampedArray(d);
@@ -1231,28 +1399,31 @@ function postFX(g,w,h){
 const SPRC={};
 function charSprite(key,dir,frame,noW,flash,wt){
   const id=key+dir+frame+(noW?1:0)+(flash?1:0)+(wt||'');if(SPRC[id])return SPRC[id];
-  const [c,g]=mk(24,30);
+  const [c,g]=mk(48,40);g.translate(12,6);
   const C=CHAR[key],pal=Object.assign({},BASEPAL,CP[key]);if(flash)for(const q in pal)pal[q]='#fff6ea';const side=dir>=2,back=dir===1,grid=charGrid(key,dir,frame),bob=(frame===1||frame===3)?1:0;
-  const pg=G;G=g;const WT=wt||C.w,hx=side?15:back?6:17,hy=23-bob,wp=!noW&&WT,shd=C.shield&&(WT==='sword'||WT==='spear'||WT==='rapier');
-  if(back&&wp)drawWeapon(WT,hx,hy);
+  const pg=G;G=g;const WT=wt||C.w,hx=side?15:back?6:17,hy=23-bob,wp=!noW&&WT,shd=C.shield&&['sword','spear','rapier'].includes(wParse(WT||'')[0]);
+  const [wn]=wp?wParse(WT):[''],hd=wp&&HOLD[wn]&&WG[wn],HX=side?15:back?6:17,H=hd&&HOLD[wn],ha=H&&(side?H[1]:back?H[2]:H[0]),hf=H&&(side?H[4]:back?0:H[3]);
+  const held=()=>{g.drawImage(wRotRaw(WT,ha,hf),HX-24,hy-24);};
+  if(back&&wp)hd?held():drawWeapon(WT,hx,hy);
   for(let r=0;r<28;r++){const rr=r-6,yy=rr+7-(rr<=18?bob:0);for(let col=0;col<16;col++){const ch=grid[r][col];if(ch==='.')continue;const cl=pal[ch];if(cl)P(col+4,yy,1,1,cl);}}
   if(!back&&!side&&shd)drawKShield(1,16-bob);
-  if(!back&&wp)(side?drawWeaponSide:drawWeapon)(WT,hx,hy);
-  G=pg;postFX(g,24,30);return SPRC[id]=c;
+  if(!back&&wp){if(hd)held();else (side?drawWeaponSide:drawWeapon)(WT,hx,hy);}
+  if(hd&&!flash){const hc=[pal[grid[22][side?10:back?2:12]]||pal.S,pal[grid[22][side?11:back?3:13]]||pal.s];drawFist(HX,hy,hc);}
+  G=pg;g.setTransform(1,0,0,1,0,0);postFX(g,48,40);return SPRC[id]=c;
 }
 function drawHuman(x,y,key,o){
   x=Math.round(x);y=Math.round(y);if(!o.noShadow)ell(x,y,6,2,'rgba(0,0,0,.42)');
   const f=o.moving?Math.floor(o.t*8)%4:0,d=o.dir,spr=charSprite(key,d===2?3:d,f,!!o.noWeapon,!!o.flash,o.wt);
-  if(d===2){G.save();G.translate(x,0);G.scale(-1,1);G.drawImage(spr,-12,y-29);G.restore();}else G.drawImage(spr,x-12,y-29);
+  if(d===2){G.save();G.translate(x,0);G.scale(-1,1);G.drawImage(spr,-24,y-35);G.restore();}else G.drawImage(spr,x-24,y-35);
 }
 function drawPlayer(){
   const p=player;if(p.hidden)return;
   if(p.inv>0&&p.rollT<=0&&p.dashT<=0&&Math.floor(time*20)%2)ctx.globalAlpha=.45;
   if(p.rollT>0)ctx.globalAlpha=.8;
-  if(p.lying){ctx.save();ctx.translate(Math.round(p.x),Math.round(p.y)-2);ctx.rotate(-Math.PI/2);drawHuman(0,14,p.c.key,{dir:0,t:0,noShadow:1,wt:FAM[famOf(p.weapon)].w});ctx.restore();}
-  else{const wp=weaponPose(p),beh=wp&&Math.sin(wp.a)<-.25;if(beh)drawPose(wp);
+  if(p.lying){ctx.save();ctx.translate(Math.round(p.x),Math.round(p.y)-2);ctx.rotate(-Math.PI/2);drawHuman(0,14,p.c.key,{dir:0,t:0,noShadow:1,wt:wKey(p.weapon)});ctx.restore();}
+  else{const wp=weaponPose(p),beh=wp&&Math.sin(wp.a)<-.25;if(wp)wp.hc=handCol(p.c.key);if(beh)drawPose(wp);
     let lx=0,ly=0;if(p.act&&p.act.k==='swing'){const u=p.act.t/p.act.dur;if(u>.28&&u<.65){lx=Math.round(Math.cos(p.act.ang)*1.5);ly=Math.round(Math.sin(p.act.ang));}}
-    drawHuman(p.x+lx,p.y+ly,p.c.key,{dir:p.dir,moving:p.moving&&!(p.act&&p.act.k!=='cast'),t:p.anim,flash:p.flash>0,noWeapon:!!wp,wt:FAM[famOf(p.weapon)].w});if(wp&&!beh)drawPose(wp);}
+    drawHuman(p.x+lx,p.y+ly,p.c.key,{dir:p.dir,moving:p.moving&&!(p.act&&p.act.k!=='cast'),t:p.anim,flash:p.flash>0,noWeapon:!!wp,wt:wKey(p.weapon)});if(wp&&!beh)drawPose(wp);}
   ctx.globalAlpha=1;
   if(p.shield>0){for(let i=0;i<28;i++){const a=i/28*TAU+time*2;P(p.x+Math.cos(a)*11,p.y-8+Math.sin(a)*12,1,1,i%3?'#9fd0ff':'#ffffff');}}
 }
@@ -1279,7 +1450,7 @@ function drawEnemy(e){
       for(let i=0;i<5;i++){const len=4+Math.round(Math.sin(e.anim*5+i)*2+2);P(x-6+i*3,yy-3,2,len,W('#4a7aa0'));}
       ell(x,yy-9,7,9,'#0a1420');ell(x,yy-9,6,8,W('#7aa8cc'));ell(x-1,yy-11,4,5,W('#c4e8ff'));ell(x,yy-10,3,3,'#0a1420');P(x-2,yy-11,1,2,'#7ff0ff');P(x+1,yy-11,1,2,'#7ff0ff');
       P(x-8,yy-9+Math.round(Math.sin(e.anim*4)),2,5,W('#7aa8cc'));P(x+6,yy-9-Math.round(Math.sin(e.anim*4)),2,5,W('#7aa8cc'));break;}
-    default:{const wp=enemyPose(e),beh=wp&&Math.sin(wp.a)<-.25;if(beh)drawPose(wp);drawHuman(x,y,e.type,{dir:e.face<0?2:3,moving:e.moving,t:e.anim,flash:f,noWeapon:!!wp});if(wp&&!beh)drawPose(wp);
+    default:{const wp=enemyPose(e),beh=wp&&Math.sin(wp.a)<-.25;if(wp&&WG[wp.t])wp.hc=handCol(e.type);if(beh)drawPose(wp);drawHuman(x,y,e.type,{dir:e.face<0?2:3,moving:e.moving,t:e.anim,flash:f,noWeapon:!!wp});if(wp&&!beh)drawPose(wp);
       if(e.state==='wind'){P(x-1,y-36,2,4,'#ff5a3a');P(x-1,y-31,2,1,'#ff5a3a');}}
   }
   ctx.globalAlpha=1;
@@ -1411,6 +1582,7 @@ function drawNum(str,x,y,col){str=String(str);const w=str.length*4-1;let ox=Math
 function collectLights(){
   const L=[];
   if(player&&!player.hidden)L.push({x:player.x,y:player.y-8,r:(map.id==='grotte'||map.id==='crypte'||map.id==='racines')?92:76,a:.95});
+  if(player&&!player.hidden&&player.weapon&&player.weapon.rar>=4)L.push({x:player.x+(player.dir===2?-6:6),y:player.y-16,r:16+Math.sin(time*4)*2,c:RAR[player.weapon.rar].c,ga:.35});
   for(const o of map.vis||[]){const d=OBJ[o.type];if(d.light&&!(o.type==='lantern'&&o.v)){const fl=1+Math.sin(time*9+o.x)*d.light.fl+(Math.random()-.5)*d.light.fl;L.push({x:o.x,y:o.y+d.light.dy,r:d.light.r*fl,c:d.light.c,ga:d.light.ga});}
     if(o.type==='mlantern')L.push(o.v?{x:o.x,y:o.y-24,r:100+Math.random()*6,c:'#ffcf5a',ga:.6}:{x:o.x,y:o.y-24,r:26,c:'#5a6ac8',ga:.5});
     if(o.type==='gtree'){L.push({x:o.x,y:o.y-32,r:30,c:'#ffcf5a',ga:.5});L.push({x:o.x,y:o.y-58,r:44,c:'#9fffe0',ga:.3});}
@@ -1964,7 +2136,7 @@ $('#miniwrap').addEventListener('click',e=>{e.stopPropagation();$('#miniwrap').c
 /* ================= ICÔNES ================= */
 const ICN={};
 function icon(key){if(ICN[key])return ICN[key];const [c,g]=mk(32,32);
-  if(key.startsWith('w:')){g.drawImage(wRot(key.slice(2),28),14,2,32,32,0,0,32,32);return ICN[key]=c.toDataURL();}
+  if(key.startsWith('w:')){const t=key.slice(2),src=wRot(t,wParse(t)[0]==='tome'?0:28),d=src.getContext('2d').getImageData(0,0,48,48).data;let x0=48,y0=48,x1=0,y1=0;for(let y=0;y<48;y++)for(let x=0;x<48;x++)if(d[(y*48+x)*4+3]){x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x);y1=Math.max(y1,y);}const n=Math.max(20,x1-x0+5,y1-y0+5),[c2,g2]=mk(n,n);g2.drawImage(src,Math.round(n/2-(x0+x1+1)/2),Math.round(n/2-(y0+y1+1)/2));return ICN[key]=c2.toDataURL();}
   const pg=G;G=g;
   switch(key){
     case 'potion':P(13,4,6,4,'#c0b090');P(12,3,8,2,'#8a7a5a');ell(16,19,9,9,'#7a1a2a');ell(16,19,8,8,'#e0475b');ell(14,17,4,4,'#ff8a9a');P(12,15,2,3,'#ffffff');P(13,8,6,4,'#d8e0ec');break;
@@ -2074,11 +2246,11 @@ function renderMenu(){const p=player,items=menuItems();if(mSel>=items.length)mSe
   if(mTab==='w'||mTab==='o'||mTab==='t'){
     const title={w:'Armes',o:'Objets',t:'Trésors et objets de quête'}[mTab];
     L=`<h3 class="mh">${title}${mTab==='w'?` <small>${p.bag.length+1} / 25</small>`:''}</h3><div class="grid6">${items.map((it,i)=>{
-      if(it.w){const r=RAR[it.w.rar];return `<button class="slot2${i===mSel?' sel':''}" data-i="${i}" style="--rc:${r.c}"><img src="${icon('w:'+FAM[famOf(it.w)].w)}" alt="">${it.eq?'<i class="eq"></i>':''}<i class="rar"></i><span class="qty">${it.w.atk}</span></button>`;}
+      if(it.w){const r=RAR[it.w.rar];return `<button class="slot2${i===mSel?' sel':''}" data-i="${i}" style="--rc:${r.c}"><img src="${icon('w:'+wKey(it.w))}" alt="">${it.eq?'<i class="eq"></i>':''}<i class="rar"></i><span class="qty">${it.w.atk}</span></button>`;}
       return `<button class="slot2${i===mSel?' sel':''}" data-i="${i}"><img src="${icon(it.k)}" alt=""><span class="qty">${it.q}</span></button>`;}).join('')||''}</div>${items.length?'':'<p class="mempty">Rien pour l’instant. Les objets importants que tu trouveras apparaîtront ici.</p>'}`;
     const it=items[mSel];
     if(it&&it.w){const w=it.w,fk=famOf(w),F=FAM[fk],r=RAR[w.rar],d=w.atk-p.weapon.atk,aff=AFF[p.c.key].includes(fk);
-      R=`<img class="dicon" src="${icon('w:'+F.w)}" alt=""><div class="dname" style="color:${r.c}">${esc(w.name)}</div><div class="dsub">${r.n} · ${F.n}${aff?' · <span class="aff">Affinité de classe +15 %</span>':''}</div>
+      R=`<img class="dicon" src="${icon('w:'+wKey(w))}" alt=""><div class="dname" style="color:${r.c}">${esc(w.name)}</div><div class="dsub">${r.n} · ${F.n}${aff?' · <span class="aff">Affinité de classe +15 %</span>':''}</div>
         <div class="dstat"><span>Attaque <b>${w.atk}</b></span>${it.eq?'<span class="eqt">Équipée</span>':`<span class="${d>0?'up':d<0?'dn':''}">${d>0?'+':''}${d}</span>`}</div>
         <p class="ddesc">${esc(F.desc)}${w.proc?' Foudre en chaîne : 22 % de chances par coup.':''}</p>
         ${it.eq?'':`<div class="mrow"><button class="mbtn pri" data-a="equip">Équiper</button><button class="mbtn" data-a="sell">Vendre · ${wValue(w)} pièces</button></div>`}`;}
@@ -2091,7 +2263,7 @@ function renderMenu(){const p=player,items=menuItems();if(mSel>=items.length)mSe
     if(it&&it.main){const cur=!it.done&&stage>=it.a&&stage<it.b,q=QUEST[stage];R=`<div class="dsub">Quête principale</div><div class="dname">${esc(it.n)}</div><p class="ddesc">${esc(it.d)}</p>${cur?`<div class="dobj"><small>Objectif</small><b>${esc(typeof q.o==='function'?q.o():q.o)}</b></div><div class="mrow"><button class="mbtn pri" data-a="track" data-id="main"${tr==='main'?' disabled':''}>${tr==='main'?'Quête suivie':'Suivre cette quête'}</button></div>`:'<div class="dobj done"><b>Terminée</b></div>'}`;}
     else if(it){const Q=SQ[it.id],st=sqS(it.id),s=Q.steps[st.s];R=`<div class="dsub side">Quête secondaire · ${esc(Q.where)}</div><div class="dname">${esc(Q.n)}</div><p class="ddesc">${esc(Q.desc)}</p><div class="dsub">Donnée par ${esc(Q.gn)}</div>${st.done?'<div class="dobj done"><b>Terminée</b></div>':`<div class="dobj"><small>Objectif</small><b>${esc(s.o(st.c))}</b></div><div class="dsub">Récompense : ${esc(Q.rt)}</div><div class="mrow"><button class="mbtn pri" data-a="track" data-id="${it.id}"${tr===it.id?' disabled':''}>${tr===it.id?'Quête suivie':'Suivre cette quête'}</button></div>`}`;}
   }else{
-    L=`<div class="cport"><canvas id="mport" width="24" height="30"></canvas><div><div class="dname">${esc(p.c.name)}</div><div class="dsub">Niveau ${p.lvl} · ${p.xp} / ${need(p.lvl)} XP</div></div></div>
+    L=`<div class="cport"><canvas id="mport" width="36" height="40"></canvas><div><div class="dname">${esc(p.c.name)}</div><div class="dsub">Niveau ${p.lvl} · ${p.xp} / ${need(p.lvl)} XP</div></div></div>
       <div class="cstats">${[['PV',`${Math.ceil(p.hp)} / ${p.maxHp}`],['PM',`${Math.floor(p.mp)} / ${p.maxMp}`],['Attaque',Math.round(pAtk())],['Défense',Math.round(p.def)],['Ennemis vaincus',p.kills],['Temps de jeu',`${Math.floor(playT/60)} min`]].map(([a,b])=>`<div><span>${a}</span><b>${b}</b></div>`).join('')}</div>`;
     R=`<div class="dsub">Compétence</div><div class="dname" style="font-size:20px">${esc(p.c.skill.name)}</div><p class="ddesc">${esc(p.c.skill.desc)} (${p.c.skill.mp} PM)</p>
       <div class="dsub">Affinités d’armes</div><p class="ddesc">${AFF[p.c.key].map(k=>FAM[k].n).join(' · ')} — +15 % de dégâts</p>
@@ -2100,7 +2272,7 @@ function renderMenu(){const p=player,items=menuItems();if(mSel>=items.length)mSe
       <div class="mrow"><button class="mbtn" data-a="quit">Sauvegarder et quitter</button></div>`;}
   $('#mleft').innerHTML=L;$('#mright').innerHTML=R;
   $('#mhint').textContent=touchMode?'Touche un objet pour le voir':'Flèches : choisir · Entrée : action · Tab : onglet · Échap : fermer';
-  const mp=$('#mport');if(mp){const g=mp.getContext('2d'),pg=G;G=g;drawHuman(12,29,p.c.key,{dir:0,t:0,wt:FAM[famOf(p.weapon)].w});G=pg;}
+  const mp=$('#mport');if(mp){const g=mp.getContext('2d'),pg=G;G=g;drawHuman(18,35,p.c.key,{dir:0,t:0,wt:wKey(p.weapon)});G=pg;}
 }
 function menuAct(a,id){const p=player,items=menuItems(),it=items[mSel];
   if(a==='equip'&&it&&it.w&&!it.eq){const w=p.bag[it.i];p.bag[it.i]=p.weapon;p.weapon=w;mSel=0;sfx('chest');}
@@ -2153,15 +2325,15 @@ function showEnd(ch){ch=ch||0;S.screen='end';const p=player,w=p.weapon,r=RAR[w.r
 /* ================= SCREENS ================= */
 let selKey=null;const previews=[];
 function buildSelect(){const box=$('#cards');const mx={hp:140,atk:14,def:7,spd:80};
-  box.innerHTML=Object.values(CLS).map(c=>`<button class="card panel" data-k="${c.key}"><canvas width="24" height="30"></canvas><b>${c.name}</b><small>${c.style}</small>
+  box.innerHTML=Object.values(CLS).map(c=>`<button class="card panel" data-k="${c.key}"><canvas width="36" height="40"></canvas><b>${c.name}</b><small>${c.style}</small>
     ${[['PV',c.hp/mx.hp],['ATQ',c.atk/mx.atk],['DÉF',c.def/mx.def],['VIT',c.spd/mx.spd]].map(([n,v])=>`<div class="stat">${n}<i><u style="width:${Math.round(v*100)}%"></u></i></div>`).join('')}</button>`).join('')+
-    `<div class="card panel lock"><canvas width="24" height="30"></canvas><b>???</b><small>Classe cachée. Se débloque par des conditions secrètes.</small></div>`;
+    `<div class="card panel lock"><canvas width="36" height="40"></canvas><b>???</b><small>Classe cachée. Se débloque par des conditions secrètes.</small></div>`;
   box.querySelectorAll('canvas').forEach((c,i)=>previews.push({g:c.getContext('2d'),k:Object.keys(CLS)[i]||null}));
   box.querySelectorAll('button.card').forEach(b=>b.addEventListener('click',()=>{initAudio();selKey=b.dataset.k;box.querySelectorAll('.card').forEach(x=>x.classList.toggle('sel',x===b));const c=CLS[selKey];$('#sdesc').innerHTML=`<b style="color:#ffd166">${c.name}</b> · Compétence <b>${c.skill.name}</b> — ${c.skill.desc}`;$('#bStart').disabled=false;sfx('pick');}));
 }
-function drawPreviews(){for(const pv of previews){const g=pv.g;g.clearRect(0,0,24,30);const pg=G;G=g;
-  if(pv.k)drawHuman(12,29,pv.k,{wt:FAM[AFF[pv.k][0]].w,dir:pv.k===selKey?[0,3,0,2][Math.floor(time*1.5)%4]:0,moving:pv.k===selKey,t:time});
-  else{g.drawImage(charSprite('chevalier',0,0,1,0),0,0);g.globalCompositeOperation='source-in';g.fillStyle='#24124a';g.fillRect(0,0,24,30);g.globalCompositeOperation='source-over';P(11,12,2,4,'#c9a2ff');P(11,17,2,1,'#c9a2ff');}
+function drawPreviews(){for(const pv of previews){const g=pv.g;g.clearRect(0,0,36,40);const pg=G;G=g;
+  if(pv.k)drawHuman(18,35,pv.k,{wt:FAM[AFF[pv.k][0]].w,dir:pv.k===selKey?[0,3,0,2][Math.floor(time*1.5)%4]:0,moving:pv.k===selKey,t:time});
+  else{g.drawImage(charSprite('chevalier',0,0,1,0),-6,0);g.globalCompositeOperation='source-in';g.fillStyle='#24124a';g.fillRect(0,0,36,40);g.globalCompositeOperation='source-over';P(17,18,2,4,'#c9a2ff');P(17,23,2,1,'#c9a2ff');}
   G=pg;}}
 function startGame(sv){
   $('#title').classList.add('hidden');$('#select').classList.add('hidden');$('#hud').classList.remove('hidden');
