@@ -1377,25 +1377,21 @@ const WG={
   ".IHffHIP",
   "..PPPPP."],
  bow:[
-  "vXW......",
-  "S.XW.....",
-  "S..XW....",
-  "S...XW...",
-  "S....XW..",
-  "S....XW..",
-  "S.....XW.",
-  "S.....HG.",
-  "S.....JK.",
-  "S.....+K.",
-  "S.....JK.",
-  "S.....HG.",
-  "S.....XY.",
-  "S....XY..",
-  "S....XY..",
-  "S...XY...",
-  "S..XY....",
-  "S.XY.....",
-  "vXY......"],
+  "..vW...",
+  ".XW....",
+  ".XW....",
+  "..XW...",
+  "...XW..",
+  "....XW.",
+  "....HG.",
+  "....+K.",
+  "....HG.",
+  "....XY.",
+  "...XY..",
+  "..XY...",
+  ".XY....",
+  ".XY....",
+  "..vY..."],
  xbow:[
   ".............HG..",
   "............S.HG.",
@@ -1429,7 +1425,7 @@ function wDesign(name,rar,str){const id=name+'#'+rar+(str?'s':'');if(WSPR[id])re
 function wParse(t){const i=t.indexOf('#');return i<0?[t,0]:[t.slice(0,i),+t.slice(i+1)];}
 function shadeHex(h,k){const n=parseInt(h.slice(1),16);return 'rgb('+((n>>16)*k|0)+','+((n>>8&255)*k|0)+','+((n&255)*k|0)+')';}
 
-const HOLD={sword:[-1.35,-.8,-1.8,0,0],katana:[-1.3,-.65,-1.85],rapier:[-1.45,-.4,-1.75],dagger:[1.35,.45,1.8],spear:[-1.57,-.95,-1.57],axe:[-1.25,-1.1,-1.9,1,1],hammer:[-1.25,-1.05,-1.9,1,1],staff:[-1.57,-1.45,-1.62],sceptre:[-1.3,-1.05,-1.85,1,1],tome:[0,0,0],bow:[Math.PI,0,0],xbow:[-1.25,-.35,-1.9,1,1]};
+const HOLD={sword:[-1.35,-.8,-1.8,0,0],katana:[-1.3,-.65,-1.85],rapier:[-1.45,-.4,-1.75],dagger:[1.35,.45,1.8],spear:[-1.57,-.95,-1.57],axe:[-1.25,-1.1,-1.9,1,1],hammer:[-1.25,-1.05,-1.9,1,1],staff:[-1.57,-1.45,-1.62],sceptre:[-1.3,-1.05,-1.85,1,1],tome:[0,0,0],bow:[-.3,.45,Math.PI],xbow:[-1.25,-.35,-1.9,1,1]};
 const WRAW={};
 function wRotRaw(t,a,flip){const id=t+'|'+a.toFixed(3)+(flip?'f':'');if(WRAW[id])return WRAW[id];
   const [nm,rr]=wParse(t),src=wDesign(nm,rr,1),sd=src.getContext('2d').getImageData(0,0,48,48).data,ca=Math.cos(a),sa=Math.sin(a);
@@ -1466,9 +1462,9 @@ function wRot(t,k){const id=t+k;if(WROT[id])return WROT[id];
 function lineP(x0,y0,x1,y1,c){const n=Math.max(1,Math.round(Math.max(Math.abs(x1-x0),Math.abs(y1-y0))));for(let i=0;i<=n;i++)P(lerp(x0,x1,i/n),lerp(y0,y1,i/n),1,1,c);}
 function drawPose(w){
   const nm=wParse(w.t)[0],k=nm==='tome'?0:Math.round(((w.a%TAU+TAU)%TAU)/TAU*32)%32;G.drawImage(wRot(w.t,k),Math.round(w.x)-24,Math.round(w.y)-24);
-  if(nm==='bow'){const ca=Math.cos(w.a),sa=Math.sin(w.a),L=(lx,ly)=>[w.x+lx*ca-ly*sa,w.y+lx*sa+ly*ca];const pl=(w.pull||0)*5,t1=L(-6,-9),t2=L(-6,9),pp=L(-6-pl,0);
+  if(nm==='bow'){const ca=Math.cos(w.a),sa=Math.sin(w.a),L=(lx,ly)=>[w.x+lx*ca-ly*sa,w.y+lx*sa+ly*ca];const pl=(w.pull||0)*5,t1=L(-2,-7),t2=L(-2,7),pp=L(-2-pl,0);
     lineP(t1[0],t1[1],pp[0],pp[1],'#d8e0ec');lineP(pp[0],pp[1],t2[0],t2[1],'#d8e0ec');
-    if(w.arrow){const a2=L(-pl+8,0);lineP(pp[0],pp[1],a2[0],a2[1],w.glow?'#fff3b0':'#c8a070');P(a2[0],a2[1],1,1,'#ffffff');if(w.glow){const s=Math.floor(time*20)%2;P(a2[0]-1-s,a2[1]-1,3+s*2,1,'#ffffff');P(a2[0],a2[1]-2-s,1,3+s*2,'#ffffff');}}}
+    if(w.arrow){const a2=L(-pl+10,0);lineP(pp[0],pp[1],a2[0],a2[1],w.glow?'#fff3b0':'#c8a070');P(a2[0],a2[1],1,1,'#ffffff');if(w.glow){const s=Math.floor(time*20)%2;P(a2[0]-1-s,a2[1]-1,3+s*2,1,'#ffffff');P(a2[0],a2[1]-2-s,1,3+s*2,'#ffffff');}}}
   if(nm==='tome'&&w.glow)for(let i=0;i<3;i++)P(w.x+rnd(-4,10),w.y-rnd(4,12),1,1,'#fff3c0');
   if(w.hc)drawFist(Math.round(w.x),Math.round(w.y),w.hc);
 }
@@ -1493,7 +1489,10 @@ function charSprite(key,dir,frame,noW,flash,wt){
   if(!back&&!side&&shd)drawKShield(1,16-bob);
   if(!back&&wp){if(hd)held();else (side?drawWeaponSide:drawWeapon)(WT,hx,hy);}
   if(hd&&!flash){const hc=[pal[grid[22][side?10:back?2:12]]||pal.S,pal[grid[22][side?11:back?3:13]]||pal.s];drawFist(HX,hy,hc);}
-  G=pg;g.setTransform(1,0,0,1,0,0);postFX(g,48,40);return SPRC[id]=c;
+  G=pg;g.setTransform(1,0,0,1,0,0);postFX(g,48,40);
+  if(hd&&wn==='bow'&&!back){const ca=Math.cos(ha),sa=Math.sin(ha),T=(dx,dy)=>{if(hf)dy=-dy;return [HX+12+dx*ca-dy*sa,hy+6+dx*sa+dy*ca];},a=T(-2,-7),b=T(-2,7),n=Math.ceil(Math.hypot(b[0]-a[0],b[1]-a[1]));
+    g.fillStyle=side?'rgba(232,220,192,.6)':'rgba(232,220,192,.9)';for(let i=0;i<=n;i++)g.fillRect(Math.round(a[0]+(b[0]-a[0])*i/n),Math.round(a[1]+(b[1]-a[1])*i/n),1,1);}
+  return SPRC[id]=c;
 }
 function drawHuman(x,y,key,o){
   x=Math.round(x);y=Math.round(y);if(!o.noShadow)ell(x,y,6,2,'rgba(0,0,0,.42)');
