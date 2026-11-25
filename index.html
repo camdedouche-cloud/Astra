@@ -199,6 +199,8 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 #qbanner::before,#qbanner::after{content:'';display:block;height:1px;margin:8px auto;width:70%;background:linear-gradient(90deg,transparent,rgba(236,231,212,.7),transparent)}
 #quest{pointer-events:auto;cursor:pointer}#quest.side small{color:#8fe0ff}
 
+#qhint{margin-top:4px;font-size:10px;line-height:1.35;color:#c8d4e8;font-style:italic;opacity:.85;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}#qhint:empty{display:none}
+.dhint{margin-top:10px;padding:10px 12px;border-left:2px solid #ffd166;background:rgba(255,209,102,.06);font-style:italic;color:#e8e2cc;font-size:13px;line-height:1.5}.dhint small{display:block;font-style:normal;color:#ffd166;margin-bottom:4px;letter-spacing:.06em;text-transform:uppercase;font-size:10px}
 </style>
 </head>
 <body>
@@ -214,7 +216,7 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
     </div>
   </div>
   <div id="mark" title="La marque"><svg viewBox="0 0 40 40" fill="none" stroke="#c9a2ff" stroke-width="2.4"><circle cx="20" cy="20" r="15"/><circle cx="20" cy="20" r="6" fill="#2a1450"/><path d="M20 3v8M20 29v8M3 20h8M29 20h8M8 8l5.5 5.5M26.5 26.5L32 32M32 8l-5.5 5.5M13.5 26.5L8 32"/></svg></div>
-  <div id="rcol"><div id="quest" class="panel"><small id="qtitle">Quête principale</small><p id="qtext"></p></div><div id="miniwrap" class="panel" title="Carte"><canvas id="mini" width="10" height="10"></canvas><small id="miniName"></small></div></div>
+  <div id="rcol"><div id="quest" class="panel"><small id="qtitle">Quête principale</small><p id="qtext"></p><p id="qhint"></p></div><div id="miniwrap" class="panel" title="Carte"><canvas id="mini" width="10" height="10"></canvas><small id="miniName"></small></div></div>
   <div id="topbtns">
     <button id="bBag" class="panel" aria-label="Inventaire" title="Inventaire (I)"><svg viewBox="0 0 24 24" fill="#ffd166"><path d="M8 7V5a4 4 0 018 0v2h3l1 14H4L5 7h3zm2 0h4V5a2 2 0 00-4 0v2z"/></svg></button>
     <button id="bMute" class="panel" aria-label="Son"><svg viewBox="0 0 24 24" fill="#9fb0c8"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16 8a5 5 0 010 8M18.5 5.5a8.5 8.5 0 010 13" fill="none" stroke="#9fb0c8" stroke-width="2"/></svg></button>
@@ -376,12 +378,12 @@ const setT=(m,x,y,v)=>{if(x>=0&&y>=0&&x<m.w&&y<m.h)m.t[y*m.w+x]=v;};
 const setSolid=(m,x,y,v=1)=>{if(x>=0&&y>=0&&x<m.w&&y<m.h)m.solid[y*m.w+x]=v;};
 const isWater=(m,x,y)=>{const t=tAt(m,x,y);return t===T.WATER||t===T.BRIDGE;};
 const isWall=(m,x,y)=>{const t=tAt(m,x,y);return t===T.WALL||t===-1;};
-function solidAt(m,px,py){const x=Math.floor(px/TS),y=Math.floor(py/TS);if(x<0||y<0||x>=m.w||y>=m.h)return true;return m.solid[y*m.w+x]===1;}
+function solidAt(m,px,py){const x=Math.floor(px/TS),y=Math.floor(py/TS);if(x<0||y<0||x>=m.w||y>=m.h)return oobSolid(m,px,py);return m.solid[y*m.w+x]===1;}
 
 function paintTile(m,x,y){
   const t=m.t[y*m.w+x],ox=x*TS,oy=y*TS,h=i=>hash(x,y,i);
   if(t===T.GRASS||t===T.VOID){
-    const v=t===T.VOID,GP=m.style==='fog'?['#1b2a2f','#24373b','#2c4245','#132226','#c8d4e8']:['#1f3a36','#284a41','#30574a','#183230','#6f9fe6'];P(ox,oy,16,16,v?'#211b33':GP[0]);
+    const v=t===T.VOID,GP=GSTY[m.style]||(m.style==='fog'?['#1b2a2f','#24373b','#2c4245','#132226','#c8d4e8']:['#1f3a36','#284a41','#30574a','#183230','#6f9fe6']);P(ox,oy,16,16,v?'#211b33':GP[0]);
     for(let i=0;i<24;i++){const r=h(i+100);P(ox+Math.floor(h(i)*16),oy+Math.floor(h(i+50)*16),1,r<.5?2:1,v?(r<.6?'#2e2447':'#3a2d5a'):(r<.5?GP[1]:r<.82?GP[2]:GP[3]));}
     if(!v&&h(200)<.07){const fx=ox+3+Math.floor(h(201)*10),fy=oy+3+Math.floor(h(202)*10);P(fx,fy+1,1,2,GP[1]);P(fx-1,fy,3,1,GP[4]);P(fx,fy-1,1,3,GP[4]);P(fx,fy,1,1,'#e2ecff');}
     if(!v&&h(220)<.05){const fx=ox+2+Math.floor(h(221)*12),fy=oy+2+Math.floor(h(222)*12);P(fx,fy,3,1,'#3f6e58');P(fx+1,fy-1,1,1,'#4f8064');}
@@ -404,7 +406,7 @@ function paintTile(m,x,y){
     if(!isWater(m,x,y-1)||tAt(m,x,y-1)!==T.BRIDGE){P(ox,oy,16,2,'#1e160f');P(ox,oy+2,16,1,'#6e573e');}
     if(tAt(m,x,y+1)!==T.BRIDGE){P(ox,oy+13,16,3,'#1e160f');P(ox,oy+13,16,1,'#5e4a36');}
   }else if(t===T.FLOOR){
-    const FP=m.style==='crypt'?['#151922','#1d2230','#212735','#2b3346']:['#1b1822','#25212d','#292432','#322c3c'];P(ox,oy,16,16,FP[0]);
+    const FP=FSTY[m.style]||(m.style==='crypt'?['#151922','#1d2230','#212735','#2b3346']:['#1b1822','#25212d','#292432','#322c3c']);P(ox,oy,16,16,FP[0]);
     for(let row=0;row<2;row++)for(let col=0;col<2;col++){const k=h(row*2+col+500);P(ox+col*8,oy+row*8,7,7,k<.5?FP[1]:FP[2]);P(ox+col*8,oy+row*8,7,1,FP[3]);}
     if(h(520)<.18)P(ox+Math.floor(h(521)*12),oy+Math.floor(h(522)*12),3,1,'#121017');
     if(h(530)<.06){P(ox+5,oy+9,3,1,'#2e3a2a');P(ox+6,oy+8,1,1,'#3a4a34');}
@@ -412,11 +414,11 @@ function paintTile(m,x,y){
     if(isWall(m,x-1,y))P(ox,oy,2,16,'rgba(0,0,0,.35)');
   }else if(t===T.WALL){
     const face=y+1<m.h&&!isWall(m,x,y+1);
-    const WP=m.style==='crypt'?['#1c2130','#2a3146','#262c40','#3a4462']:['#241f2e','#352e42','#30293c','#463e56'];
+    const WP=WSTY[m.style]||(m.style==='crypt'?['#1c2130','#2a3146','#262c40','#3a4462']:['#241f2e','#352e42','#30293c','#463e56']);
     if(face){P(ox,oy,16,16,WP[0]);
       for(let row=0;row<4;row++){const off=row%2?4:0;for(let c=-1;c<3;c++){const bx=ox+c*8+off,x0=Math.max(bx,ox),x1=Math.min(bx+7,ox+16);if(x1>x0){P(x0,oy+row*4,x1-x0,3,h(row*5+c+600)<.5?WP[1]:WP[2]);P(x0,oy+row*4,x1-x0,1,WP[3]);}}}
       P(ox,oy+14,16,2,'#110e16');
-    }else{P(ox,oy,16,16,'#0c0a11');
+    }else{P(ox,oy,16,16,m.style==='mount'?'#a8b4c6':'#0c0a11');if(m.style==='mount')for(let i=0;i<7;i++)P(ox+Math.floor(h(i+700)*14),oy+Math.floor(h(i+710)*15),2,1,h(i+720)<.5?'#e8eef8':'#8e9ab0');
       if(!isWall(m,x,y-1))P(ox,oy,16,1,'#3a3350');
       if(!isWall(m,x-1,y))P(ox,oy,1,16,'#2a2440');
       if(!isWall(m,x+1,y))P(ox+15,oy,1,16,'#2a2440');}
@@ -619,7 +621,7 @@ function buildValdoria(){
       for(let oy=-1;oy<=1;oy++)for(let ox=-1;ox<=1;ox++){const t=tAt(m,px+ox,py+oy);if(t===T.WATER)setT(m,px+ox,py+oy,T.BRIDGE);else if(t!==T.BRIDGE&&t!==-1&&(Math.abs(ox)+Math.abs(oy)<2||hash(px+ox,py+oy,4)<.6))setT(m,px+ox,py+oy,T.PATH);}}}
   for(let y=34;y<48;y++)for(let x=19;x<34;x++){const d=Math.hypot(x-26,y-41);if(d<4.6)setT(m,x,y,T.RUIN);}
   for(const[x,y]of[[17,37],[18,38],[21,47],[34,46],[33,45],[16,36]])setT(m,x,y,T.RUIN);
-  carvePath(m,[[37,38],[36,30],[34,22],[37,14],[40,6],[40,0]]);
+  carvePath(m,[[37,38],[36,30],[34,22],[37,14],[40,6],[40,0]]);carvePath(m,[[66,33],[72,38],[80,42],[88,45],[95,46]]);carvePath(m,[[9,55],[9,60],[10,63]]);
   // objects
   addObj(m,'crystal',26,40);
   addObj(m,'house',33,38);
@@ -754,11 +756,21 @@ const QUEST=[
   {o:'Purifie l’Ancien Sylvestre.'},
   {o:'Ramasse le troisième fragment de sceau.',tg:()=>flags.frag3Pos?['racines',flags.frag3Pos[0],flags.frag3Pos[1]]:null},
   {o:'Retourne voir Lyssara au Temple de la Lune.',tg:()=>['sylvaris',50*TS+8,27*TS]},
-  {o:'Chapitre 2 terminé. La suite arrive bientôt.'}
+  {o:'Trouve le chemin de Kar-Dûm, au-delà des montagnes.'},
+  {o:'Trouve les nains de Kar-Dûm.'},
+  {o:()=>`Trouve les pierres runiques (${runeCount()}/3)`},
+  {o:'Pose les runes sur les piliers du Grand Portail.'},
+  {o:'Entre dans les Archives de Kar-Dûm.'},
+  {o:'Trouve Thorek l’archiviste.'},
+  {o:'Pénètre dans la Grande Salle.'},
+  {o:'Vaincs le Gardien d’Airain.'},
+  {o:'Ramasse le quatrième fragment de sceau.'},
+  {o:'Retourne voir Thorek.'},
+  {o:'Chapitre 3 terminé. La suite arrive bientôt.'}
 ];
-function setStage(s){stage=s;updQuest();if(s>0)save();}
-function updQuest(){const tr=flags.track;if(tr&&tr!=='main'&&sqS(tr)&&!sqS(tr).done){const Q=SQ[tr],st=sqS(tr);$('#quest').classList.add('side');$('#qtitle').textContent='Quête secondaire · '+Q.n;$('#qtext').textContent=Q.steps[st.s].o(st.c);return;}$('#quest').classList.remove('side');const q=QUEST[stage];$('#qtitle').textContent=stage<10?'Prologue · Le réveil':stage<20?'Chapitre 1 · Le village oublié':stage<30?'Chapitre 2 · Les secrets de Sylvaris':'Exploration libre';$('#qtext').textContent=typeof q.o==='function'?q.o():q.o;}
-function questTarget(){const tr=flags.track,side=tr&&tr!=='main'&&sqS(tr)&&!sqS(tr).done;const q=QUEST[stage];if(!side&&(!q||!q.tg))return null;const t=side?trackedTarget():q.tg();if(!t)return null;if(t[0]===map.id)return {x:t[1],y:t[2]};const e=exitTo(map.id,t[0]);return e?{x:e[0],y:e[1]}:null;}
+function setStage(s){stage=s;hintAuto(s);updQuest();if(s>0)save();}
+function updQuest(){const tr=flags.track;if(tr&&tr!=='main'&&sqS(tr)&&!sqS(tr).done){const Q=SQ[tr],st=sqS(tr);$('#quest').classList.add('side');$('#qhint').textContent='';$('#qtitle').textContent='Quête secondaire · '+Q.n;$('#qtext').textContent=Q.steps[st.s].o(st.c);return;}$('#quest').classList.remove('side');$('#qtitle').textContent=stage<10?'Prologue · Le réveil':stage<20?'Chapitre 1 · Le village oublié':stage<30?'Chapitre 2 · Les secrets de Sylvaris':stage<40?'Chapitre 3 · Les archives de Kar-Dûm':'Exploration libre';$('#qtext').textContent=questGoal();$('#qhint').textContent=questHint();}
+function questTarget(){return null;const tr=flags.track,side=tr&&tr!=='main'&&sqS(tr)&&!sqS(tr).done;const q=QUEST[stage];if(!side&&(!q||!q.tg))return null;const t=side?trackedTarget():q.tg();if(!t)return null;if(t[0]===map.id)return {x:t[1],y:t[2]};const e=exitTo(map.id,t[0]);return e?{x:e[0],y:e[1]}:null;}
 function exitTo(from,to){if(from==='grotte'||from==='crypte'||from==='racines')return [maps[from].stairs.x,maps[from].stairs.y];
   if(from==='sylvaris')return to==='racines'?[maps.sylvaris.arch.x,maps.sylvaris.arch.y-8]:[TS,35*TS+8];
   if(from==='valdoria')return to==='grotte'?[maps.valdoria.cave.x,maps.valdoria.cave.y-8]:[40*TS+8,TS];
@@ -768,7 +780,7 @@ function exitTo(from,to){if(from==='grotte'||from==='crypte'||from==='racines')r
 function newPlayer(key){const c=CLS[key];return {c,x:0,y:0,r:5,fx:0,fy:1,dir:0,moving:false,anim:0,lvl:1,xp:0,hp:c.hp,maxHp:c.hp,mp:c.mp,maxMp:c.mp,atk:c.atk,def:c.def,
   weapon:{name:FAM[AFF[key][0]].n+' '+SUF[0],type:AFF[key][0],rar:0,atk:2},bag:[],coins:0,items:{},potions:3,atkT:0,rollT:0,rollCd:0,skillCd:0,inv:0,flash:0,shield:0,spin:0,spinTick:0,dashT:0,combo:0,comboT:0,swing:0,kx:0,ky:0,kills:0,titles:[],aimT:0};}
 const pAtk=()=>player.atk+player.weapon.atk+(player.titles.length*1);
-function move(e,dx,dy){const r=e.r||5;if(dx){const nx=e.x+dx;if(!boxSolid(nx,e.y,r))e.x=nx;}if(dy){const ny=e.y+dy;if(!boxSolid(e.x,ny,r))e.y=ny;}}
+function move(e,dx,dy){curMover=e;const r=e.r||5;if(dx){const nx=e.x+dx;if(!boxSolid(nx,e.y,r))e.x=nx;}if(dy){const ny=e.y+dy;if(!boxSolid(e.x,ny,r))e.y=ny;}curMover=null;}
 function boxSolid(x,y,r){return solidAt(map,x-r,y-3)||solidAt(map,x+r,y-3)||solidAt(map,x-r,y+1)||solidAt(map,x+r,y+1);}
 function nearestEnemy(maxD,cone){let best=null,bd=maxD;const a0=Math.atan2(player.fy,player.fx);for(const e of enemies){if(e.dead||e.fade)continue;const dx=e.x-player.x,dy=e.y-player.y,d=Math.hypot(dx,dy);if(d<bd&&(!cone||d<24||angDiff(Math.atan2(dy,dx),a0)<cone)){bd=d;best=e;}}return best;}
 function aim(maxD,any){const p=player;if(p.aimT>0){p.fx=p.aimX;p.fy=p.aimY;return;}const e=any?nearestEnemy(175):nearestEnemy(maxD,1.2);if(e){const dx=e.x-p.x,dy=(e.y-4)-(p.y-4),l=Math.hypot(dx,dy)||1;p.fx=dx/l;p.fy=dy/l;}}
@@ -945,6 +957,7 @@ function updEnemy(e,dt){
   if(ai==='boss'){bossAI(e,dt,dx,dy,d);return;}
   if(ai==='sentinel'){sentinelAI(e,dt,dx,dy,d);return;}
   if(ai==='treant'){treantAI(e,dt,dx,dy,d);return;}
+  if(ai==='airain'){airainAI(e,dt,dx,dy,d);return;}
   if(ai==='heart'){heartAI(e,dt,d);return;}
   if(ai==='ronce'){ronceAI(e,dt,dx,dy,d);if(d<e.r+6)hurtPlayer(e.atk,dx/d,dy/d);return;}
   if(!e.aggro&&ai!=='hop'){wander(e,dt);return;}
@@ -1006,7 +1019,7 @@ function killEnemy(e){
   if(e.d.void&&stage===4){flags.shadows=(flags.shadows||0)+1;updQuest();if(flags.shadows>=3){setStage(5);toast('Les ombres se dissipent… Retourne voir Maëlle.');}}
   sqKill(e.type);if(e.type==='spectre'){const sl=sqS('lune');if(sl&&!sl.done&&sl.s===0&&Math.random()<.6)pickups.push({k:'qitem',item:'eclat',x:e.x,y:e.y,t:0});}
   if(e.type==='heart'){(flags.hearts=flags.hearts||{})[e.hid]=1;updQuest();toast(`Cœur de ronces détruit (${heartCount()}/3)`,'#a66bff');if(stage===22&&heartCount()>=3){setStage(23);toast('Le Bosquet Gris est purifié. Retourne voir Caelan.');}save();}
-  if(e.d.boss)(e.type==='boss'?bossDown:e.type==='sentinel'?sentinelDown:treantDown)(e);
+  if(e.d.boss)(e.type==='boss'?bossDown:e.type==='sentinel'?sentinelDown:e.type==='airain'?airainDown:treantDown)(e);
   else{hitstop=Math.max(hitstop,.05);}
 }
 
@@ -1444,6 +1457,7 @@ function drawEnemy(e){
       ell(x,yy-8,7,8,'#05020c');ell(x,yy-8,6,7,W('#140a24'));ell(x-1,yy-10,4,5,W('#2a1650'));P(x-3,yy-11,2,1,'#e8c8ff');P(x+2,yy-11,2,1,'#e8c8ff');break;}
     case 'boss':case 'sentinel':drawBoss(e);break;
     case 'treant':drawTreant(e);break;
+    case 'golem':drawGolem(e);break;case 'bat':drawBat(e);break;case 'airain':drawAirain(e);break;
     case 'ronce':drawRonce(e,W);break;
     case 'heart':drawHeart(e,W);break;
     case 'spectre':{const yy=y-6+Math.sin(e.anim*2.5)*2;ell(x,y,6,2,'rgba(60,160,200,.3)');ctx.globalAlpha*=.85;
@@ -1545,7 +1559,7 @@ function drawPickup(k){const b=Math.sin(time*4+k.x)*1.2;
   else if(k.k==='potion'){P(k.x-3,k.y-9+b,6,7,'#05070d');P(k.x-2,k.y-8+b,4,5,'#e0475b');P(k.x-1,k.y-10+b,2,2,'#c0b090');P(k.x-1,k.y-7+b,1,2,'#ffb0bc');}
   else if(k.k==='weapon'){const c=RAR[k.w.rar].c;ctx.globalAlpha=.35;P(k.x-1,k.y-40,2,36,c);ctx.globalAlpha=1;P(k.x-1,k.y-14+b,3,11,'#05070d');P(k.x,k.y-13+b,1,8,c);P(k.x-2,k.y-6+b,5,1,'#e0b84a');P(k.x,k.y-5+b,1,2,'#3a2a20');}
   else if(k.k==='qitem'){ctx.globalAlpha=.4;P(k.x-1,k.y-34,2,30,'#8fe0ff');ctx.globalAlpha=1;const s=Math.floor(time*6)%2;P(k.x-2,k.y-12+b,5,6,'#05070d');P(k.x-1,k.y-11+b,3,4,k.item==='eclat'?'#9fd0ff':'#ffd166');P(k.x-3-s,k.y-9+b,1,1,'#ffffff');P(k.x+3+s,k.y-10+b,1,1,'#ffffff');}
-  else if(k.k==='seal'||k.k==='seal2'||k.k==='seal3'){const r=5+Math.sin(time*3);for(let i=0;i<8;i++){const a=i/8*TAU+time;P(k.x+Math.cos(a)*r*1.6,k.y-12+Math.sin(a)*r,1,1,'#ffd166');}P(k.x-2,k.y-16+b,5,8,'#05070d');P(k.x-1,k.y-15+b,3,6,'#b088ff');P(k.x,k.y-14+b,1,3,'#fff0ff');}
+  else if(k.k==='seal'||k.k==='seal2'||k.k==='seal3'||k.k==='seal4'){const r=5+Math.sin(time*3);for(let i=0;i<8;i++){const a=i/8*TAU+time;P(k.x+Math.cos(a)*r*1.6,k.y-12+Math.sin(a)*r,1,1,'#ffd166');}P(k.x-2,k.y-16+b,5,8,'#05070d');P(k.x-1,k.y-15+b,3,6,'#b088ff');P(k.x,k.y-14+b,1,3,'#fff0ff');}
 }
 function drawProj(q){const x=Math.round(q.x),y=Math.round(q.y);
   if(q.k==='arrow'||q.k==='earrow'){const l=Math.hypot(q.vx,q.vy),dx=q.vx/l,dy=q.vy/l;for(let i=0;i<6;i++)P(x-dx*i,y-dy*i,1,1,i<1?'#e8eef6':q.k==='earrow'?'#8a5a3a':'#c8a070');}
@@ -1580,7 +1594,7 @@ function drawNum(str,x,y,col){str=String(str);const w=str.length*4-1;let ox=Math
 
 /* ================= RENDER ================= */
 function collectLights(){
-  const L=[];
+  const L=[];for(const q of map.nvis||[]){const d=OBJ[q.o.type];if(d.light)L.push({x:q.o.x+q.dx,y:q.o.y+q.dy+d.light.dy,r:d.light.r,c:d.light.c,ga:d.light.ga});}
   if(player&&!player.hidden)L.push({x:player.x,y:player.y-8,r:(map.id==='grotte'||map.id==='crypte'||map.id==='racines')?92:76,a:.95});
   if(player&&!player.hidden&&player.weapon&&player.weapon.rar>=4)L.push({x:player.x+(player.dir===2?-6:6),y:player.y-16,r:16+Math.sin(time*4)*2,c:RAR[player.weapon.rar].c,ga:.35});
   for(const o of map.vis||[]){const d=OBJ[o.type];if(d.light&&!(o.type==='lantern'&&o.v)){const fl=1+Math.sin(time*9+o.x)*d.light.fl+(Math.random()-.5)*d.light.fl;L.push({x:o.x,y:o.y+d.light.dy,r:d.light.r*fl,c:d.light.c,ga:d.light.ga});}
@@ -1593,8 +1607,8 @@ function collectLights(){
     if(o.type==='house'&&!o.v)for(const ox of[-14,14])L.push({x:o.x+ox,y:o.y-19,r:30,c:'#ffcf5a',ga:.5});
     if(o.type==='burnt')L.push({x:o.x-6,y:o.y-6,r:24+Math.random()*4,c:'#ff6a20',ga:.35});}
   const PL={fire:[44,'#ff8a30'],bolt:[30,'#6ac8ff'],shard:[24,'#a66bff'],wisp:[30,'#6ae0ff'],orb:[32,'#ffe9a0'],carrow:[26,'#fff3b0']};for(const q of projs){const v=PL[q.k];if(v)L.push({x:q.x,y:q.y,r:v[0],c:v[1],ga:.6});}
-  for(const e of enemies){if(e.d.void)L.push({x:e.x,y:e.y-10,r:28,c:'#8a4dff',ga:.4});if(e.type==='boss'&&e.phase===2)L.push({x:e.x,y:e.y-30,r:60,c:'#ff3a2a',ga:.25});if(e.type==='sentinel')L.push({x:e.x,y:e.y-50,r:50,c:e.phase===2?'#b07aff':'#6ae0ff',ga:.35});if(e.type==='treant')L.push({x:e.x,y:e.y-52,r:60,c:e.phase===2?'#d070ff':'#b0ff8a',ga:.35});if(e.type==='heart')L.push({x:e.x,y:e.y-14,r:44,c:'#d040d0',ga:.45});if(e.type==='spectre')L.push({x:e.x,y:e.y-14,r:30,c:'#6ae0ff',ga:.35});}
-  for(const k of pickups){if(k.k==='weapon')L.push({x:k.x,y:k.y-10,r:34,c:RAR[k.w.rar].c,ga:.45});if(k.k==='qitem')L.push({x:k.x,y:k.y-10,r:30,c:'#8fe0ff',ga:.5});if(k.k==='seal'||k.k==='seal2'||k.k==='seal3')L.push({x:k.x,y:k.y-12,r:60,c:'#b088ff',ga:.6});}
+  for(const e of enemies){if(e.type==='airain')L.push({x:e.x,y:e.y-52,r:80,c:e.phase===2?'#ff6a3a':'#7ff6ff',ga:.45});if(e.type==='golem')L.push({x:e.x,y:e.y-17,r:22,c:'#7ff6ff',ga:.4});if(e.d.void)L.push({x:e.x,y:e.y-10,r:28,c:'#8a4dff',ga:.4});if(e.type==='boss'&&e.phase===2)L.push({x:e.x,y:e.y-30,r:60,c:'#ff3a2a',ga:.25});if(e.type==='sentinel')L.push({x:e.x,y:e.y-50,r:50,c:e.phase===2?'#b07aff':'#6ae0ff',ga:.35});if(e.type==='treant')L.push({x:e.x,y:e.y-52,r:60,c:e.phase===2?'#d070ff':'#b0ff8a',ga:.35});if(e.type==='heart')L.push({x:e.x,y:e.y-14,r:44,c:'#d040d0',ga:.45});if(e.type==='spectre')L.push({x:e.x,y:e.y-14,r:30,c:'#6ae0ff',ga:.35});}
+  for(const k of pickups){if(k.k==='weapon')L.push({x:k.x,y:k.y-10,r:34,c:RAR[k.w.rar].c,ga:.45});if(k.k==='qitem')L.push({x:k.x,y:k.y-10,r:30,c:'#8fe0ff',ga:.5});if(k.k==='seal'||k.k==='seal2'||k.k==='seal3'||k.k==='seal4')L.push({x:k.x,y:k.y-12,r:60,c:'#b088ff',ga:.6});}
   for(const e of fx){if(e.k==='boom')L.push({x:e.x,y:e.y,r:70,c:'#ff8a30',ga:.6*(1-e.t/e.life)});if(e.k==='bolt')L.push({x:e.x,y:e.y,r:80,c:'#fff8a0',ga:.7});}
   if(player&&famOf(player.weapon)==='baton'&&!player.hidden)L.push({x:player.x+(player.dir===2?-1:player.dir===1?-6:5),y:player.y-25,r:24,c:'#7fd8ff',ga:.4});
   return L;
@@ -1603,16 +1617,17 @@ function render(){
   ctx.fillStyle='#05070d';ctx.fillRect(0,0,VW,VH);if(!map)return;
   const sx=shake>0?rnd(-shake,shake):0,sy=shake>0?rnd(-shake,shake):0;
   const cx=Math.round(cam.x-VW/2+sx),cy=Math.round(cam.y-VH/2+sy);
-  ctx.drawImage(map.ground,-cx,-cy);
+  if(WORLD[map.id])drawWorldBack(cx,cy);ctx.drawImage(map.ground,-cx,-cy);
   G=ctx;ctx.save();ctx.translate(-cx,-cy);
   // water shimmer
   const wt=map.waterTiles;for(let i=0;i<wt.length;i+=2){const x=wt[i]*TS,y=wt[i+1]*TS;if(x<cx-16||x>cx+VW||y<cy-16||y>cy+VH)continue;const h=hash(wt[i],wt[i+1],77);const o=(time*6+h*16)%16;P(x+o,y+4+Math.floor(h*8),3,1,'#2d5a86');P(x+(o+8)%16,y+11,2,1,'#3a6a9a');if(h<.15)P(x+Math.floor(h*90)%14,y+8,1,1,'#8fb7d9');}
   // visible objects
   const vis=[];for(const o of map.objs){if(o.x<cx-80||o.x>cx+VW+80||o.y<cy-20||o.y>cy+VH+90)continue;vis.push(o);}map.vis=vis;
+  const nv=nbVis(cx,cy);map.nvis=nv;for(const q of nv)if(OBJ[q.o.type].flat)drawNObj(q);
   for(const o of vis)if(OBJ[o.type].flat)drawObj(o);
   for(const e of fx)if(e.k==='tele'||e.k==='teleLine'||e.k==='cone')drawFx(e);
   for(const k of pickups)if(k.k==='xp'||k.k==='coin')drawPickup(k);
-  const list=[];for(const o of vis)if(!OBJ[o.type].flat)list.push({y:o.y,f:drawObj,a:o});
+  const list=[];for(const o of vis)if(!OBJ[o.type].flat)list.push({y:o.y,f:drawObj,a:o});for(const q of nv)if(!OBJ[q.o.type].flat)list.push({y:q.o.y+q.dy,f:drawNObj,a:q});
   for(const e of enemies)list.push({y:e.y,f:drawEnemy,a:e});
   for(const n of npcs)list.push({y:n.y,f:drawNPC,a:n});
   for(const k of pickups)if(k.k!=='xp'&&k.k!=='coin')list.push({y:k.y,f:drawPickup,a:k});
@@ -1621,7 +1636,7 @@ function render(){
   for(const q of projs)drawProj(q);
   for(const e of fx)if(!'tele teleLine cone bolt impact slash ring thrustfx'.split(' ').includes(e.k))drawFx(e);
   for(const p of parts)if(!p.glow){ctx.globalAlpha=Math.min(1,p.l/p.ml*1.5);P(p.x,p.y,p.s,p.s,p.c);}ctx.globalAlpha=1;
-  ctx.restore();
+  drawLockedFog();ctx.restore();
   // lighting
   const L=collectLights();
   lctx.globalCompositeOperation='source-over';lctx.clearRect(0,0,VW,VH);lctx.fillStyle=map.dark;lctx.fillRect(0,0,VW,VH);
@@ -1640,7 +1655,6 @@ function render(){
   for(const f of floats){const a=1-Math.max(0,f.t-.5)/.4;ctx.globalAlpha=clamp(a,0,1);const yy=f.y-cy-f.t*22;
     if(f.txt){ctx.font='bold 8px "Pixelify Sans",monospace';ctx.textAlign='center';ctx.fillStyle='#05070d';ctx.fillText(f.txt,f.x-cx+1,yy+1);ctx.fillStyle=f.col;ctx.fillText(f.txt,f.x-cx,yy);}
     else drawNum(f.n,f.x-cx,yy,f.col);}ctx.globalAlpha=1;
-  if(S.screen==='play'&&player&&!dialog)drawObjective(cx,cy);
   ctx.drawImage(vign,0,0);
 }
 function drawObjective(cx,cy){const t=questTarget();if(!t)return;const sx=t.x-cx,sy=t.y-cy;const b=Math.round(Math.sin(time*5)*2);
@@ -1670,7 +1684,8 @@ function update(dt){
       else if(k.k==='seal'){k.dead=true;sealSeq();}
       else if(k.k==='seal2'){k.dead=true;frag2Seq();}
       else if(k.k==='seal3'){k.dead=true;frag3Seq();}
-      else if(k.k==='qitem'){k.dead=true;player.items[k.item]=(player.items[k.item]||0)+1;if(k.eid)(flags.eclats=flags.eclats||{})[k.eid]=1;sfx('chest');toast(`Objet obtenu : <b style="color:#8fe0ff">${esc(QITEMS[k.item].n)}</b>`,'#8fe0ff');sqItem(k.item);}}}
+      else if(k.k==='seal4'){k.dead=true;frag4Seq();}
+      else if(k.k==='qitem'){k.dead=true;player.items[k.item]=(player.items[k.item]||0)+1;if(k.eid)(flags.eclats=flags.eclats||{})[k.eid]=1;sfx('chest');toast(`Objet obtenu : <b style="color:#8fe0ff">${esc(QITEMS[k.item].n)}</b>`,'#8fe0ff');sqItem(k.item);if(k.item==='rune')runeGot(k.eid);}}}
   pickups=pickups.filter(k=>!k.dead);
   for(const p of parts){p.l-=dt;p.vy+=(p.g||0)*dt;if(p.ff){p.vx+=Math.sin(time*2+p.ph)*8*dt;p.vy+=Math.cos(time*1.7+p.ph)*8*dt;}p.x+=p.vx*dt;p.y+=p.vy*dt;if(p.g){p.vx*=.96;}}
   parts=parts.filter(p=>p.l>0);
@@ -1687,21 +1702,23 @@ function update(dt){
   if(map.id==='ostval'&&stage===13&&!flags.wave)for(const o of map.ml)if(!o.v&&Math.hypot(o.x-player.x,o.y-player.y)<30)interT={kind:'lantern',o,label:'Toucher la lanterne'};
   if(flags.wave&&map.id==='ostval'&&!enemies.some(e=>e.wave===flags.wave))lanternLit(flags.wave);
   {const sf=sqS('fleurs');if(map.id==='sylvaris'&&sf&&!sf.done&&sf.s===0)for(const o of map.vis||[])if(o.type==='moonflower'&&!o.picked&&Math.hypot(o.x-player.x,o.y-player.y)<20){interT={kind:'flower',o,label:'Cueillir la fleur de lune'};break;}
-   const sn=sqS('nom');if(map.id==='ostval'&&sn&&!sn.done&&sn.s===0&&Math.hypot(8*TS+8-player.x,34*TS+14-player.y)<24)interT={kind:'grave',label:'Lire l’inscription de la tombe'};}
+   const sn=sqS('nom');if(map.id==='ostval'&&sn&&!sn.done&&sn.s===0&&Math.hypot(8*TS+8-player.x,34*TS+14-player.y)<24)interT={kind:'grave',label:'Lire l’inscription de la tombe'};
+   for(const o of map.vis||[])if(o.type==='sign'&&Math.hypot(o.x-player.x,o.y-4-player.y)<20){interT={kind:'sign',o,label:'Lire le panneau'};break;}
+   if(map.id==='kardum'&&stage===33&&!flags.portal&&Math.hypot(40*TS+8-player.x,19*TS+14-player.y)<34)interT={kind:'pillar',label:'Poser les pierres runiques'};}
   // triggers
   if(!S.lock&&!S.dead){
     if(map.id==='valdoria'){const c=map.cave;if(Math.abs(player.x-c.x)<10&&player.y<c.y+2&&player.y>c.y-14)enterMap('grotte',7*TS+8,34*TS);
-      if(player.y<TS*1.2){if(stage>=11)enterMap('ostval',32*TS+8,49*TS);else{player.y+=8;if(!(flags.fogT>time)){flags.fogT=time+3;toast('Une brume épaisse barre le vieux chemin… Pas encore.');}}}}
+}
     else if(map.id==='grotte'){const s=map.stairs;if(Math.hypot(player.x-s.x,player.y-s.y)<9)enterMap('valdoria',78*TS+8,23*TS);
       if(stage===7&&player.x>38*TS+9&&!flags.bossOn)bossStart();}
-    else if(map.id==='ostval'){if(player.y>50.6*TS)enterMap('valdoria',40*TS+8,3*TS);
-      if(player.x>62.6*TS){if(stage>=20)enterMap('sylvaris',2*TS+8,35*TS+8);else{player.x-=8;if(!(flags.fogT>time)){flags.fogT=time+3;toast('La forêt à l’est est trop dense… Pas encore.');}}}
+    else if(map.id==='ostval'){
       if(flags.chapelOpen&&Math.abs(player.x-(32*TS+8))<8&&player.y<18*TS+15&&player.y>17*TS)enterMap('crypte',23*TS+8,36*TS);}
-    else if(map.id==='sylvaris'){if(player.x<TS)enterMap('ostval',61*TS,33*TS+8);const a=map.arch;if(Math.abs(player.x-a.x)<10&&player.y<a.y+2&&player.y>a.y-14){if(stage>=25)enterMap('racines',25*TS+8,40*TS);else{player.y+=8;if(!(flags.fogT>time)){flags.fogT=time+3;toast('Des racines vivantes bloquent l’entrée du temple.');}}}}
+    else if(map.id==='sylvaris'){const a=map.arch;if(Math.abs(player.x-a.x)<10&&player.y<a.y+2&&player.y>a.y-14){if(stage>=25)enterMap('racines',25*TS+8,40*TS);else{player.y+=8;if(!(flags.fogT>time)){flags.fogT=time+3;toast('Des racines vivantes bloquent l’entrée du temple.');}}}}
     else if(map.id==='racines'){const s=map.stairs;if(Math.hypot(player.x-s.x,player.y-s.y)<9)enterMap('sylvaris',70*TS+8,12*TS+8);
       if(stage===26&&player.y<10*TS+4&&!flags.bossOn)treantStart();}
     else if(map.id==='crypte'){const s=map.stairs;if(Math.hypot(player.x-s.x,player.y-s.y)<9)enterMap('ostval',32*TS+8,20*TS+8);
       if(stage===16&&player.y<8*TS+4&&!flags.bossOn)sentinelStart();}
+    ch3Tick();worldCross();
     if(stage===1&&map.id==='valdoria'&&Math.hypot(player.x-26*TS,player.y-42*TS)<120){setStage(2);}
   }
   zoneT-=dt;if(zoneT<=0){zoneT=.4;checkZone();}
@@ -1715,9 +1732,9 @@ function update(dt){
 function explode(q){if(q.exploded)return;q.exploded=true;fx.push({k:'boom',x:q.x,y:q.y,r:30,t:0,life:.35});shake=Math.max(shake,3);sfx('fire');
   for(const e of enemies){if(e.dead)continue;const dx=e.x-q.x,dy=(e.y-6)-q.y,d=Math.hypot(dx,dy)||1;if(d<34+e.r)damageEnemy(e,d<12?q.mult:q.mult*.65,dx/d,dy/d,120);}
   for(let i=0;i<24;i++){const a=rnd(0,TAU),s=rnd(20,90);parts.push({x:q.x,y:q.y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,l:rnd(.3,.6),ml:.6,c:pick(['#ff7a30','#ffd166','#ff4a20']),s:1,g:0,glow:1});}}
-function clampCam(){const mw=map.w*TS,mh=map.h*TS;cam.x=mw<VW?mw/2:clamp(cam.x,VW/2,mw-VW/2);cam.y=mh<VH?mh/2:clamp(cam.y,VH/2,mh-VH/2);}
+function clampCam(){if(WORLD[map.id]&&S.screen!=='title')return;const mw=map.w*TS,mh=map.h*TS;cam.x=mw<VW?mw/2:clamp(cam.x,VW/2,mw-VW/2);cam.y=mh<VH?mh/2:clamp(cam.y,VH/2,mh-VH/2);}
 const ZONES=[[32,0,46,10,'Vieux chemin du nord'],[0,44,16,64,'Clairière du réveil'],[11,31,40,50,'Ruines de Brumeval'],[24,3,55,31,'Bois des Murmures'],[50,26,66,38,'Pont de la Rivière Grise'],[62,17,90,36,'Camp gobelin'],[63,0,92,17,'Faille du Néant']];
-function checkZone(){let z='';const tx0=player.x/TS,ty0=player.y/TS;if(map.id==='grotte')z=player.x>37*TS?'Salle du trône':'Grotte des Crocs';else if(map.id==='crypte')z=ty0<9?'Salle du Gardien':'Crypte d’Ostval';else if(map.id==='racines')z=ty0<11?'Cœur de l’Ancien':'Temple des Racines';else if(map.id==='sylvaris')z=tx0<31?(tAt(map,tx0|0,ty0|0)===T.VOID?'Bosquet Gris':'Lisière de Sylvaris'):tx0>61&&ty0<18?'Sanctuaire des Racines':tx0>61?'Lac de Lune':'Village de Sylvaris';else if(map.id==='ostval')z=tx0<18?'Cimetière d’Ostval':tx0>46&&ty0<20?'Ruines du nord':tx0>46?'Champs de l’est':ty0<23?'Parvis de la chapelle':'Ostval';else{const tx=player.x/TS,ty=player.y/TS;for(const r of ZONES)if(tx>=r[0]&&tx<=r[2]&&ty>=r[1]&&ty<=r[3]){z=r[4];break;}}
+function checkZone(){let z='';const tx0=player.x/TS,ty0=player.y/TS;if(map.id==='grotte')z=player.x>37*TS?'Salle du trône':'Grotte des Crocs';else if(map.id==='crypte')z=ty0<9?'Salle du Gardien':'Crypte d’Ostval';else if(map.id==='racines')z=ty0<11?'Cœur de l’Ancien':'Temple des Racines';else if(map.id==='sylvaris')z=tx0<31?(tAt(map,tx0|0,ty0|0)===T.VOID?'Bosquet Gris':'Lisière de Sylvaris'):tx0>61&&ty0<18?'Sanctuaire des Racines':tx0>61?'Lac de Lune':'Village de Sylvaris';else if(ZN[map.id]){z=map.name;for(const r of ZN[map.id])if(tx0>=r[0]&&tx0<=r[2]&&ty0>=r[1]&&ty0<=r[3]){z=r[4];break;}}else if(map.id==='ostval')z=tx0<18?'Cimetière d’Ostval':tx0>46&&ty0<20?'Ruines du nord':tx0>46?'Champs de l’est':ty0<23?'Parvis de la chapelle':'Ostval';else{const tx=player.x/TS,ty=player.y/TS;for(const r of ZONES)if(tx>=r[0]&&tx<=r[2]&&ty>=r[1]&&ty<=r[3]){z=r[4];break;}}
   if(z&&z!==zoneName){zoneName=z;if(!S.lock)zoneTitle(map.id==='grotte'?'Valdoria · Donjon':map.id==='crypte'?'Ostval · Donjon':map.id==='racines'?'Sylvaris · Donjon':map.id==='sylvaris'?'Sylvaris':map.id==='ostval'?'Valdoria · Nord':'Valdoria',z);}}
 
 /* ================= MAPS / SPAWNS ================= */
@@ -1756,6 +1773,7 @@ function loadMap(id,px,py){
     for(const[x,y,l]of[[40,18,8],[8,18,8]])spawn('spectre',x,y,l);spawn('shadow',27,20,8);
     if(stage===18&&flags.frag2Pos)pickups.push({k:'seal2',x:flags.frag2Pos[0],y:flags.frag2Pos[1],t:1});
     setMusic('dun');
+  }else if(REG3[id]){ch3Load(id);
   }else{
     for(const[x,y,l]of[[24,30,4],[28,33,5],[26,28,4]])spawn('goblin',x,y,l);spawn('garcher',29,27,5);spawn('slime',8,30,4);
     spawn('chief',25,11,6);spawn('garcher',20,10,5);spawn('garcher',30,13,5);spawn('goblin',22,15,5);
@@ -1766,16 +1784,18 @@ function loadMap(id,px,py){
   updGate();
 }
 function updGate(){const m=maps.grotte;const has=m.objs.find(o=>o.type==='gate');if(flags.gate&&!has){addObj(m,'gate',37,13);for(let y=11;y<=13;y++)setSolid(m,37,y,1);}else if(!flags.gate&&has){m.objs.splice(m.objs.indexOf(has),1);for(let y=11;y<=13;y++)setSolid(m,37,y,0);}}
-async function enterMap(id,px,py){S.lock=true;sfx('door');await fadeTo(1);loadMap(id,px,py);if(id==='grotte'&&stage===6)setStage(7);if(id==='crypte'&&stage===15)setStage(16);if(id==='racines'&&stage===25)setStage(26);const first2=id==='sylvaris'&&stage===20;if(first2){setStage(21);setTimeout(()=>zoneTitle('Chapitre 2 · Les secrets de Sylvaris','Sylvaris'),700);}const first=id==='ostval'&&stage===11;if(first)setStage(12);save();if(first)setTimeout(()=>zoneTitle('Chapitre 1 · Le village oublié','Ostval'),700);await wait(150);await fadeTo(0);S.lock=false;checkZone();}
+async function enterMap(id,px,py){S.lock=true;sfx('door');await fadeQ(1);loadMap(id,px,py);ch3Enter(id);if(id==='grotte'&&stage===6)setStage(7);if(id==='crypte'&&stage===15)setStage(16);if(id==='racines'&&stage===25)setStage(26);const first2=id==='sylvaris'&&stage===20;if(first2){setStage(21);setTimeout(()=>zoneTitle('Chapitre 2 · Les secrets de Sylvaris','Sylvaris'),700);}const first=id==='ostval'&&stage===11;if(first)setStage(12);save();if(first)setTimeout(()=>zoneTitle('Chapitre 1 · Le village oublié','Ostval'),700);await wait(30);await fadeQ(0);S.lock=false;checkZone();}
 
 /* ================= STORY ================= */
 async function interact(t){
   if(t.kind==='npc'){S.lock=true;held.delete('attack');const n=t.n,dx=player.x-n.x,dy=player.y-n.y;n.dir=Math.abs(dx)>Math.abs(dy)?(dx<0?2:3):(dy<0?1:0);const l=Math.hypot(dx,dy)||1;player.fx=-dx/l;player.fy=-dy/l;player.dir=Math.abs(dx)>Math.abs(dy)?(dx>0?2:3):(dy>0?1:0);
-    await talkNPC(n);S.lock=false;}
+    await talkHint(n);S.lock=false;}
   else if(t.kind==='crystal')crystalSeq();
   else if(t.kind==='chest')openChest(t.o);
   else if(t.kind==='lantern')lightLanternWave(t.o);
   else if(t.kind==='flower'){const o=t.o;o.picked=1;(flags.flw=flags.flw||{})[o.tx+','+o.ty]=1;player.items.fleur=(player.items.fleur||0)+1;sfx('pick');for(let i=0;i<10;i++)parts.push({x:o.x,y:o.y-4,vx:rnd(-20,20),vy:rnd(-30,-5),l:.6,ml:.6,c:'#bfe0ff',s:1,g:0,glow:1});sqItem('fleur');}
+  else if(t.kind==='sign'){S.lock=true;await talk([{who:'Panneau',text:t.o.txt}]);S.lock=false;}
+  else if(t.kind==='pillar')placeRunes();
   else if(t.kind==='grave'){S.lock=true;await talk([{who:ME,text:'(La pierre est usée, mais on lit encore : « À Aldwin, de son fils Edwin. »)'}]);S.lock=false;sqAdvance('nom');}
 }
 async function crystalSeq(){S.lock=true;held.delete('attack');sfx('void');shake=8;
@@ -1920,7 +1940,7 @@ function syncWorld(){
 }
 const litCount=()=>Object.keys(flags.lit||{}).length;
 const VILL=['On dit qu’Ostval avait une fête des lanternes… Je ne m’en souviens plus.','J’ai l’impression d’attendre quelqu’un. Mais qui ?','La brume entre dans les maisons la nuit. Elle murmure des noms.','Mon reflet dans le puits… je ne le reconnais pas toujours.'];
-async function talkNPC(n){const id=n.id;if(await sqTalk(n))return;if(['caelan','lyssara','faelan','e1','e2'].includes(id))return talkCh2(n);
+async function talkNPC(n,noSq){const id=n.id;if(!noSq&&await sqTalk(n))return;if(['bryn','gilda','thorek','odric','hal'].includes(id))return talkCh3(n);if(['caelan','lyssara','faelan','e1','e2'].includes(id))return talkCh2(n);
   if(id==='maelle'){
     if(stage<=2){await talk([{who:'Maëlle',text:'Par les dieux… un survivant ? Non… tu n’es pas d’ici.'},{who:ME,text:'Je me suis réveillé dans la clairière. Je ne me souviens de rien.'},{who:'Maëlle',text:'Brumeval a brûlé il y a trois nuits. Des gobelins… et des ombres qui marchaient avec eux.'},{who:'Maëlle',text:'Montre-moi ta main. Cette marque… elle ressemble aux gravures du cristal noir, au centre du village.'},{who:'Maëlle',text:'Va le voir. Si la marque réagit, nous saurons ce que tu es.'}]);addTitle('Survivant de Brumeval');setStage(3);}
     else if(stage===5){await talk([{who:'Maëlle',text:'Des Ombres rampantes… des créatures du Néant. Elles te cherchaient, toi.'},{who:'Maëlle',text:'Les gobelins ont arraché un éclat du cristal. Il porte le même symbole que ta marque.'},{who:'Maëlle',text:'Leur roi se terre dans la Grotte des Crocs, à l’est, de l’autre côté de la rivière.'},{who:'Maëlle',text:'Prends ces fioles. Et reviens vivant, porteur.'}]);player.potions+=2;toast('Potions de soin <b style="color:#ff8a9a">+2</b>');sfx('pick');setStage(6);}
@@ -2001,7 +2021,7 @@ function buildSylvaris(){
   for(const[,cx,cy]of HEARTS){const r=cx===23?5:7;for(let y=cy-r-2;y<=cy+r+2;y++)for(let x=cx-r-2;x<=cx+r+2;x++){const d=Math.hypot(x-cx,(y-cy)*1.1)/r;if(d+hash(x,y,13)*.35<1&&tAt(m,x,y)===T.GRASS)setT(m,x,y,T.VOID);}}
   for(let y=26;y<48;y++)for(let x=62;x<78;x++){const d=Math.hypot((x-70)/6.5,(y-37)/8);if(d+hash(x,y,17)*.2<1)setT(m,x,y,T.WATER);}
   carvePath(m,[[0,35],[12,35],[22,34],[34,34],[44,35],[50,36]]);carvePath(m,[[50,36],[50,28]]);carvePath(m,[[50,36],[60,38],[62,38]]);carvePath(m,[[52,30],[60,22],[66,16],[70,12]]);
-  carvePath(m,[[12,35],[11,24],[11,17]]);carvePath(m,[[12,35],[13,44],[14,48]]);carvePath(m,[[22,34],[23,27]]);
+  carvePath(m,[[12,35],[11,24],[11,17]]);carvePath(m,[[12,35],[13,44],[14,48]]);carvePath(m,[[22,34],[23,27]]);carvePath(m,[[50,36],[48,46],[44,56],[40,63]]);carvePath(m,[[60,38],[62,50],[70,52],[79,50]]);
   for(let y=30;y<43;y++)for(let x=44;x<57;x++)if(Math.hypot(x-50,y-36)<5)setT(m,x,y,T.RUIN);
   m.gate=addObj(m,'egate',32,35);
   for(let y=1;y<m.h;y++){if(y>=33&&y<=35)continue;for(const x of[31,32,33])if(x===32||hash(x,y,51)<.55)addObj(m,'tree',x,y,{v:x===32?1:Math.floor(hash(x,y,52)*3)});}
@@ -2119,7 +2139,7 @@ function drawSpikes(e){const k=e.t/e.life,h=Math.round(16*Math.min(1,k/.18)*(k>.
 /* ================= MINI-CARTE ================= */
 const MM={};let mmLast=0;
 function miniThumb(m){if(MM[m.id])return MM[m.id];const [c,g]=mk(m.w*2,m.h*2),st=m.style;
-  const col={[T.GRASS]:st==='fog'?'#263a3e':st==='elf'?'#2a5a44':'#2b4d40',[T.PATH]:'#56667c',[T.RUIN]:'#6a7890',[T.WATER]:'#1e4a7a',[T.BRIDGE]:'#7a5a3a',[T.VOID]:'#4a2a6a',[T.FLOOR]:st==='crypt'?'#3a4a62':st==='roots'?'#4a4a30':'#4a4458',[T.WALL]:'#0a0a10'};
+  const col={[T.GRASS]:st==='mount'?'#3a4456':st==='hills'?'#34452e':st==='marsh'?'#1e3a32':st==='fog'?'#263a3e':st==='elf'?'#2a5a44':'#2b4d40',[T.PATH]:'#56667c',[T.RUIN]:'#6a7890',[T.WATER]:'#1e4a7a',[T.BRIDGE]:'#7a5a3a',[T.VOID]:'#4a2a6a',[T.FLOOR]:st==='dwarf'?'#4a3c2a':st==='crypt'?'#3a4a62':st==='roots'?'#4a4a30':'#4a4458',[T.WALL]:st==='mount'?'#8a96a8':'#0a0a10'};
   for(let y=0;y<m.h;y++)for(let x=0;x<m.w;x++){const i=y*m.w+x,t=m.t[i];let cc=col[t]||'#000';if(m.solid[i]&&t!==T.WALL&&t!==T.WATER)cc=st==='elf'?'#123222':'#132620';g.fillStyle=cc;g.fillRect(x*2,y*2,2,2);}
   const BLD={house:1,burnt:1,chapel:1,gtree:1,temple:1,tent:1,cave:1,rootarch:1,well:1,throne:1,altar:1};
   for(const o of m.objs)if(BLD[o.type])for(const[dx,dy]of OBJ[o.type].solid||[[0,0]]){g.fillStyle='#a89678';g.fillRect((o.tx+dx)*2,(o.ty+dy)*2,2,2);}
@@ -2228,7 +2248,8 @@ const MICO={q:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke
 const MTABS=[['q','Quêtes'],['w','Armes'],['o','Objets'],['t','Trésors'],['c','Personnage']];
 const CHQ=[['Prologue — Le réveil',0,10,'Tu t’es réveillé sans souvenirs près de Brumeval, une étrange marque sur la main. Les gobelins et le Néant semblent te chercher.'],
   ['Chapitre 1 — Le village oublié',10,20,'Le fragment de sceau porte le symbole d’Ostval, un village effacé des mémoires au nord du Bois des Murmures.'],
-  ['Chapitre 2 — Les secrets de Sylvaris',20,30,'Merrin t’a révélé que tu as été caché chez les elfes. Sylvaris détient la vérité sur ton passé… et sur Sylthar.']];
+  ['Chapitre 2 — Les secrets de Sylvaris',20,30,'Merrin t’a révélé que tu as été caché chez les elfes. Sylvaris détient la vérité sur ton passé… et sur Sylthar.'],
+  ['Chapitre 3 — Les archives de Kar-Dûm',30,40,'Lyssara t’envoie chez les nains. Leurs archives gardent le secret des huit sceaux… et Dorgath, le Forgeron du Vide, rôde sous la montagne.']];
 let mTab='w',mSel=0;
 function openMenu(tab){S.screen='menu';if(tab)mTab=tab;mSel=0;$('#miniwrap').classList.remove('big');renderMenu();$('#menu').classList.remove('hidden');sfx('pick');}
 function closeMenu(){S.screen='play';$('#menu').classList.add('hidden');}
@@ -2260,7 +2281,7 @@ function renderMenu(){const p=player,items=menuItems();if(mSel>=items.length)mSe
     const row=(it,i)=>`<button class="qrow${i===mSel?' sel':''}${it.done?' done':''}" data-i="${i}"><i class="qi ${it.main?'qm':'qs'}"></i><span>${esc(it.n)}</span>${it.done?'<span class="trk">Terminée</span>':(it.main&&tr==='main')||(it.side&&tr===it.id)?'<span class="trk">Suivie</span>':''}</button>`;
     L=`<div class="qsec"><h3>Quêtes principales</h3>${items.map((it,i)=>it.main?row(it,i):'').join('')}<h3>Quêtes secondaires</h3>${items.some(it=>it.side)?items.map((it,i)=>it.side?row(it,i):'').join(''):'<p class="mempty">Parle aux habitants d’Eldoria : certains ont besoin d’aide.</p>'}</div>`;
     const it=items[mSel];
-    if(it&&it.main){const cur=!it.done&&stage>=it.a&&stage<it.b,q=QUEST[stage];R=`<div class="dsub">Quête principale</div><div class="dname">${esc(it.n)}</div><p class="ddesc">${esc(it.d)}</p>${cur?`<div class="dobj"><small>Objectif</small><b>${esc(typeof q.o==='function'?q.o():q.o)}</b></div><div class="mrow"><button class="mbtn pri" data-a="track" data-id="main"${tr==='main'?' disabled':''}>${tr==='main'?'Quête suivie':'Suivre cette quête'}</button></div>`:'<div class="dobj done"><b>Terminée</b></div>'}`;}
+    if(it&&it.main){const cur=!it.done&&stage>=it.a&&stage<it.b,q=QUEST[stage];R=`<div class="dsub">Quête principale</div><div class="dname">${esc(it.n)}</div><p class="ddesc">${esc(it.d)}</p>${cur?`<div class="dobj"><small>Objectif</small><b>${esc(questGoal())}</b></div>${heard(stage)?`<div class="dhint"><small>Indice · ${esc(heard(stage).who)}</small>« ${esc(heard(stage).text)} »</div>`:questHint()?`<div class="dhint"><small>Indice</small>${esc(questHint())}</div>`:''}<div class="mrow"><button class="mbtn pri" data-a="track" data-id="main"${tr==='main'?' disabled':''}>${tr==='main'?'Quête suivie':'Suivre cette quête'}</button></div>`:'<div class="dobj done"><b>Terminée</b></div>'}`;}
     else if(it){const Q=SQ[it.id],st=sqS(it.id),s=Q.steps[st.s];R=`<div class="dsub side">Quête secondaire · ${esc(Q.where)}</div><div class="dname">${esc(Q.n)}</div><p class="ddesc">${esc(Q.desc)}</p><div class="dsub">Donnée par ${esc(Q.gn)}</div>${st.done?'<div class="dobj done"><b>Terminée</b></div>':`<div class="dobj"><small>Objectif</small><b>${esc(s.o(st.c))}</b></div><div class="dsub">Récompense : ${esc(Q.rt)}</div><div class="mrow"><button class="mbtn pri" data-a="track" data-id="${it.id}"${tr===it.id?' disabled':''}>${tr===it.id?'Quête suivie':'Suivre cette quête'}</button></div>`}`;}
   }else{
     L=`<div class="cport"><canvas id="mport" width="36" height="40"></canvas><div><div class="dname">${esc(p.c.name)}</div><div class="dsub">Niveau ${p.lvl} · ${p.xp} / ${need(p.lvl)} XP</div></div></div>
@@ -2295,6 +2316,413 @@ function menuKey(code){const items=menuItems();
   else if(code==='Enter'||code==='KeyE'){const b=$('#mright .mbtn.pri:not([disabled])');if(b)b.click();return;}else return;
   renderMenu();sfx('xp');}
 
+/* ================= MONDE OUVERT ================= */
+const WORLD={valdoria:[0,0],ostval:[8,-52],sylvaris:[72,-54],collines:[96,10],marais:[0,64],kardum:[152,-64]};
+const NB={};let curMover=null;
+function wRect(id){const m=maps[id],o=WORLD[id];return [o[0],o[1],o[0]+m.w,o[1]+m.h];}
+function neighbors(id){if(NB[id])return NB[id];const a=wRect(id),r=[];
+  for(const k in WORLD){if(k===id||!maps[k])continue;const b=wRect(k),ox=Math.min(a[2],b[2])-Math.max(a[0],b[0]),oy=Math.min(a[3],b[3])-Math.max(a[1],b[1]);
+    if((ox===0&&oy>0)||(oy===0&&ox>0))r.push(k);}return NB[id]=r;}
+function gateOK(to){return to==='ostval'?stage>=11:to==='sylvaris'?stage>=20:to==='kardum'?stage>=30:true;}
+const GATEMSG={ostval:'Une brume épaisse barre le vieux chemin du nord… Pas encore.',sylvaris:'Une muraille de ronces elfiques ferme la lisière… Pas encore.',kardum:'Le col est enseveli sous la neige… Pas encore.'};
+function nbOff(k){const o=WORLD[map.id],q=WORLD[k];return [(q[0]-o[0])*TS,(q[1]-o[1])*TS];}
+function nbAt(px,py){const o=WORLD[map.id];if(!o)return null;const wx=px/TS+o[0],wy=py/TS+o[1];
+  for(const k of neighbors(map.id)){const r=wRect(k);if(wx>=r[0]&&wx<r[2]&&wy>=r[1]&&wy<r[3])return k;}return null;}
+function oobSolid(m,px,py){if(m!==map||curMover!==player)return true;const k=nbAt(px,py);if(!k||!gateOK(k))return true;const [dx,dy]=nbOff(k);return solidAt(maps[k],px-dx,py-dy);}
+function worldCross(){if(!WORLD[map.id]||!player)return;const p=player,W=map.w*TS,H=map.h*TS;
+  for(const[ax,ay]of[[-14,0],[14,0],[0,-14],[0,14]]){const k=nbAt(p.x+ax,p.y+ay);if(k&&!gateOK(k)&&!(flags.fogT>time)&&(p.x+ax<0||p.y+ay<0||p.x+ax>=W||p.y+ay>=H)){flags.fogT=time+4;toast(GATEMSG[k]||'Pas encore.');}}
+  if(p.x>=0&&p.y>=0&&p.x<W&&p.y<H)return;const k=nbAt(p.x,p.y);if(!k||!gateOK(k)){p.x=clamp(p.x,1,W-1);p.y=clamp(p.y,1,H-1);return;}
+  const [dx,dy]=nbOff(k),cx=cam.x-dx,cy=cam.y-dy;loadMap(k,p.x-dx,p.y-dy);cam.x=cx;cam.y=cy;onRegion(k);}
+function onRegion(k){
+  if(k==='ostval'&&stage===11){setStage(12);setTimeout(()=>zoneTitle('Chapitre 1 · Le village oublié','Ostval'),300);}
+  else if(k==='sylvaris'&&stage===20){setStage(21);setTimeout(()=>zoneTitle('Chapitre 2 · Les secrets de Sylvaris','Sylvaris'),300);}
+  else if(k==='kardum'&&stage===30){setStage(31);setTimeout(()=>zoneTitle('Chapitre 3 · Les archives de Kar-Dûm','Kar-Dûm'),300);}
+  else zoneTitle(maps[k].sub||'',maps[k].name);
+  save();checkZone();}
+let canopyPat=null;
+function canopy(){const [c,g]=mk(64,64);const pg=G;G=g;P(0,0,64,64,'#08130f');
+  const cl=[[8,10,9],[30,6,10],[52,14,9],[18,32,11],[44,36,10],[6,52,8],[30,56,9],[58,50,8],[62,30,6],[2,30,6]];
+  for(const[x,y,r]of cl){circ(x,y+1,r,'#050c0a');circ(x,y,r-1,'#0f2620');circ(x-2,y-2,r-4,'#16352c');circ(x-3,y-4,Math.max(1,r-7),'#1e4436');}
+  G=pg;return c;}
+function drawWorldBack(cx,cy){const o=WORLD[map.id];if(!canopyPat)canopyPat=ctx.createPattern(canopy(),'repeat');
+  ctx.save();const ox=((o[0]*TS-cx)%64+64)%64,oy=((o[1]*TS-cy)%64+64)%64;ctx.translate(ox-64,oy-64);ctx.fillStyle=canopyPat;ctx.fillRect(0,0,VW+128,VH+128);ctx.restore();
+  for(const k of neighbors(map.id)){const [dx,dy]=nbOff(k),m=maps[k];if(dx-cx>VW||dy-cy>VH||dx+m.w*TS-cx<0||dy+m.h*TS-cy<0)continue;ctx.drawImage(m.ground,dx-cx,dy-cy);}}
+function nbVis(cx,cy){const out=[];if(!WORLD[map.id])return out;
+  for(const k of neighbors(map.id)){const [dx,dy]=nbOff(k),m=maps[k];if(dx-cx>VW+80||dy-cy>VH+90||dx+m.w*TS-cx<-80||dy+m.h*TS-cy<-20)continue;
+    for(const o of m.objs){const x=o.x+dx,y=o.y+dy;if(x<cx-80||x>cx+VW+80||y<cy-20||y>cy+VH+90)continue;out.push({o,dx,dy,k});}}return out;}
+function drawNObj(q){ctx.save();ctx.translate(q.dx,q.dy);drawObj(q.o);ctx.restore();}
+function drawLockedFog(){if(!WORLD[map.id])return;for(const k of neighbors(map.id)){if(gateOK(k))continue;const [dx,dy]=nbOff(k),m=maps[k];
+  ctx.fillStyle='rgba(150,170,200,.5)';ctx.fillRect(dx,dy,m.w*TS,m.h*TS);
+  for(let i=0;i<40;i++){const x=dx+hash(i,1,91)*m.w*TS,y=dy+hash(i,2,91)*m.h*TS;ctx.globalAlpha=.25;ctx.drawImage(tintSpr('#dfe8ff'),x-40+Math.sin(time*.3+i)*20,y-40,80,80);}ctx.globalAlpha=1;}}
+async function fadeQ(v){const f=$('#fade');f.style.transition='opacity .15s';f.style.opacity=v;await wait(160);f.style.transition='';}
+
+/* ---------- styles de sol ---------- */
+const GSTY={mount:['#353f52','#404a5e','#4c586e','#29313f','#f0f6ff'],hills:['#2a3a29','#33452f','#3e5236','#1f2b1f','#e8c060'],marsh:['#1a2e2a','#213a33','#28463b','#122420','#c0e8d0']};
+const FSTY={dwarf:['#1f1a15','#2b241c','#312920','#4a3c2a']},WSTY={dwarf:['#2a2218','#3e3324','#372d20','#5e4c32'],mount:['#283040','#3a4456','#343d4e','#56637c']};
+
+/* ---------- objets ---------- */
+Object.assign(OBJ,{
+  pine:{ax:14,ay:42},boulder:{ax:12,ay:18,solid:[[0,0]]},reed:{ax:6,ay:13},lily:{ax:5,ay:4,flat:1},
+  menhir:{ax:6,ay:25,solid:[[0,0]]},ruinwall:{ax:17,ay:22,solid:[[-1,0],[0,0],[1,0]]},
+  dgate:{ax:48,ay:78,solid:[[-3,0],[-2,0],[-1,0],[1,0],[2,0],[3,0]]},
+  rpillar:{ax:7,ay:28,solid:[[0,0]]},rpillar2:{ax:7,ay:28,solid:[[0,0]],light:{r:52,c:'#7ff6ff',dy:-22,fl:.04,ga:.5}},
+  dstatue:{ax:11,ay:40,solid:[[0,0]]},shelf:{ax:8,ay:33,solid:[[0,0],[1,0]]},
+  brazier:{ax:6,ay:16,solid:[[0,0]],light:{r:70,c:'#ff9a40',dy:-12,fl:.12,ga:.5},fire:1,fdy:-13},
+  mcart:{ax:9,ay:12,solid:[[0,0]]},ore:{ax:6,ay:12,light:{r:30,c:'#7ff6ff',dy:-6,fl:.03,ga:.45}},
+  rail:{ax:8,ay:14,flat:1},nest:{ax:14,ay:10},vdoor:{ax:24,ay:42},sign:{ax:6,ay:18,solid:[[0,0]]},
+  hut:{ax:24,ay:44,solid:[[-1,0],[0,0],[1,0],[-1,-1],[0,-1],[1,-1]]}
+});
+function buildSprites2(){
+  const tri=(cx,y0,h,w,c1,c2,c3)=>{for(let r=0;r<h;r++){const hw=Math.round(r/(h-1)*w/2)+1;P(cx-hw,y0+r,hw,1,c1);P(cx,y0+r,hw,1,c2);if(r===h-1)P(cx-hw,y0+r,hw*2,1,c3);}};
+  OBJ.pine.spr=[0,1].map(v=>sprite(28,44,()=>{P(12,33,4,9,'#20150f');P(13,33,1,9,'#4a3424');P(9,41,10,2,'#140d0a');
+    for(let i=0;i<5;i++){const y0=3+i*6,w=6+i*4;tri(14,y0,9,w,'#22483c','#163428','#0c1e18');if(v){for(let k=0;k<w/2;k++)if(hash(i,k,7)<.6)P(14-w/2+k*2,y0+5+(k%2),2,1,'#dfe8f4');P(13,y0,2,2,'#eef4ff');}else P(12,y0+2,2,3,'#2e5a4a');}}));
+  OBJ.boulder.spr=[0,1].map(v=>sprite(24,20,()=>{ell(12,12,11,7,'#11141a');ell(12,11,10,6,'#4a5262');ell(9,9,6,3,'#626c7e');P(13,10,4,1,'#2e3440');P(15,11,1,3,'#2e3440');P(6,8,3,1,'#7a8496');if(v){ell(11,7,7,2,'#e8eef8');P(6,7,3,1,'#ffffff');}}));
+  OBJ.reed.spr=[0,1].map(v=>sprite(12,14,()=>{for(const[x,h,c]of[[2,9,'#3a6a4a'],[4,12,'#4a7a52'],[6,8,'#2e5a40'],[8,11,'#4a7a52'],[10,7,'#3a6a4a']]){P(x,13-h,1,h,c);}if(v){P(4,1,1,3,'#6a4a2a');P(8,2,1,3,'#6a4a2a');}}));
+  OBJ.lily.spr=[0,1].map(v=>sprite(10,6,()=>{ell(5,3,4,2,'#1e5a3a');ell(4,2,3,1,'#2e7a4a');P(5,2,2,1,'#112847');if(v){P(3,2,2,1,'#f0a0c8');P(3,1,1,1,'#ffd0e8');}}));
+  OBJ.menhir.spr=[0,1].map(v=>sprite(12,27,()=>{P(2,4,8,21,'#262a34');P(3,2,6,23,'#4e5464');P(3,2,2,23,'#6a7080');P(4,1,4,1,'#4e5464');P(2,24,9,2,'#151820');if(v){P(5,8,2,1,'#8fe0ff');P(6,9,1,3,'#8fe0ff');P(5,13,3,1,'#8fe0ff');P(5,17,1,2,'#8fe0ff');}else{P(5,9,2,1,'#3a3f4c');P(6,14,2,1,'#3a3f4c');}}));
+  OBJ.ruinwall.spr=[0].map(()=>sprite(34,24,()=>{const top=[8,6,6,4,4,6,9,9,12,10,7,7,5,5,8,11,14];for(let i=0;i<17;i++){const t=top[i];P(i*2,t,2,22-t,'#2c3446');}
+    for(let row=0;row<5;row++)for(let c=0;c<5;c++){const bx=c*7+(row%2?3:0),by=8+row*3;P(bx,by,6,2,'#4a556a');P(bx,by,6,1,'#5e6a80');}
+    for(let i=0;i<17;i++){P(i*2,top[i],2,1,'#6a7690');}P(0,21,34,2,'#151a24');P(4,12,3,1,'#2f5a3c');P(22,16,4,1,'#2f5a3c');}));
+  OBJ.dgate.spr=[0,1].map(v=>sprite(96,80,()=>{
+    P(6,10,84,70,'#1e2230');P(8,12,80,68,'#3a4254');for(let row=0;row<17;row++)for(let c=0;c<11;c++){const bx=8+c*8+(row%2?4:0),by=12+row*4;if(bx>86)continue;P(bx,by,7,3,hash(row,c,5)<.5?'#444d62':'#3e465a');P(bx,by,7,1,'#58627a');}
+    for(const px of[10,74]){P(px,14,12,66,'#262c3a');P(px+1,14,10,66,'#5a6478');P(px+1,14,3,66,'#7a849a');P(px-2,12,16,5,'#6a748a');P(px-2,12,16,1,'#9aa4ba');P(px-2,76,16,4,'#2a3040');}
+    P(28,4,40,8,'#262c3a');P(30,5,36,6,'#8a7a4a');P(30,5,36,1,'#d8b860');for(let i=0;i<5;i++)P(34+i*7,7,3,2,'#ffd166');
+    ell(48,30,22,20,'#1a1e28');ell(48,30,20,18,v?'#05060a':'#6a4a22');
+    if(!v){P(28,30,40,50,'#6a4a22');P(30,30,17,50,'#8a6430');P(49,30,17,50,'#7a5628');P(47,22,2,58,'#2a1c0c');for(const y of[40,56,70]){P(30,y,36,2,'#c9a24a');P(30,y,36,1,'#ffe08a');}
+      ell(48,46,9,9,'#2a1c0c');ell(48,46,8,8,'#4a3a2a');for(let i=0;i<8;i++){const a=i/8*TAU;P(48+Math.round(Math.cos(a)*6),46+Math.round(Math.sin(a)*6),1,1,'#7ff6ff');}P(47,45,2,2,'#ffffff');}
+    else{P(28,30,40,50,'#05060a');P(28,30,6,50,'#5a3e1c');P(62,30,6,50,'#5a3e1c');for(let i=0;i<10;i++)P(40+hash(i,1,3)*16,40+hash(i,2,3)*36,1,1,'#7ff6ff');}
+    P(4,78,88,2,'#0e1018');}));
+  OBJ.rpillar.spr=[sprite(14,30,()=>{P(2,6,10,22,'#262c3a');P(3,5,8,23,'#5a6478');P(3,5,2,23,'#7a849a');P(1,2,12,4,'#6a748a');P(1,2,12,1,'#9aa4ba');P(5,12,4,6,'#1a1e28');P(1,27,12,2,'#151820');})];
+  OBJ.rpillar2.spr=[sprite(14,30,()=>{P(2,6,10,22,'#262c3a');P(3,5,8,23,'#5a6478');P(3,5,2,23,'#7a849a');P(1,2,12,4,'#6a748a');P(1,2,12,1,'#9aa4ba');P(5,12,4,6,'#2a7a9a');P(6,13,2,4,'#bff8ff');P(6,0,2,2,'#7ff6ff');P(1,27,12,2,'#151820');})];
+  OBJ.dstatue.spr=[sprite(22,42,()=>{const S1='#4e5464',S2='#6a7080',S3='#2c303a';P(3,34,16,6,S3);P(4,33,14,6,S1);P(4,33,14,1,S2);
+    P(6,18,10,15,S1);P(6,18,3,15,S2);ell(11,12,6,6,S1);P(7,6,8,4,S2);P(6,9,10,2,S3);P(8,12,2,1,S3);P(12,12,2,1,S3);P(7,15,8,8,S2);P(8,22,6,4,S1);
+    P(16,8,2,24,S3);P(15,6,5,5,S2);P(19,7,2,3,S1);P(3,20,3,8,S1);P(16,20,3,8,S1);P(2,40,18,2,'#151820');})];
+  OBJ.shelf.spr=[sprite(32,34,()=>{P(0,0,32,32,'#2a1a0e');P(1,1,30,30,'#4a3018');P(1,1,30,1,'#6a4a28');
+    const BC=['#7a2a2a','#2a4a7a','#3a6a3a','#7a6a2a','#5a2a6a','#8a5a2a'];for(const sy of[3,12,21]){P(2,sy+8,28,1,'#2a1a0e');let x=2;while(x<29){const w=1+Math.floor(hash(x,sy,8)*2),h=5+Math.floor(hash(x,sy,9)*3);P(x,sy+8-h,w,h,BC[Math.floor(hash(x,sy,10)*6)]);P(x,sy+8-h,w,1,'#e8d8b0');x+=w+(hash(x,sy,11)<.2?1:0);}}
+    P(0,31,32,3,'#140c06');})];
+  OBJ.brazier.spr=[sprite(12,18,()=>{P(2,8,8,2,'#3a2a1a');P(1,6,10,3,'#6a5030');P(1,6,10,1,'#c9a24a');P(5,9,2,7,'#3a2a1a');P(3,15,6,2,'#2a1c10');})];
+  OBJ.mcart.spr=[sprite(18,14,()=>{P(2,4,14,7,'#3a3028');P(2,4,14,1,'#6a5a48');P(1,3,16,2,'#5a5048');P(4,1,4,3,'#7ff6ff');P(9,2,4,2,'#5a6070');P(5,1,2,1,'#ffffff');ell(5,12,2,2,'#1a1410');ell(13,12,2,2,'#1a1410');})];
+  OBJ.ore.spr=[sprite(12,12,()=>{P(2,8,8,3,'#2a2e3a');P(3,4,2,6,'#4ac8e8');P(3,4,1,6,'#bff8ff');P(6,2,2,8,'#5ad8f0');P(6,2,1,8,'#e8ffff');P(8,6,2,4,'#3ab0d0');})];
+  OBJ.rail.spr=[0,1].map(v=>sprite(16,16,()=>{if(v){for(let y=1;y<16;y+=4)P(2,y,12,2,'#3a2a1c');P(4,0,1,16,'#8a94a4');P(11,0,1,16,'#8a94a4');}else{for(let x=1;x<16;x+=4)P(x,3,2,10,'#3a2a1c');P(0,5,16,1,'#8a94a4');P(0,11,16,1,'#8a94a4');}}));
+  OBJ.nest.spr=[sprite(28,12,()=>{ell(14,7,13,5,'#2a1c10');ell(14,6,11,4,'#5a4028');for(let i=0;i<14;i++)P(2+i*2,4+(i%3),3,1,'#7a5a38');ell(14,5,7,2,'#2a1c10');})];
+  OBJ.vdoor.spr=[sprite(48,44,()=>{P(0,0,48,44,'#2a1c0c');P(2,2,44,42,'#6a4a22');P(2,2,21,42,'#8a6430');P(23,0,2,44,'#2a1c0c');for(const y of[8,22,36]){P(2,y,44,2,'#c9a24a');P(2,y,44,1,'#ffe08a');}ell(24,22,6,6,'#2a1c0c');P(21,21,6,2,'#ffd166');})];
+  OBJ.sign.spr=[sprite(12,20,()=>{P(5,6,2,13,'#3a2a1c');P(5,6,1,13,'#6a5038');P(0,2,12,7,'#2a1c10');P(1,3,10,5,'#7a5a38');P(1,3,10,1,'#9a7a54');P(3,5,6,1,'#3a2a1c');P(2,18,8,2,'#140c06');})];
+  OBJ.hut.spr=[sprite(48,46,()=>{P(4,22,40,22,'#2a2018');P(5,22,38,21,'#5a4630');for(let y=24;y<42;y+=3)P(5,y,38,1,'#4a3824');P(20,30,8,13,'#1a120a');P(9,28,6,5,'#ffcf5a');P(33,28,6,5,'#ffcf5a');
+    for(let r=0;r<16;r++){const w=26-r+10;P(24-w+4,6+r,(w-4)*2,1,r%3?'#5a6a3a':'#4a5a2e');}P(2,21,44,2,'#2e3a20');P(0,44,48,2,'#140c06');})];
+}
+
+/* ---------- utilitaires de construction ---------- */
+function blob(m,cx,cy,rx,ry,t,seed,only){for(let y=Math.floor(cy-ry-2);y<=cy+ry+2;y++)for(let x=Math.floor(cx-rx-2);x<=cx+rx+2;x++){if(x<0||y<0||x>=m.w||y>=m.h)continue;const d=Math.hypot((x-cx)/rx,(y-cy)/ry);if(d+hash(x,y,seed||5)*.3<1&&(only===undefined||tAt(m,x,y)===only))setT(m,x,y,t);}}
+function rectT(m,x0,y0,x1,y1,t){for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)setT(m,x,y,t);}
+function plantFlora(m,reserved,dens,pick){
+  const occ=new Set(m.objs.flatMap(o=>{const s=OBJ[o.type].solid||[[0,0]];return s.map(([dx,dy])=>(o.tx+dx)+','+(o.ty+dy));}));
+  for(let y=1;y<m.h;y++)for(let x=0;x<m.w;x++){const t=tAt(m,x,y);if(t!==T.GRASS&&t!==T.VOID)continue;if(occ.has(x+','+y))continue;
+    let near=false;for(let oy=-2;oy<=2&&!near;oy++)for(let ox=-2;ox<=2;ox++){const q=tAt(m,x+ox,y+oy);if(q===T.PATH||q===T.BRIDGE||q===T.RUIN){near=true;break;}}
+    if(near)continue;const border=x<3||y<4||x>m.w-4||y>m.h-3;
+    if(!border&&reserved.some(r=>x>=r[0]&&x<=r[2]&&y>=r[1]&&y<=r[3]))continue;
+    const p=border?.85:dens(x,y);
+    if(hash(x,y,31)<p){if(occ.has((x-1)+','+y)&&hash(x,y,32)<.5)continue;const [ty,v]=pick(x,y,t,1);addObj(m,ty,x,y,{v,solidT:1});occ.add(x+','+y);}
+    else{const r=pick(x,y,t,0);if(r){addObj(m,r[0],x,y,{v:r[1]});if(OBJ[r[0]].solid)occ.add(x+','+y);}}}}
+function finishRegion(m){finishMap(m);for(const o of m.objs)if(o.solidT)setSolid(m,o.tx,o.ty);return m;}
+
+/* ---------- Marais des Saules (sud de Valdoria) ---------- */
+function buildMarais(){
+  const m=newMap('marais',96,44,T.GRASS);m.name='Marais des Saules';m.sub='Région';m.style='marsh';m.dark='rgba(8,16,26,.6)';
+  for(const[cx,cy,rx,ry]of[[24,30,9,6],[48,10,7,4],[60,32,12,6],[82,30,6,8],[38,38,6,3],[12,22,4,3],[72,14,5,3]])blob(m,cx,cy,rx,ry,T.WATER,23);
+  carvePath(m,[[10,0],[11,8],[18,14],[30,17],[44,20],[56,22],[68,22],[78,20],[88,14],[95,12]]);
+  carvePath(m,[[30,17],[30,24],[33,30]]);carvePath(m,[[68,22],[70,30],[72,36]]);carvePath(m,[[56,22],[54,14],[50,6]]);
+  setT(m,95,12,T.GRASS);setT(m,95,11,T.GRASS);setT(m,95,13,T.GRASS);
+  m.hut=addObj(m,'hut',33,30);addObj(m,'campfire',37,32);addObj(m,'barrel',30,31);addObj(m,'crate',36,30);
+  for(let y=26;y<38;y++)for(let x=64;x<78;x++)if(Math.hypot(x-71,y-33)<5&&tAt(m,x,y)!==T.WATER)setT(m,x,y,T.RUIN);
+  for(const[x,y]of[[67,30],[75,30],[67,36],[75,36]])addObj(m,'pillar',x,y);addObj(m,'ruinwall',71,28);addObj(m,'altar',71,33);
+  for(const[x,y]of[[47,5],[53,5]])addObj(m,'menhir',x,y,{v:1});addObj(m,'grave',50,4);
+  for(const[x,y]of[[16,15],[44,21],[66,23],[86,16]])addObj(m,'lantern',x,y,{v:0});
+  addObj(m,'sign',13,10,{txt:'↑ Brumeval (ruines)   → Cabane du pêcheur   ↘ Temple englouti'});
+  addObj(m,'sign',57,24,{txt:'↑ Pierres levées   ↓ Temple englouti   ← Cabane du pêcheur'});
+  for(const[cid,x,y,c,po,w]of[['m1',4,40,55,1,0],['m2',71,31,80,1,10],['m3',50,7,60,1,0],['m4',92,40,70,2,0]])addObj(m,'chest',x,y,{cid,loot:{coins:c,potion:po,weapon:w}});
+  for(let y=0;y<m.h;y++)for(let x=0;x<m.w;x++){if(tAt(m,x,y)===T.WATER&&hash(x,y,61)<.12)addObj(m,'lily',x,y,{v:hash(x,y,62)<.3?1:0});}
+  plantFlora(m,[[28,25,40,34],[62,24,80,38],[44,2,56,8],[2,37,7,42],[89,36,94,42]],(x,y)=>vnoise(x/6,y/6,12)>.5?.4:.09,
+    (x,y,t,tree)=>{if(tree)return ['tree',hash(x,y,37)<.35?3:1];if(hash(x,y,68)<.018)return ['shroom',0];let nw=false;for(const[a,b]of[[1,0],[-1,0],[0,1],[0,-1]])if(tAt(m,x+a,y+b)===T.WATER)nw=true;if(nw&&hash(x,y,63)<.5)return ['reed',hash(x,y,64)<.4?1:0];if(hash(x,y,34)<.06)return ['bush',hash(x,y,35)<.3?1:0];if(hash(x,y,69)<.01)return ['rock',0];return null;});
+  return finishRegion(m);}
+/* ---------- Collines de Cendrebrune (est de Valdoria) ---------- */
+function buildCollines(){
+  const m=newMap('collines',72,54,T.GRASS);m.name='Collines de Cendrebrune';m.sub='Région';m.style='hills';m.dark='rgba(10,14,28,.52)';
+  blob(m,48,44,6,4,T.WATER,29);
+  carvePath(m,[[0,36],[10,36],[18,30],[18,20],[16,10],[16,0]]);carvePath(m,[[18,30],[30,32],[42,28],[54,30],[62,36]]);carvePath(m,[[42,28],[40,20]]);carvePath(m,[[10,36],[12,44],[14,48]]);
+  for(let y=10;y<23;y++)for(let x=33;x<48;x++)if(Math.hypot(x-40,y-16)<4.2)setT(m,x,y,T.RUIN);
+  for(let i=0;i<8;i++){const a=i/8*TAU;addObj(m,'menhir',Math.round(40+Math.cos(a)*5.5),Math.round(16+Math.sin(a)*5),{v:i%2});}addObj(m,'altar',40,15);
+  for(const[x,y]of[[56,18],[62,18],[56,24]])addObj(m,'ruinwall',x,y);addObj(m,'tent',60,22);addObj(m,'campfire',59,25);addObj(m,'crate',63,23);addObj(m,'barrel',55,21);addObj(m,'totem',53,20);
+  addObj(m,'tent',12,46);addObj(m,'campfire',15,47);for(let x=17;x<23;x++)addObj(m,'fence',x,44);
+  addObj(m,'sign',20,33,{txt:'↑ Sylvaris (forêt elfique)   ← Valdoria   → Tour de guet en ruine'});
+  addObj(m,'sign',40,24,{txt:'↑ Cercle des Pierres Levées'});
+  for(const[cid,x,y,c,po,w]of[['c1',40,13,80,1,0],['c2',63,20,70,1,11],['c3',4,50,50,1,0],['c4',68,48,90,2,0],['c5',30,5,60,1,0]])addObj(m,'chest',x,y,{cid,loot:{coins:c,potion:po,weapon:w}});
+  plantFlora(m,[[33,9,47,23],[51,15,66,27],[9,42,24,50],[2,47,7,52],[64,44,70,51],[27,2,33,8]],(x,y)=>vnoise(x/7,y/7,14)>.55?.3:.06,
+    (x,y,t,tree)=>{if(tree)return ['tree',hash(x,y,37)<.25?3:Math.floor(hash(x,y,33)*3)];if(hash(x,y,66)<.022)return ['boulder',0];if(hash(x,y,34)<.06)return ['bush',hash(x,y,35)<.3?1:0];if(hash(x,y,67)<.012)return ['rock',0];return null;});
+  return finishRegion(m);}
+/* ---------- Kar-Dûm (montagnes à l'est de Sylvaris) ---------- */
+function buildKardum(){
+  const m=newMap('kardum',80,74,T.GRASS);m.name='Kar-Dûm';m.sub='Les montagnes des nains';m.style='mount';m.dark='rgba(10,14,32,.55)';
+  for(let x=0;x<m.w;x++){const h=8+Math.round(Math.sin(x*.3)*1.5+hash(x,0,4)*2);for(let y=0;y<h;y++)setT(m,x,y,T.WALL);}
+  for(let y=0;y<14;y++)for(let x=34;x<47;x++)setT(m,x,y,y<12?T.WALL:T.GRASS);
+  for(const[cx,cy,rx,ry]of[[10,30,6,4],[30,40,5,7],[54,24,6,5],[70,58,5,4],[48,62,4,3]])blob(m,cx,cy,rx,ry,T.WALL,41);
+  blob(m,66,40,8,6,T.WATER,43);
+  carvePath(m,[[0,60],[10,60],[20,56],[26,50],[30,40],[34,30],[38,22],[40,14]]);carvePath(m,[[26,50],[16,40],[12,30],[12,22]]);
+  carvePath(m,[[34,30],[48,32],[58,36],[62,40]]);carvePath(m,[[48,32],[56,24],[64,18],[70,12]]);carvePath(m,[[20,56],[30,64],[40,68]]);
+  for(let y=9;y<24;y++)for(let x=7;x<18;x++)if(Math.hypot((x-12)/5,(y-17)/6)<1&&tAt(m,x,y)!==T.WALL)setT(m,x,y,T.RUIN);
+  for(let y=14;y<20;y++)for(let x=33;x<48;x++)setT(m,x,y,T.RUIN);
+  for(let y=36;y<45;y++)for(let x=58;x<75;x++)if(tAt(m,x,y)===T.WATER&&Math.hypot(x-66,y-40)<3)setT(m,x,y,T.RUIN);
+  carvePath(m,[[62,40],[66,40]],1);
+  m.portal=addObj(m,'dgate',40,13);m.pillars=[addObj(m,'rpillar',35,17,{pid:0}),addObj(m,'rpillar',40,19,{pid:1}),addObj(m,'rpillar',45,17,{pid:2})];
+  for(const[x,y]of[[33,15],[47,15]])addObj(m,'dstatue',x,y);for(const[x,y]of[[37,20],[43,20]])addObj(m,'brazier',x,y);
+  addObj(m,'mcart',14,20);addObj(m,'mcart',9,15);for(let x=10;x<17;x++)addObj(m,'rail',x,18);for(const[x,y]of[[8,12],[16,12],[11,11],[15,14],[7,19]])addObj(m,'ore',x,y);
+  addObj(m,'torch',10,22);addObj(m,'torch',15,23);
+  addObj(m,'dstatue',66,38);addObj(m,'dstatue',66,43);addObj(m,'altar',68,40);
+  m.nest=addObj(m,'nest',71,11);for(const[x,y]of[[68,9],[74,10]])addObj(m,'boulder',x,y,{v:1});
+  addObj(m,'tent',22,51);addObj(m,'tent',28,53);addObj(m,'campfire',24,55);addObj(m,'brazier',20,53);addObj(m,'crate',30,55);addObj(m,'barrel',21,57);addObj(m,'anvil',27,56);
+  addObj(m,'sign',12,58,{txt:'↗ Camp des éclaireurs nains   ↑ Grand Portail de Kar-Dûm'});
+  addObj(m,'sign',33,33,{txt:'↖ Ancienne mine   → Lac gelé   ↗ Falaise des corbeaux   ↑ Grand Portail'});
+  for(const[cid,x,y,c,po,w]of[['k1',4,66,90,2,0],['k2',76,66,110,1,14],['k3',5,26,100,1,0],['k4',76,24,120,2,14],['k5',52,48,90,1,0]])addObj(m,'chest',x,y,{cid,loot:{coins:c,potion:po,weapon:w}});
+  plantFlora(m,[[6,8,18,25],[31,12,49,22],[57,34,76,47],[64,6,78,15],[18,48,32,59],[2,63,7,69],[73,62,78,69],[3,23,8,29],[73,21,78,27],[49,45,55,51]],(x,y)=>vnoise(x/6,y/6,16)>.5?.34:.07,
+    (x,y,t,tree)=>{if(tree)return ['pine',hash(x,y,38)<.55?1:0];if(hash(x,y,66)<.025)return ['boulder',1];if(hash(x,y,34)<.02)return ['bush',0];return null;});
+  return finishRegion(m);}
+/* ---------- Archives de Kar-Dûm (donjon) ---------- */
+function buildArchives(){
+  const m=newMap('archives',52,46,T.WALL);m.name='Archives de Kar-Dûm';m.style='dwarf';m.dark='rgba(6,4,2,.86)';
+  rectT(m,18,34,34,42,T.FLOOR);rectT(m,24,20,28,34,T.FLOOR);rectT(m,4,18,20,32,T.FLOOR);rectT(m,32,18,48,32,T.FLOOR);rectT(m,20,24,24,26,T.FLOOR);rectT(m,28,24,32,26,T.FLOOR);
+  rectT(m,14,3,38,17,T.FLOOR);rectT(m,24,17,28,20,T.FLOOR);
+  m.stairs=addObj(m,'stairs',26,42);
+  for(const[x,y]of[[19,35],[33,35],[19,41],[33,41]])addObj(m,'brazier',x,y);for(const[x,y]of[[22,34],[30,34]])addObj(m,'dstatue',x,y);
+  for(const y of[19,23,27])for(const x of[5,9,15])addObj(m,'shelf',x,y);addObj(m,'shelf',5,31);addObj(m,'shelf',15,31);addObj(m,'altar',12,30);for(const[x,y]of[[4,18],[20,18]])addObj(m,'torch',x,y);
+  for(const[x,y]of[[34,19],[46,19],[34,31],[46,31]])addObj(m,'brazier',x,y);for(const y of[22,27])for(const x of[37,43])addObj(m,'pillar',x,y);
+  for(const[x,y]of[[15,4],[37,4],[15,16],[37,16]])addObj(m,'brazier',x,y);for(const y of[7,12])for(const x of[18,34])addObj(m,'dstatue',x,y);addObj(m,'anvil',26,5);
+  for(const[x,y]of[[24,21],[28,21]])addObj(m,'torch',x,y);
+  m.vdoor=addObj(m,'vdoor',26,19);
+  for(const[cid,x,y,c,po,w]of[['a1',47,20,120,2,15],['a2',5,32,100,1,0]])addObj(m,'chest',x,y,{cid,loot:{coins:c,potion:po,weapon:w}});
+  finishMap(m);return m;}
+
+/* ================= CHAPITRE 3 : LES ARCHIVES DE KAR-DÛM ================= */
+Object.assign(EN,{
+  kobold:{name:'Kobold des mines',hp:40,atk:13,def:2,spd:46,xp:26,r:5,ai:'melee',reach:20,top:26},
+  bat:{name:'Chauve-souris des cimes',hp:22,atk:11,def:0,spd:72,xp:16,r:4,ai:'lunge',top:18},
+  golem:{name:'Golem runique',hp:110,atk:19,def:6,spd:24,xp:50,r:8,ai:'melee',reach:27,elite:1,top:36},
+  ndwarf:{name:'Nain du Vide',hp:56,atk:15,def:3,spd:36,xp:32,r:5,ai:'melee',reach:22,top:28,void:1},
+  airain:{name:'Gardien d’Airain',hp:720,atk:22,def:6,spd:30,xp:900,r:14,ai:'airain',boss:1,top:90}
+});
+HEADS.dwarf={top:-1,bm:{S:'H',e:'H',w:'H',p:'H',m:'H',k:'H',z:'H'},
+  f:['.....nMMMMn.....','.n..nMMoMMMn..n.','.nn.nMoMMMMn.nn.','..nnMMMMMMMMnn..','...nTTTTTTTTn...','..hHSSSSSSSSHh..','..hHSeeSSeeSHh..','..hHSwpSSwpSHh..','..hHHHHmmHHHHh..','.hHHHHHHHHHHHHh.','.hHHiHHHHHHiHHh.','..hHHHHHHHHHHh..','...hHHHiiHHHh...','....hHHHHHHh....','......hHHh......'],
+  s:['.....nMMMMn.....','....nMMoMMMn.n..','....nMoMMMMMnnn.','...nMMMMMMMMn...','...nTTTTTTTTn...','...hHHHSSSSS....','...hHHSSSeeS....','...hHHSSSwpS....','...hHHHHHmHHh...','...hHHHHHHHHHh..','...hHHiHHHHHHh..','....hHHHHHHHh...','.....hHHiHHh....','......hHHHh.....','.......hHh......']};
+Object.assign(CP,{
+  bryn:Object.assign({},CP.chevalier,{S:'#d8a07a',s:'#a06e50',k:'#ecc0a0',h:'#6a2a10',H:'#b0582a',i:'#e08a3a',p:'#3a6aa0',M:'#9aa4b4',n:'#3a4252',o:'#e0e8f4',T:'#c9a24a',t:'#7a6030',C:'#7a2a1a',c:'#4a1a10',l:'#9a4a2a'}),
+  gilda:{S:'#e0b090',s:'#b0805e',k:'#f4d0b0',h:'#5a2a10',H:'#c8682a',i:'#f0a050',p:'#4a8a5a',M:'#7a8494',n:'#343a48',o:'#c8d0dc',T:'#b08a3a',t:'#6a5020',C:'#3a5a7a',c:'#22384e',l:'#5a7a9a',D:'#3a3028',d:'#241c16',B:'#2a2018',b:'#160f08',x:'#4a3020'},
+  thorek:{S:'#e0b896',s:'#b08a6a',k:'#f4d4b8',h:'#a8acb8',H:'#eceef4',i:'#ffffff',p:'#5a6a8a',C:'#5a3a2a',c:'#3a2418',l:'#7a5238',T:'#c9a24a',t:'#7a6030',B:'#2a2018',b:'#160f08'},
+  ndwarf:Object.assign({},CP.chevalier,{S:'#6a5a8a',s:'#4a3a6a',k:'#8a7aaa',h:'#1e1430',H:'#3a2c5a',i:'#8a6ad8',p:'#ff4ad8',e:'#ff4ad8',w:'#ffb0f0',M:'#4e4866',n:'#1e1a30',o:'#9a8ad0',T:'#8a4dff',t:'#4a2a8a',C:'#2a1a40',c:'#160e26',l:'#4a3a6a'}),
+  dorgath:Object.assign({},CP.chevalier,{S:'#4a3a3a',s:'#2a1e1e',k:'#6a5050',h:'#140c0c',H:'#2a1c1c',i:'#ff6a2a',p:'#ff8a3a',e:'#ff6a2a',w:'#ffd0a0',M:'#3a3440',n:'#141018',o:'#ff8a3a',T:'#ff6a2a',t:'#8a2a10',C:'#2a1414',c:'#140a0a',l:'#4a2020'}),
+  kobold:Object.assign({},CP.goblin||{},{S:'#b0683a',s:'#7a4022',k:'#d08a58',C:'#5a4a3a',c:'#3a2e24',l:'#7a6450'}),
+  odric:{S:'#d8a882',s:'#a07a5a',k:'#ecc8a8',h:'#8a8a90',H:'#b8b8c0',i:'#e0e0e8',U:'#3a5a4a',u:'#22382e',y:'#5a7a6a',p:'#4a6a8a',C:'#4a5a3a',c:'#2e3a24',l:'#6a7a52',D:'#3a3a2a',d:'#24241a',B:'#2a2018',b:'#160f08',x:'#4a3020',T:'#8a7a5a',t:'#5a4e3a'},
+  hal:{S:'#e0b48e',s:'#b08460',k:'#f4d0ac',h:'#6a4a24',H:'#9a6e3a',i:'#c8945a',p:'#4a7a5a',C:'#8a6a3a',c:'#5a4424',l:'#a8864e',D:'#4a3a2a',d:'#2e2418',B:'#2a2018',b:'#160f08',x:'#3a2a1a',T:'#c8b890',t:'#8a7a5a'}
+});
+Object.assign(CHAR,{bryn:{head:'dwarf',body:'plate',w:'axe'},gilda:{head:'dwarf',body:'tunic',w:'hammer'},thorek:{head:'beard',body:'robe'},ndwarf:{head:'dwarf',body:'plate',w:'hammer'},
+  dorgath:{head:'dwarf',body:'plate',w:'hammer'},kobold:{head:(CHAR.goblin||{}).head||'wild',body:'tunic',w:'axe'},odric:{head:'hood',body:'tunic'},hal:{head:'short',body:'tunic',w:'staff'},
+  golem:{head:'short',body:'tunic',w:'club'},bat:{head:'short',body:'tunic'},airain:{head:'short',body:'tunic'}});
+
+/* ---------- dessins ennemis ---------- */
+function drawGolem(e){const x=Math.round(e.x),y=Math.round(e.y),f=e.flash>0,W=c=>f?'#ffffff':c,st=e.moving?Math.floor(e.anim*5)%2:0,wind=e.state==='wind',sw=e.strikeT>0,s=e.face<0?-1:1;
+  ell(x,y,11,3,'rgba(0,0,0,.45)');const S0='#151820',S1='#4e5668',S2='#6a7488',S3='#8a94a8',R='#7ff6ff';
+  P(x-8,y-9+st,6,9-st,W(S0));P(x-7,y-9+st,4,8-st,W(S1));P(x+2,y-9+(1-st),6,9-(1-st),W(S0));P(x+3,y-9+(1-st),4,8-(1-st),W(S1));
+  P(x-10,y-26,20,18,W(S0));P(x-9,y-25,18,16,W(S1));P(x-9,y-25,18,2,W(S3));P(x-9,y-25,4,16,W(S2));P(x+5,y-23,4,13,W('#3a4252'));
+  P(x-6,y-25,5,1,W('#3a6a4a'));P(x+2,y-12,4,1,W('#3a6a4a'));
+  P(x-3,y-20,6,6,W('#0a2a34'));P(x-2,y-19,4,4,W(R));P(x-1,y-18,2,2,W('#ffffff'));
+  P(x-5,y-32,10,7,W(S0));P(x-4,y-31,8,6,W(S2));P(x-4,y-31,8,1,W(S3));P(x-3+(s>0?1:0),y-28,2,1,W(R));P(x+1+(s>0?1:0),y-28,2,1,W(R));
+  const ay=wind?-14:sw?6:0;for(const sd of[-1,1]){const ax=x+sd*13;P(ax-3,y-25+ay,6,12,W(S0));P(ax-2,y-24+ay,4,10,W(S1));P(ax-4,y-14+ay,8,7,W(S0));P(ax-3,y-13+ay,6,5,W(S2));P(ax-3,y-13+ay,6,1,W(S3));}
+  if(wind&&Math.floor(time*12)%2)P(x-1,y-42,2,5,'#ff5a3a');}
+function drawBat(e){const x=Math.round(e.x),y=Math.round(e.y),f=e.flash>0,W=c=>f?'#ffffff':c,fl=Math.floor(e.anim*14)%2,h=10+Math.round(Math.sin(e.anim*6)*2);
+  ell(x,y,5,2,'rgba(0,0,0,.35)');const yy=y-h;
+  if(fl){P(x-10,yy-4,6,2,W('#2a1a3a'));P(x-12,yy-6,3,2,W('#2a1a3a'));P(x+4,yy-4,6,2,W('#2a1a3a'));P(x+9,yy-6,3,2,W('#2a1a3a'));}
+  else{P(x-10,yy,6,2,W('#2a1a3a'));P(x-12,yy+2,3,2,W('#2a1a3a'));P(x+4,yy,6,2,W('#2a1a3a'));P(x+9,yy+2,3,2,W('#2a1a3a'));}
+  P(x-4,yy-3,8,6,W('#120a1a'));P(x-3,yy-2,6,5,W('#3a2a4a'));P(x-3,yy-5,2,2,W('#3a2a4a'));P(x+1,yy-5,2,2,W('#3a2a4a'));P(x-2,yy-1,1,1,W('#ff4a6a'));P(x+1,yy-1,1,1,W('#ff4a6a'));}
+function drawAirain(e){const x=Math.round(e.x),y=Math.round(e.y),f=e.flash>0,W=c=>f?'#fff6ea':c,st=e.state,ph2=e.phase===2,step=e.moving?Math.floor(e.anim*4)%2:0;
+  const B0='#1e1208',B1='#5a3a18',B2='#8a5e28',B3='#c8904a',B4='#ffe08a',core=ph2?'#ff6a3a':'#7ff6ff',coreL=ph2?'#ffd0a0':'#e8ffff';
+  ell(x,y,26,6,'rgba(0,0,0,.5)');
+  for(const[sd,lift]of[[-1,step],[1,1-step]]){const lx=x+sd*11;P(lx-6,y-24-lift*2,12,24+lift*2-lift*2,W(B0));P(lx-5,y-23-lift*2,10,21,W(B1));P(lx-5,y-23-lift*2,3,21,W(B2));P(lx-7,y-5,14,5,W(B0));P(lx-6,y-5,12,4,W(B2));P(lx-6,y-5,12,1,W(B3));}
+  P(x-19,y-34,38,12,W(B0));P(x-18,y-33,36,10,W(B1));P(x-18,y-33,36,2,W(B3));
+  for(let r=0;r<34;r++){const w=Math.round(16+r*.25);P(x-w-1,y-70+r,(w+1)*2,1,W(B0));P(x-w,y-70+r,w*2,1,W(r<3?B3:r%9===0?B0:B2));P(x-w,y-70+r,4,1,W(B3));P(x+w-5,y-70+r,5,1,W(B1));}
+  for(const rx of[-14,14])for(const ry of[-64,-52,-40])P(x+rx,y+ry,2,2,W(B4));
+  const pulse=1+Math.sin(time*6)*.15+(st==='runeW'?.4:0);ell(x,y-52,9,9,W(B0));ell(x,y-52,Math.round(7*pulse),Math.round(7*pulse),W(core));ell(x,y-52,3,3,W(coreL));
+  for(let i=0;i<6;i++){const a=i/6*TAU+time;P(x+Math.round(Math.cos(a)*11),y-52+Math.round(Math.sin(a)*11),1,1,W(core));}
+  P(x-10,y-86,20,16,W(B0));P(x-9,y-85,18,14,W(B2));P(x-9,y-85,18,2,W(B4));P(x-9,y-85,4,14,W(B3));P(x-7,y-78,14,3,W(B0));P(x-6,y-77,12,1,W(core));P(x-2,y-90,4,5,W(B1));P(x-1,y-91,2,2,W(B3));
+  let fy=-30,fx=30;if(st==='slamW'){const k=clamp(1-e.t/.75,0,1);fy=-30-k*62;fx=22;}else if(st==='chargeW'||st==='charge'){fy=-46;fx=34;}else if(st==='runeW'){fy=-58;fx=40;}else if(e.slamT>0){fy=-8;fx=24;}else fy=-30+Math.sin(e.anim*2)*2;
+  for(const sd of[-1,1]){const sx=x+sd*24,sy=y-64;ell(sx,sy,10,8,W(B0));ell(sx,sy-1,9,7,W(B2));ell(sx-sd*2,sy-3,5,3,W(B4));
+    const hx=x+sd*fx,hy=y+fy,n=8;for(let i=0;i<=n;i++){const px=Math.round(lerp(sx,hx,i/n)),py=Math.round(lerp(sy+4,hy-6,i/n));P(px-3,py-3,7,7,W(B0));P(px-2,py-2,5,5,W(i%3?B1:B2));}
+    P(hx-7,hy-8,14,13,W(B0));P(hx-6,hy-7,12,11,W(B2));P(hx-6,hy-7,12,2,W(B4));P(hx-6,hy-7,3,11,W(B3));for(let k=0;k<3;k++)P(hx-5+k*4,hy+2,3,2,W(B1));}
+  if(st==='slamW'&&Math.floor(time*12)%2){P(x-1,y-104,3,6,'#ff5a3a');P(x-1,y-96,3,2,'#ff5a3a');}}
+
+/* ---------- IA du boss ---------- */
+function airainAI(e,dt,dx,dy,d){
+  if(!flags.bossOn)return;
+  if(e.phase===1&&e.hp<e.maxHp*.5){e.phase=2;e.state='roar';e.t=1;shake=7;sfx('void');floats.push({x:e.x,y:e.y-96,n:'',txt:'LE NOYAU S’EMBRASE',col:'#ff9a5a',t:0});}
+  if(!e.s1&&e.hp<e.maxHp*.66){e.s1=1;golemCall(e);}if(!e.s2&&e.hp<e.maxHp*.33){e.s2=1;golemCall(e);}
+  const sp=e.d.spd*(e.phase===2?1.3:1);
+  switch(e.state){
+    case 'wander':case 'chase':e.state='chase';steer(e,player.x,player.y,sp,dt);e.face=dx<0?-1:1;
+      if(e.cd<=0){const r=Math.random();
+        if(d<66&&r<.6){e.state='slamW';e.t=e.phase===2?.55:.75;fx.push({k:'tele',x:e.x,y:e.y,r:60,t:0,life:e.t});}
+        else if(d>70&&r<.55){e.state='chargeW';e.t=.65;e.cdx=dx/d;e.cdy=dy/d;fx.push({k:'teleLine',x:e.x,y:e.y,dx:e.cdx,dy:e.cdy,t:0,life:.65});}
+        else{e.state='runeW';e.t=.6;}}break;
+    case 'slamW':if(e.t<=0){shake=9;sfx('slam');e.slamT=.3;fx.push({k:'ring',x:e.x,y:e.y,r:6,max:64,t:0,life:.4,col:'#ffb84a'});for(let i=0;i<14;i++)dust(e.x+rnd(-30,30),e.y+rnd(-6,6));if(d<62)hurtPlayer(e.atk*1.2,dx/d,dy/d);
+      if(e.phase===2)for(let i=0;i<8;i++){const a=i/8*TAU;projs.push({o:'e',k:'wisp',x:e.x,y:e.y-10,vx:Math.cos(a)*90,vy:Math.sin(a)*90,life:1.6,dmg:e.atk*.6,r:3});}
+      e.state='rec';e.t=.7;e.cd=e.phase===2?.7:1.1;}break;
+    case 'chargeW':if(e.t<=0){e.state='charge';e.t=.55;e.hitDone=0;sfx('slam');}break;
+    case 'charge':move(e,e.cdx*250*dt,e.cdy*250*dt);e.moving=true;if(Math.random()<.5)dust(e.x,e.y);if(!e.hitDone&&d<e.r+12){e.hitDone=1;hurtPlayer(e.atk*1.1,dx/d,dy/d);}
+      if(e.t<=0){e.state='rec';e.t=.8;e.cd=1;shake=4;}break;
+    case 'runeW':if(e.t<=0){const n=e.phase===2?16:11,o=rnd(0,TAU);for(let i=0;i<n;i++){const a=o+i/n*TAU;projs.push({o:'e',k:'wisp',x:e.x,y:e.y-52,vx:Math.cos(a)*92,vy:Math.sin(a)*92,life:2.2,dmg:e.atk*.65,r:3});}sfx('void');e.state='rec';e.t=.5;e.cd=1.2;}break;
+    case 'roar':if(e.t<=0){e.state='chase';e.cd=.4;}break;
+    default:if(e.t<=0)e.state='chase';}}
+function golemCall(e){for(const sd of[-1,1]){const g=spawn('golem',Math.floor(e.x/TS)+sd*4,Math.floor(e.y/TS)+1,14,{aggro:true});for(let k=0;k<12;k++)dust(g.x+rnd(-6,6),g.y);}
+  floats.push({x:e.x,y:e.y-96,n:'',txt:'RÉPARATION… REQUISE',col:'#7ff6ff',t:0});sfx('void');}
+
+/* ---------- état du monde ---------- */
+function syncKardum(){const k=maps.kardum,a=maps.archives;if(!k)return;const rn=flags.runes||{};
+  const placed=!!flags.portal;for(const o of k.pillars)o.type=placed?'rpillar2':'rpillar';
+  k.portal.v=placed?1:0;setSolid(k,40,13,placed?0:1);
+  if(a){const open=flags.vdoor&&!flags.bossOn;a.vdoor.picked=open?1:0;for(let x=25;x<=27;x++)setSolid(a,x,19,open?0:1);}}
+function runeCount(){return Object.keys(flags.runes||{}).length;}
+const RUNES=[['mine',12,14],['lac',66,41],['nid',71,12]];
+function ch3Load(id){
+  if(id==='kardum'){
+    npcs.push({name:'Bryn',id:'bryn',pal:'bryn',x:25*TS+8,y:54*TS+4,dir:0},{name:'Gilda',id:'gilda',pal:'gilda',x:29*TS+8,y:57*TS+8,dir:2});
+    for(const[x,y,l]of[[10,16,12],[14,13,13],[8,20,12],[16,18,13]])spawn('kobold',x,y,l);spawn('golem',12,12,14);
+    for(const[x,y,l]of[[16,30,12],[8,34,12]])spawn('bat',x,y,l);
+    for(const[x,y,l]of[[62,36,13],[70,44,13],[60,44,14]])spawn('ndwarf',x,y,l);spawn('golem',68,37,14);
+    for(const[x,y,l]of[[66,12,13],[74,14,13],[68,16,13],[60,20,12]])spawn('bat',x,y,l);spawn('golem',72,14,15);
+    for(const[x,y,l]of[[44,28,13],[52,44,13],[40,48,12],[56,58,13],[10,46,12]])spawn(pick(['bat','kobold','ndwarf']),x,y,l);
+    if(stage>=32&&!flags.portal)for(const[k,x,y]of RUNES)if(!(flags.runes||{})[k])pickups.push({k:'qitem',item:'rune',eid:k,x:x*TS+8,y:y*TS+8,t:1});
+    setMusic('fog');}
+  else if(id==='archives'){
+    if(stage===37)setStage(36);flags.bossOn=false;
+    if(stage<40)npcs.push({name:'Thorek',id:'thorek',pal:'thorek',x:12*TS+8,y:25*TS+8,dir:0});
+    for(const[x,y,l]of[[26,30,14],[26,24,14]])spawn('bat',x,y,l);for(const[x,y,l]of[[8,21,14],[16,29,15]])spawn('ndwarf',x,y,l);
+    for(const[x,y,l]of[[38,24,15],[44,28,15]])spawn('kobold',x,y,l);spawn('golem',40,20,15);spawn('ndwarf',42,25,15);
+    if(stage===38&&flags.frag4Pos)pickups.push({k:'seal4',x:flags.frag4Pos[0],y:flags.frag4Pos[1],t:1});
+    setMusic('dun');}
+  else if(id==='marais'){
+    npcs.push({name:'Odric',id:'odric',pal:'odric',x:36*TS+8,y:33*TS+12,dir:2});
+    for(const[x,y,l]of[[20,20,4],[44,26,5],[60,16,5],[84,22,6],[14,34,4],[50,36,5]])spawn('slime',x,y,l);
+    for(const[x,y,l]of[[68,32,6],[74,34,7],[70,37,6]])spawn('skeleton',x,y,l);spawn('spectre',72,29,7);
+    for(const[x,y,l]of[[48,8,6],[52,9,6]])spawn('spectre',x,y,l);for(const[x,y,l]of[[86,36,6],[8,28,5]])spawn('wolf',x,y,l);
+    setMusic('fog');}
+  else if(id==='collines'){
+    npcs.push({name:'Hal',id:'hal',pal:'hal',x:14*TS+8,y:49*TS+4,dir:0});
+    for(const[x,y,l]of[[57,21,8],[61,24,8],[55,25,9]])spawn('goblin',x,y,l);spawn('garcher',58,18,9);spawn('chief',60,20,10);
+    for(const[x,y,l]of[[36,14,9],[44,18,9]])spawn('spectre',x,y,l);
+    for(const[x,y,l]of[[28,40,7],[34,44,8],[22,24,7],[50,38,8],[64,46,8],[8,20,7]])spawn('wolf',x,y,l);
+    setMusic('field');}
+  if(id==='kardum'||id==='archives')syncKardum();}
+function ch3Tick(){
+  if(map.id==='kardum'){const g=maps.kardum.portal;if(flags.portal&&Math.abs(player.x-g.x)<10&&player.y<g.y+2&&player.y>g.y-12&&!S.lock)enterMap('archives',26*TS+8,40*TS);}
+  else if(map.id==='archives'){const s=map.stairs;if(Math.hypot(player.x-s.x,player.y-s.y)<9&&!S.lock)enterMap('kardum',40*TS+8,15*TS+8);
+    if(stage===36&&player.y<16*TS&&!S.lock&&!flags.bossOn)airainStart();}}
+function ch3Enter(id){if(id==='archives'&&stage===34)setStage(35);}
+async function placeRunes(){S.lock=true;held.delete('attack');
+  await talk([{who:ME,text:'(Les trois piliers portent la même encoche que les pierres runiques…)'}]);
+  flags.portal=1;player.items.rune=0;syncKardum();sfx('void');shake=8;for(const o of maps.kardum.pillars)for(let i=0;i<16;i++)parts.push({x:o.x+rnd(-4,4),y:o.y-rnd(10,30),vx:rnd(-20,20),vy:rnd(-40,-10),l:.9,ml:.9,c:'#7ff6ff',s:1,g:0,glow:1});
+  await wait(700);sfx('door');shake=10;await wait(400);
+  await talk([{who:ME,text:'Le Grand Portail… Il s’ouvre !'},{who:'Bryn',text:'(au loin) Par la barbe de mes pères ! Les Archives respirent de nouveau !'},{who:'Bryn',text:'Thorek ne quitte jamais sa bibliothèque, à l’ouest du grand couloir. Trouve-le, enfant marqué !'}]);
+  setStage(34);save();S.lock=false;}
+async function airainStart(){flags.bossOn=true;syncKardum();S.lock=true;held.delete('attack');sfx('door');shake=6;
+  const b=spawn('airain',26,8,16,{aggro:true});b.cd=1.6;b.phase=1;setMusic('boss');
+  await wait(500);await talk([{who:'Gardien d’Airain',v:1,text:'… INTRUS… DÉTECTÉ. PROTOCOLE… D’ÉCRASEMENT.'},{who:'???',v:1,text:'Écrase-le, mon beau gardien. Que l’airain boive le sang du petit sceau.'}]);
+  $('#bossName').textContent='Gardien d’Airain';$('#bossbar').classList.remove('hidden');setStage(37);S.lock=false;}
+function airainDown(e){hitstop=.35;shake=12;sfx('slam');sfx('lvl');$('#bossbar').classList.add('hidden');flags.bossOn=false;
+  flags.frag4Pos=[e.x,e.y+4];pickups.push({k:'seal4',x:e.x,y:e.y+4,t:0});for(const o of enemies)if(!o.dead){o.dead=true;burst(o.x,o.y-6,10,'#ffd08a');}
+  for(let i=0;i<60;i++)parts.push({x:e.x+rnd(-24,24),y:e.y-rnd(0,80),vx:rnd(-30,30),vy:rnd(-50,-10),l:rnd(.8,1.6),ml:1.6,c:pick(['#ffd08a','#ffffff','#7ff6ff']),s:1,g:0,glow:1});
+  addTitle('Briseur d’airain');setMusic('dun');syncKardum();setStage(38);toast('<b style="color:#ffd08a">Le Gardien d’Airain est vaincu !</b>','#ffb84a');}
+async function frag4Seq(){S.lock=true;held.delete('attack');sfx('void');
+  const ill={name:'Dorgath',id:'dorgath',pal:'dorgath',x:player.x+30,y:player.y-8,dir:2,ghost:1};npcs.push(ill);for(let i=0;i<30;i++)parts.push({x:ill.x+rnd(-8,8),y:ill.y-rnd(0,26),vx:rnd(-20,20),vy:rnd(-30,0),l:.8,ml:.8,c:'#ff6a2a',s:1,g:0,glow:1});
+  player.items.frag=(player.items.frag||0)+1;
+  await talk([{who:'Dorgath',v:1,text:'Le petit sceau. Enfin.'},{who:'Dorgath',v:1,text:'Tu as brisé mon jouet. Peu importe : l’airain se reforge toujours.'},{who:ME,text:'Qui êtes-vous ?'},
+    {who:'Dorgath',v:1,text:'Dorgath. Premier forgeron de Kar-Dûm… et troisième des Sept Élus.'},{who:'Dorgath',v:1,text:'C’est moi qui ai forgé les chaînes du Néant. Je sais mieux que quiconque comment elles se brisent.'},
+    {who:'Dorgath',v:1,text:'Rassemble tes fragments, enfant. Chaque pièce que tu reprends fissure un peu plus la prison. Je t’attendrai de l’autre côté.'}]);
+  for(let i=0;i<30;i++)parts.push({x:ill.x+rnd(-8,8),y:ill.y-rnd(0,26),vx:rnd(-40,40),vy:rnd(-40,0),l:.8,ml:.8,c:'#ff6a2a',s:1,g:0,glow:1});
+  npcs.splice(npcs.indexOf(ill),1);setStage(39);S.lock=false;}
+const GILDA=['La vieille mine, au nord-ouest… Les kobolds y creusent jour et nuit. Ils cherchent quelque chose.','Mon frère gardait le sanctuaire du lac gelé. Il n’est jamais revenu.','Les corbeaux de la falaise volent tout ce qui brille. Même nos runes !','Le Grand Portail n’a pas bougé depuis cent ans.'];
+const ODRIC=['Le marais garde ses morts. Le temple englouti, à l’est, grouille de squelettes.','Les pierres levées, au nord du marais… On y entend des voix quand la lune est haute.','Tu viens de Brumeval ? Le chemin du nord y mène, droit comme une flèche.'];
+const HAL=['Les pierres levées chantent la nuit. Des spectres y dansent, au centre des collines.','Des gobelins ont pris l’ancienne tour de guet, à l’est. Leur chef est une brute.','Le sentier du nord mène à la lisière de Sylvaris. Les elfes n’aiment pas les étrangers.'];
+async function talkCh3(n){const id=n.id;
+  if(id==='bryn'){
+    if(stage===31){await talk([{who:'Bryn',text:'Halte ! Un humain, si haut dans les montagnes ?'},{who:ME,text:'Je cherche les archives de Kar-Dûm. Lyssara, la prêtresse de Sylvaris, m’envoie.'},{who:'Bryn',text:'La prêtresse de la lune… Montre-moi ta main.'},{who:'Bryn',text:'Par la barbe de mes pères. La marque du huitième sceau.'},
+      {who:'Bryn',text:'Les Archives sont scellées. Le Grand Portail ne s’ouvre qu’avec trois pierres runiques.'},{who:'Bryn',text:'Quand le Néant a frappé, nos anciens les ont cachées aux quatre vents. Puis les créatures sont venues…'}]);setStage(32);
+      for(const[k,x,y]of RUNES)if(!(flags.runes||{})[k])pickups.push({k:'qitem',item:'rune',eid:k,x:x*TS+8,y:y*TS+8,t:1});}
+    else if(stage===32)await talk([{who:'Bryn',text:`Tu as ${runeCount()} pierre${runeCount()>1?'s':''} sur trois. Les montagnes ne rendent rien sans combat.`}]);
+    else if(stage===33)await talk([{who:'Bryn',text:'Les trois runes ! Je n’y croyais plus. File au Grand Portail, petit !'}]);
+    else if(stage<40)await talk([{who:'Bryn',text:'Thorek… S’il est encore en vie, il sera dans sa bibliothèque. Il n’en sort jamais.'}]);
+    else await talk([{who:'Bryn',text:'Kar-Dûm te doit une fière chandelle, enfant marqué. Que tes pas restent solides.'}]);}
+  else if(id==='thorek'){
+    if(stage===35){await talk([{who:'Thorek',text:'Qui ose… Un humain ? Dans MES archives ?'},{who:ME,text:'Je porte la marque. Bryn m’a dit que vous sauriez.'},{who:'Thorek',text:'… Le huitième sceau. Alors les vieux rouleaux disaient vrai.'},
+      {who:'Thorek',text:'Les sept premiers sceaux furent forgés par les dieux. Le huitième devait naître d’une mortelle. Aeris… ta mère.'},
+      {who:'Thorek',text:'Les fragments ne te détruisent pas. Ils te rendent ce qu’on t’a arraché : ta mémoire, ta force.'},{who:'Thorek',text:'Mais chaque fragment que tu reprends fragilise aussi la prison. Le Néant le sait. Les Sept Élus le savent.'},
+      {who:'Thorek',text:'Dorgath, le Forgeron du Vide, a réveillé notre Gardien d’Airain. Il veille sur le quatrième fragment.'}]);
+      flags.vdoor=1;syncKardum();sfx('door');shake=3;setStage(36);}
+    else if(stage<39)await talk([{who:'Thorek',text:'Le Gardien est fait d’airain, mais son noyau est fait de runes. Frappe quand il s’épuise.'}]);
+    else if(stage===39){await talk([{who:'Thorek',text:'Dorgath t’a parlé ? Alors il sait que tu es ici.'},{who:'Thorek',text:'Écoute bien. Dans les plus vieux rouleaux, il est écrit que le sang d’Aeris descend des Tueurs de dragons.'},
+      {who:'Thorek',text:'Si tu veux comprendre ta marque, va au Royaume des dragons, au-delà des Pics Cendrés.'},{who:'Thorek',text:'Prends cette clé. Les Archives te seront toujours ouvertes.'}]);addTitle('Ami des nains');setStage(40);save();showEnd(3);}
+    else await talk([{who:'Thorek',text:'Les dragons… Méfie-toi du feu autant que du Néant.'}]);}
+  else if(id==='gilda')await talk([{who:'Gilda',text:GILDA[(n.c=(n.c||0)+1)%GILDA.length]}]);
+  else if(id==='odric')await talk([{who:'Odric',text:ODRIC[(n.c=(n.c||0)+1)%ODRIC.length]}]);
+  else if(id==='hal')await talk([{who:'Hal',text:HAL[(n.c=(n.c||0)+1)%HAL.length]}]);}
+
+/* ================= JOURNAL & INDICES ================= */
+// g : objectif (sans lieu) · h : indice [qui, texte] · by : PNJ qui le donnent · auto : pensée du héros · r : rumeur (habitants)
+const HINTS={
+ 1:{g:'Découvre ce qui est arrivé ici.',auto:'De la fumée s’élève au nord-est… Un village, peut-être ?'},
+ 2:{g:'Trouve qui appelle à l’aide.',auto:'Une voix… près de la seule maison encore debout, au centre des ruines.'},
+ 3:{g:'Examine le cristal noir.',h:'Le cristal est au milieu de la place. C’est lui qui a tout brûlé.',by:['maelle']},
+ 5:{g:'Retourne voir Maëlle.',auto:'Maëlle m’attend devant sa maison, au centre des ruines.'},
+ 6:{g:'Trouve le repaire des gobelins.',h:'Leur repaire est une grotte en forme de crocs. Passe le pont sur la rivière et suis la fumée de leur camp, vers le nord-est.',by:['maelle'],r:'Les gobelins ? Ils campent au-delà du pont, à l’est. Leurs feux brûlent toute la nuit devant une grotte.'},
+ 7:{g:'Trouve le Roi Gobelin.',auto:'Les tambours résonnent plus loin… tout au fond de la grotte, vers le nord-est.'},
+ 10:{g:'Montre le fragment à Maëlle.',auto:'Maëlle saura peut-être ce que c’est. Elle est restée aux ruines de Brumeval.'},
+ 11:{g:'Trouve Ostval, le village oublié.',h:'Ostval… le village de ma grand-mère. Prends le vieux chemin au nord des ruines, à travers le Bois des Murmures.',by:['maelle'],r:'Le vieux chemin du nord traverse le Bois des Murmures. On dit qu’un village y dort dans la brume.'},
+ 12:{g:'Trouve l’ancien du village.',auto:'Un village silencieux… Quelqu’un ici doit savoir qui commande.',r:'L’ancien ? Aldric vit dans la grande maison du centre, près du puits.'},
+ 13:{g:'Rallume les lanternes de mémoire.',h:'Trois lanternes : une près du cimetière, à l’ouest. Une au bord du chemin de l’est. La dernière au nord-est, près des maisons brûlées.',by:['aldric'],r:'Une lanterne de mémoire veille sur les tombes, à l’ouest. Les autres… je ne sais plus.'},
+ 14:{g:'Retourne voir Aldric.',auto:'Aldric m’attend au centre du village.'},
+ 15:{g:'Descends dans la crypte.',h:'La crypte s’ouvre sous la chapelle, au nord du village.',by:['aldric'],r:'La chapelle, au nord… Sœur Ilda dit qu’on entend gratter sous les dalles.'},
+ 16:{g:'Trouve le cœur de la crypte.',auto:'L’air est plus froid vers le nord…'},
+ 19:{g:'Parle à Merrin l’archiviste.',h:'Merrin, l’archiviste, vit au sud-ouest de la place. Il se souvient peut-être.',by:['aldric','ilda'],r:'Merrin ? Sa maison est au sud-ouest de la place. Il parle tout seul à ses livres.'},
+ 20:{g:'Rejoins Sylvaris, la forêt des elfes.',h:'Sylvaris est à l’est d’Ostval. Suis le chemin des champs jusqu’à la lisière.',by:['merrin'],r:'Les elfes ? À l’est, au-delà des champs. On dit aussi qu’un sentier y monte depuis les collines du sud.'},
+ 21:{g:'Trouve qui garde la forêt.',auto:'Une grande porte de bois barre le chemin… Quelqu’un doit la garder.'},
+ 22:{g:'Détruis les cœurs de ronces.',h:'Le Bosquet Gris est à l’ouest de la porte. Les cœurs pulsent au nord, au sud et au centre du bois.',by:['caelan']},
+ 23:{g:'Retourne voir Caelan.',auto:'Caelan m’attend à la porte de la forêt.'},
+ 24:{g:'Rejoins la prêtresse Lyssara.',h:'Lyssara t’attend au Temple de la Lune, au cœur du village.',by:['caelan'],r:'La prêtresse vit au Temple de la Lune, au cœur du village.'},
+ 25:{g:'Trouve le Temple des Racines.',h:'Le Temple des Racines est au nord-est, au-delà du lac. Cherche une arche de racines.',by:['lyssara'],r:'Une arche de racines s’ouvre au nord-est du lac. Personne n’y entre plus.'},
+ 26:{g:'Trouve l’Ancien Sylvestre.',auto:'La sève coule vers le nord, au cœur du temple…'},
+ 29:{g:'Retourne voir Lyssara.',auto:'Lyssara m’attend au Temple de la Lune.'},
+ 30:{g:'Trouve le chemin de Kar-Dûm.',h:'Kar-Dûm est au-delà des montagnes, à l’est. Contourne le lac par le sud : un vieux sentier mène au col.',by:['lyssara'],r:'Les nains ? Leur col est à l’est, après le lac. La neige y tombe toute l’année.'},
+ 31:{g:'Trouve les nains de Kar-Dûm.',auto:'De la fumée derrière les sapins, au nord-est du sentier… Un campement ?'},
+ 32:{g:'Trouve les pierres runiques.',h:'La première dort dans la vieille mine, au nord-ouest. La deuxième au sanctuaire du lac gelé, à l’est. La dernière… les corbeaux l’ont emportée dans leur nid, en haut de la falaise du nord-est.',by:['bryn'],r:'Les kobolds creusent la vieille mine du nord-ouest. Ils ont peut-être trouvé une rune…'},
+ 33:{g:'Pose les runes sur les piliers du Grand Portail.',h:'Le Grand Portail est taillé dans la falaise, tout au nord. Trois piliers l’entourent.',by:['bryn'],r:'Le Grand Portail ? Tout au nord, au bout du chemin. Tu ne peux pas le rater.'},
+ 34:{g:'Entre dans les Archives.',auto:'Le Grand Portail est ouvert. Les Archives m’attendent.'},
+ 35:{g:'Trouve Thorek l’archiviste.',auto:'Bryn a dit : la bibliothèque, à l’ouest du grand couloir.'},
+ 36:{g:'Pénètre dans la Grande Salle.',h:'La Grande Salle est au nord du grand couloir. J’ai déverrouillé la porte de bronze.',by:['thorek']},
+ 37:{g:'Vaincs le Gardien d’Airain.'},
+ 38:{g:'Ramasse le quatrième fragment de sceau.'},
+ 39:{g:'Retourne voir Thorek.',auto:'Thorek doit savoir ce que Dorgath voulait dire. Il est dans sa bibliothèque.'},
+ 40:{g:'Chapitre 3 terminé. La suite arrive bientôt.'}
+};
+const RUMOR={tobin:1,elsa:1,v1:1,v2:1,brann:1,ilda:1,e1:1,e2:1,odric:1,hal:1,gilda:1};
+function heard(s){return (flags.hints||{})[s];}
+function noteHint(s,who,text){(flags.hints=flags.hints||{})[s]={who,text};updQuest();save();toast('<b style="color:#ffd166">Journal</b> · nouvel indice noté','#ffd166');}
+function hintAuto(s){const H=HINTS[s];if(H&&H.auto&&!heard(s)){(flags.hints=flags.hints||{})[s]={who:ME,text:H.auto};setTimeout(()=>{if(stage===s)toast('<i>« '+esc(H.auto)+' »</i>','#c8d4e8');},900);}}
+async function talkHint(n){if(await sqTalk(n))return;const s0=stage,H0=HINTS[s0];
+  if(RUMOR[n.id]&&H0&&H0.r&&!heard(s0)&&!(H0.by||[]).includes(n.id)){await talk([{who:n.name,text:H0.r}]);noteHint(s0,n.name,H0.r);return;}
+  await talkNPC(n,1);
+  const H=HINTS[stage];if(H&&H.h&&(H.by||[]).includes(n.id)&&!heard(stage)){await talk([{who:n.name,text:H.h}]);noteHint(stage,n.name,H.h);}}
+function questGoal(){const H=HINTS[stage],q=QUEST[stage];if(!q)return '';const o=typeof q.o==='function'?q.o():q.o;return /\(\d+\/\d+\)/.test(o)?o:(H&&H.g)||o;}
+function questHint(){const h=heard(stage);if(h)return (h.who===ME?'':h.who+' : ')+'« '+h.text+' »';const H=HINTS[stage];return H&&(H.h||H.r)?'Interroge les habitants pour trouver où aller.':'';}
+
+const ZN={marais:[[62,24,80,40,'Temple englouti'],[26,24,42,36,'Cabane du pêcheur'],[44,0,58,10,'Pierres levées']],collines:[[32,8,48,24,'Cercle des Pierres Levées'],[50,14,68,28,'Tour de guet en ruine'],[6,40,26,52,'Camp du berger']],
+  kardum:[[4,6,20,26,'Ancienne mine'],[56,32,78,48,'Lac gelé'],[60,0,80,18,'Falaise des corbeaux'],[30,10,50,22,'Grand Portail'],[16,46,34,60,'Camp des éclaireurs']],archives:[[4,18,20,32,'Bibliothèque de Thorek'],[14,3,38,17,'Grande Salle'],[32,18,48,32,'Salle des gardiens']]};
+const REG3={marais:1,collines:1,kardum:1,archives:1};
+QITEMS.rune={n:'Pierre runique',d:'Une pierre gravée de runes naines, tiède au toucher. Elle vibre quand on approche du Grand Portail.'};
+function runeGot(eid){(flags.runes=flags.runes||{})[eid]=1;const n=runeCount();toast(`Pierre runique (${n}/3)`,'#7ff6ff');if(n>=3&&stage===32)setStage(33);updQuest();save();}
 /* ================= SAVE ================= */
 const SKEY='astra_demo_v1';
 function save(){if(!player||!map)return;try{localStorage.setItem(SKEY,JSON.stringify({cls:player.c.key,lvl:player.lvl,xp:player.xp,hp:player.hp,maxHp:player.maxHp,maxMp:player.maxMp,atk:player.atk,def:player.def,weapon:player.weapon,bag:player.bag,coins:player.coins,items:player.items,potions:player.potions,stage,flags:{...flags,bossOn:false,gate:false,cgate:false,wave:null},map:map.id,x:player.x,y:player.y,kills:player.kills,titles:player.titles,playT}));}catch(e){}}
@@ -2315,10 +2743,10 @@ function updHUD(){const p=player;if(!p)return;
   $('#tA').classList.toggle('talk',!!(show&&!nearestEnemy(30)));
 }
 function showEnd(ch){ch=ch||0;S.screen='end';const p=player,w=p.weapon,r=RAR[w.rar],m=Math.floor(playT/60),s=Math.floor(playT%60);
-  $('#endBox').innerHTML=`<p class="muted">ASTRA · ${['Prologue','Chapitre 1','Chapitre 2'][ch]}</p><h2 class="endt">${['Le réveil','Le village oublié','Les secrets de Sylvaris'][ch]} — terminé</h2>
+  $('#endBox').innerHTML=`<p class="muted">ASTRA · ${['Prologue','Chapitre 1','Chapitre 2','Chapitre 3'][ch]}</p><h2 class="endt">${['Le réveil','Le village oublié','Les secrets de Sylvaris','Les archives de Kar-Dûm'][ch]} — terminé</h2>
   <div class="kv"><div><span>Classe</span><b>${esc(p.c.name)}</b></div><div><span>Niveau</span><b>${p.lvl}</b></div><div><span>Ennemis vaincus</span><b>${p.kills}</b></div><div><span>Temps</span><b>${m} min ${String(s).padStart(2,'0')}</b></div></div>
   <div class="wpn"><span class="muted">Arme</span><br><b style="color:${r.c}">${esc(w.name)}</b> <span class="muted">· ${r.n}</span></div>
-  <div class="tease"><b>${['Chapitre 1 — Le village oublié','Chapitre 2 — Les secrets de Sylvaris','Chapitre 3 — Les archives de Kar-Dûm'][ch]}</b><p class="muted" style="margin-top:4px">${['Une lignée draconique murmure dans ton sang… Une classe cachée attend d’être découverte.','Les elfes de Sylvaris savent qui tu es. Mais une partie de leur forêt est déjà corrompue par le Néant.','Sous les montagnes, les nains gardent les archives des huit sceaux. Mais Dorgath, le Forgeron du Vide, y a déjà posé les yeux.'][ch]}</p></div>
+  <div class="tease"><b>${['Chapitre 1 — Le village oublié','Chapitre 2 — Les secrets de Sylvaris','Chapitre 3 — Les archives de Kar-Dûm','Chapitre 4 — Le royaume des dragons'][ch]}</b><p class="muted" style="margin-top:4px">${['Une lignée draconique murmure dans ton sang… Une classe cachée attend d’être découverte.','Les elfes de Sylvaris savent qui tu es. Mais une partie de leur forêt est déjà corrompue par le Néant.','Sous les montagnes, les nains gardent les archives des huit sceaux. Mais Dorgath, le Forgeron du Vide, y a déjà posé les yeux.','Le sang d’Aeris descend des Tueurs de dragons. Au-delà des Pics Cendrés, un royaume en ruines attend son héritier… et Dorgath n’est que le premier des Élus à se lever.'][ch]}</p></div>
   <div class="row"><button class="btn gold" id="bFree">Continuer à explorer</button><button class="btn" id="bMenu">Menu principal</button></div>`;
   $('#end').classList.remove('hidden');$('#bFree').onclick=()=>{$('#end').classList.add('hidden');S.screen='play';};$('#bMenu').onclick=()=>location.reload();}
 
@@ -2367,7 +2795,7 @@ function frame(now){const dt=Math.min(.033,(now-last)/1000);last=now;time+=dt;
 
 /* ================= BOOT ================= */
 buildSprites();
-maps.valdoria=buildValdoria();maps.grotte=buildGrotte();maps.ostval=buildOstval();maps.crypte=buildCrypte();maps.sylvaris=buildSylvaris();maps.racines=buildRacines();
+buildSprites2();maps.valdoria=buildValdoria();maps.grotte=buildGrotte();maps.ostval=buildOstval();maps.crypte=buildCrypte();maps.sylvaris=buildSylvaris();maps.racines=buildRacines();maps.marais=buildMarais();maps.collines=buildCollines();maps.kardum=buildKardum();maps.archives=buildArchives();
 map=maps.valdoria;cam.x=40*TS;cam.y=36*TS;
 buildSelect();
 if(loadSave())$('#bCont').classList.remove('hidden');
