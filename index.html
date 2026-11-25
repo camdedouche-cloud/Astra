@@ -397,6 +397,7 @@ const isWall=(m,x,y)=>{const t=tAt(m,x,y);return t===T.WALL||t===-1;};
 function solidAt(m,px,py){const x=Math.floor(px/TS),y=Math.floor(py/TS);if(x<0||y<0||x>=m.w||y>=m.h)return oobSolid(m,px,py);return m.solid[y*m.w+x]===1;}
 
 function paintTile(m,x,y){
+  if(m.indoor&&m.theme){const t0=m.t[y*m.w+x];if(t0===T.FLOOR||t0===T.WALL){paintIn(m,x,y,t0);return;}}
   const t=m.t[y*m.w+x],ox=x*TS,oy=y*TS,h=i=>hash(x,y,i);
   if(t===T.GRASS||t===T.VOID){
     const v=t===T.VOID,GP=GSTY[m.style]||(m.style==='fog'?['#1b2a2f','#24373b','#2c4245','#132226','#c8d4e8']:['#1f3a36','#284a41','#30574a','#183230','#6f9fe6']);P(ox,oy,16,16,v?'#211b33':GP[0]);
@@ -2917,34 +2918,78 @@ function buildSprites3(){
   OBJ.fireplace.spr=[sprite(32,32,()=>{P(2,0,28,30,'#2a2430');P(3,0,26,29,'#4a4458');for(let r=0;r<7;r++)for(let c=0;c<4;c++)P(3+c*7+(r%2?3:0),r*4,6,3,'#5a5468');P(9,12,14,17,'#0e0a08');P(8,10,16,3,'#6a6478');P(10,24,12,3,'#3a2614');P(0,29,32,3,'#140c06');})];
   OBJ.plant.spr=[sprite(10,15,()=>{P(2,9,6,5,'#6a3a22');P(2,9,6,1,'#9a5a32');for(const[x,y]of[[4,2],[2,4],[6,3],[5,6],[3,7]])P(x,y,2,3,'#3a7a3a');P(5,1,1,2,'#5aa04a');})];
   OBJ.rug.spr=[sprite(48,14,()=>{P(0,1,48,12,'#5a1a1a');P(2,3,44,8,'#8a2a2a');P(4,5,40,4,'#c9a24a');P(6,6,36,2,'#8a2a2a');})];}
-function buildInterior(S){const m=newMap('in_'+S.key,16,12,T.WALL);m.name=S.name;m.style='shop';m.dark='rgba(12,8,4,.42)';m.indoor=1;
-  rectT(m,2,3,13,10,T.FLOOR);setT(m,7,11,T.FLOOR);setT(m,8,11,T.FLOOR);
-  for(let x=4;x<=11;x++)addObj(m,'counter',x,5);addObj(m,'rug',8,9);addObj(m,'torch',2,3);addObj(m,'torch',13,3);
-  const t=S.type;
-  if(t==='pot')for(const x of[3,5,10,12])addObj(m,'potshelf',x,3);
-  if(t==='arm')for(const x of[3,5,10,12])addObj(m,'wrack',x,3);
-  if(t==='armu'){for(const x of[3,12])addObj(m,'mannequin',x,8);for(const x of[3,5,10,12])addObj(m,'mannequin',x,3);}
-  if(t==='dye')for(const[i,x]of[[0,3],[1,5],[2,10],[3,12]].entries())addObj(m,'vat',x[1],x[0]===0?3:3,{v:i});
-  if(t==='arm'){addObj(m,'abarrel',3,8);addObj(m,'abarrel',12,8);}
-  if(t==='inn'){for(const x of[3,12])addObj(m,'bed',x,8,{v:x%3});addObj(m,'table',5,9);addObj(m,'chair',4,9);addObj(m,'chair',7,9);addObj(m,'fireplace',8,3);addObj(m,'barrel',3,3);addObj(m,'barrel',12,3);}
-  if(t!=='armu'&&t!=='inn'&&t!=='arm')addObj(m,'barrel',12,9);
-  finishMap(m);const src=maps[S.region];m.exit=[S.region,S.tx*TS+8,(S.ty+1)*TS+10];return m;}
+
 function buildShop2(){const p=player,D=SHOPDEF[shopId]||SHOPDEF[(SHOPINFO['in_'+shopId]||{}).type],I=SHOPINFO['in_'+shopId]||{},it=SHOP();
   $('#bagBox').innerHTML=`<div class="bhead"><h2>${esc(I.name||D.t)}</h2><span class="coinpill"><i></i>${p.coins}</span></div><p class="muted">${esc((I.keeper?I.keeper[0]+' : ':'')+D.q)}</p>
   <div class="tbody">${it.map((o,i)=>`<div class="irow" style="--rc:${o.c}"><div class="iinfo"><b>${o.sw?`<i class="dyesw" style="background:${o.sw}"></i>`:''}${esc(o.n)}</b><small>${esc(o.d)}</small></div><div class="iact"><button class="mini gold" data-a="buy" data-i="${i}"${o.sold||p.coins<o.price?' disabled':''}>${o.sold?(SHOPDEF.dye===D?'Actuelle':'Vendu'):o.price?o.price+' pièces':'Gratuit'}</button></div></div>`).join('')}</div>
   <div class="row"><button class="btn gold" data-a="close">Fermer</button><button class="btn" data-a="tobag">Ouvrir l’inventaire</button></div>`;}
 function shopType(){const I=SHOPINFO['in_'+shopId];return I?I.type:null;}
 async function keeperTalk(n){const I=SHOPINFO[map.id];await talk([{who:n.name,text:SHOPDEF[I.type].q.replace(/[«»]/g,'').trim()}]);shopId=I.key;S.screen='shop';buildShop();$('#bag').classList.remove('hidden');}
+/* ================= INTÉRIEURS ================= */
+const INSTY={
+  valdoria:{fl:'wood',f:['#5a3e24','#4e361e','#664628','#2e1e10'],w:['#7a6244','#5e4a32','#8e7454'],wain:'#3e2a18',beam:'#2a1a0e'},
+  ostval:{fl:'stone',f:['#3a404c','#343a46','#444c5a','#1e222a'],w:['#5a6272','#464e5c','#6e7686'],wain:'#2e2420',beam:'#1a1e26'},
+  sylvaris:{fl:'wood',f:['#6a4a2a','#5a3e22','#7a5632','#2e1e10'],w:['#2e5a44','#22463a','#3e7056'],wain:'#4a3220',beam:'#2a1a0e',trim:'#e0c070'},
+  kardum:{fl:'stone',f:['#4a4c54','#3e4048','#585a64','#22242a'],w:['#5e626c','#4a4e58','#727682'],wain:'#5a3e1e',beam:'#2a2420',trim:'#c9a24a'},
+  valcourt:{fl:'check',f:['#d8ccb4','#6a2a2a','#b8ac94','#3a2a1a'],w:['#c8b89c','#a8987c','#dccca8'],wain:'#5a3a22',beam:'#3a2416',trim:'#c9a24a'},
+  desert:{fl:'tile',f:['#b08a5a','#9a7448','#c8a070','#5a4228'],w:['#d0aa78','#b08a5a','#e0c090'],wain:'#8a4a2a',beam:'#5a3a1a',trim:'#2a6a8a'},
+  coast:{fl:'wood',f:['#7a6a52','#6a5a44','#8a7a60','#3a3024'],w:['#4a6a8a','#3a5674','#5e7e9c'],wain:'#e0dccc',beam:'#2a2420'}};
+function paintIn(m,x,y,t){const S=INSTY[m.theme]||INSTY.valdoria,ox=x*TS,oy=y*TS,h=i=>hash(x,y,i),F=S.f;
+  if(t===T.FLOOR){
+    if(S.fl==='wood'){for(let r=0;r<4;r++){const c=h(r+900)<.5?F[0]:F[2];P(ox,oy+r*4,16,4,c);P(ox,oy+r*4+3,16,1,F[1]);const sx=ox+((x*5+r*7+y*3)%16);P(sx,oy+r*4,1,3,F[3]);if(h(r+910)<.4)P(ox+Math.floor(h(r+920)*14),oy+r*4+1,2,1,F[1]);}}
+    else if(S.fl==='stone'){P(ox,oy,16,16,F[3]);for(let r=0;r<2;r++)for(let c=0;c<2;c++){const k=h(r*2+c+930);P(ox+c*8,oy+r*8,7,7,k<.4?F[0]:k<.7?F[1]:F[2]);P(ox+c*8,oy+r*8,7,1,'rgba(255,255,255,.08)');}}
+    else if(S.fl==='check'){for(let r=0;r<2;r++)for(let c=0;c<2;c++){P(ox+c*8,oy+r*8,8,8,(x*2+c+y*2+r)%2?F[0]:F[1]);}P(ox,oy,16,1,'rgba(0,0,0,.15)');}
+    else{P(ox,oy,16,16,F[3]);for(let r=0;r<2;r++)for(let c=0;c<2;c++){P(ox+c*8,oy+r*8,7,7,F[0]);P(ox+c*8+2,oy+r*8+2,3,3,(x+y)%2?F[2]:F[1]);}}
+    if(isWall(m,x,y-1))P(ox,oy,16,5,'rgba(0,0,0,.42)');if(isWall(m,x-1,y))P(ox,oy,3,16,'rgba(0,0,0,.3)');if(isWall(m,x+1,y))P(ox+13,oy,3,16,'rgba(0,0,0,.3)');}
+  else{const face=y+1<m.h&&!isWall(m,x,y+1),W=S.w;
+    if(face){P(ox,oy,16,10,W[0]);if(S.fl==='stone'){for(let r=0;r<3;r++){const off=r%2?4:0;for(let c=-1;c<3;c++){const bx=ox+c*8+off,x0=Math.max(bx,ox),x1=Math.min(bx+7,ox+16);if(x1>x0){P(x0,oy+r*3,x1-x0,2,h(r*3+c+940)<.5?W[1]:W[2]);}}}}
+      else for(let i=0;i<16;i+=4){P(ox+i,oy,1,10,W[1]);if(h(950+i)<.3)P(ox+i+2,oy+3,1,1,W[2]);}
+      P(ox,oy,16,1,S.beam);if(S.trim)P(ox,oy+9,16,1,S.trim);P(ox,oy+10,16,5,S.wain);P(ox,oy+10,16,1,'rgba(255,255,255,.18)');for(let i=2;i<16;i+=5)P(ox+i,oy+11,1,3,'rgba(0,0,0,.25)');P(ox,oy+15,16,1,'#0e0a08');}
+    else{P(ox,oy,16,16,'#0c0908');const below=y+1<m.h&&isWall(m,x,y+1)&&y+2<m.h&&!isWall(m,x,y+2);if(below){P(ox,oy+10,16,6,S.beam);P(ox,oy+10,16,1,'rgba(255,255,255,.12)');if(x%3===0)P(ox+6,oy,4,16,S.beam);}
+      if(!isWall(m,x-1,y)||!isWall(m,x+1,y))P(ox+(isWall(m,x-1,y)?15:0),oy,1,16,S.beam);}}}
+Object.assign(OBJ,{iwin:{ax:8,ay:14,flat:1},painting:{ax:7,ay:13,flat:1},shieldw:{ax:6,ay:14,flat:1},herbs:{ax:8,ay:12,flat:1},drapes:{ax:8,ay:15,flat:1},
+  candle:{ax:3,ay:10,light:{r:38,c:'#ffcf5a',dy:-8,fl:.1,ga:.45}},cauldron:{ax:9,ay:15,solid:[[0,0]],light:{r:50,c:'#7aff8a',dy:-8,fl:.08,ga:.5},fire:1,fdy:-1},
+  forge:{ax:16,ay:28,solid:[[0,0],[-1,0],[1,0]],light:{r:80,c:'#ff7a2a',dy:-10,fl:.15,ga:.6},fire:1,fdy:-10},wardrobe:{ax:8,ay:30,solid:[[0,0]]},kcounter:{ax:8,ay:16,solid:[[0,0]]},
+  istairs:{ax:8,ay:14,flat:1},spool:{ax:7,ay:12,solid:[[0,0]]},cradle:{ax:7,ay:12,solid:[[0,0]]},helmrack:{ax:8,ay:26,solid:[[0,0]]}});
+function buildSprites5(){
+  OBJ.iwin.spr=[sprite(16,14,()=>{P(1,0,14,13,'#2a1a0e');P(2,1,12,11,'#1a2a4a');P(2,1,12,4,'#2a4a7a');P(3,2,3,2,'#9fc8ff');P(7,1,1,11,'#2a1a0e');P(2,6,12,1,'#2a1a0e');P(0,12,16,2,'#5a3e24');P(0,12,16,1,'#8a6a42');P(1,1,2,11,'#7a2a2a');P(13,1,2,11,'#7a2a2a');})];
+  OBJ.painting.spr=[0,1,2].map(v=>sprite(14,13,()=>{P(0,0,14,11,'#8a6a2a');P(1,1,12,9,'#c9a24a');P(2,2,10,7,['#2a4a6a','#4a2a3a','#2a4a2a'][v]);if(v===0){P(2,6,10,3,'#3a6a4a');circ(9,4,1,'#ffe08a');}else if(v===1){ell(7,5,2,3,'#e0b090');P(5,7,4,2,'#6a2a4a');}else{P(4,4,2,5,'#1a3a1a');P(7,3,3,6,'#2a5a2a');P(2,8,10,1,'#4a3a1a');}}));
+  OBJ.shieldw.spr=['#8a2a2a','#2a4a8a','#c9a24a'].map(c=>sprite(12,14,()=>{P(1,0,10,9,'#1a1410');P(2,1,8,8,c);P(3,9,6,2,c);P(4,11,4,1,c);P(5,12,2,1,c);P(5,1,2,10,'#e8e0d0');P(2,4,8,2,'#e8e0d0');}));
+  OBJ.herbs.spr=[sprite(16,12,()=>{P(0,0,16,1,'#3a2614');for(const[x,c]of[[2,'#4a8a4a'],[6,'#8a6a3a'],[10,'#6a9a5a'],[13,'#9a5a8a']]){P(x,1,1,3,'#5a4a30');P(x-1,4,3,6,c);P(x-1,9,1,2,c);P(x+1,8,1,3,c);}})];
+  OBJ.drapes.spr=['#c04a4a','#4a8ad0','#e0c040','#8a5ac0','#3a8a4a'].map(c=>sprite(16,15,()=>{P(0,0,16,1,'#3a2614');P(2,1,12,13,c);for(let x=3;x<14;x+=3)P(x,1,1,13,'rgba(0,0,0,.18)');P(2,13,12,1,'rgba(0,0,0,.25)');P(4,2,1,10,'rgba(255,255,255,.2)');}));
+  OBJ.candle.spr=[sprite(6,10,()=>{P(1,8,4,2,'#5a4a30');P(2,3,2,5,'#efe6d0');P(2,1,2,2,'#ffd166');P(2,0,2,1,'#fff6c0');})];
+  OBJ.cauldron.spr=[sprite(18,16,()=>{P(3,13,2,3,'#1a1410');P(13,13,2,3,'#1a1410');ell(9,8,8,6,'#0e0c10');ell(9,8,7,5,'#2e2c34');P(2,3,14,3,'#46444e');ell(9,4,6,2,'#3aaa4a');ell(8,4,3,1,'#9affa0');P(6,1,2,2,'#9affa0');P(11,0,2,2,'#7aff8a');})];
+  OBJ.forge.spr=[sprite(32,28,()=>{P(2,6,28,20,'#1e1a1e');P(3,7,26,18,'#4a4048');for(let r=0;r<4;r++)for(let c=0;c<4;c++)P(4+c*7+(r%2?3:0),8+r*4,6,3,'#5a5058');P(10,14,12,10,'#120c08');P(11,18,10,5,'#ff7a2a');P(12,19,8,3,'#ffd08a');P(8,2,16,5,'#2a2428');P(13,0,6,3,'#2a2428');P(0,25,32,3,'#0e0a08');})];
+  OBJ.wardrobe.spr=[sprite(16,30,()=>{P(0,0,16,28,'#2a1a0e');P(1,1,14,26,'#6a4a2a');P(1,1,14,2,'#8a6a42');P(7,3,1,23,'#2a1a0e');P(5,13,1,2,'#c9a24a');P(9,13,1,2,'#c9a24a');P(2,5,4,6,'#5a3e24');P(10,5,4,6,'#5a3e24');P(0,28,16,2,'#140c06');})];
+  OBJ.kcounter.spr=[sprite(16,16,()=>{P(0,4,16,11,'#3a2614');P(0,4,16,2,'#a8a8a0');P(1,7,14,7,'#5a3e24');P(7,7,1,7,'#2a1a0e');P(3,0,5,5,'#2a2a30');P(4,1,3,1,'#6a6a74');P(10,1,4,3,'#c88a3a');P(0,15,16,1,'#140c06');})];
+  OBJ.istairs.spr=[sprite(16,14,()=>{for(let i=0;i<5;i++){P(0,i*3,16,3,i%2?'#5a3e24':'#6a4a2c');P(0,i*3,16,1,'#8a6a42');}P(0,0,2,14,'#2a1a0e');P(14,0,2,14,'#2a1a0e');})];
+  OBJ.spool.spr=[sprite(14,12,()=>{P(1,6,12,5,'#3a2614');for(const[x,c]of[[2,'#c04a4a'],[6,'#4a8ad0'],[10,'#e0c040']]){P(x,2,3,5,c);P(x,2,3,1,'#ffffff55');}})];
+  OBJ.cradle.spr=[sprite(14,12,()=>{P(1,4,12,6,'#5a3e24');P(1,4,12,1,'#8a6a42');P(3,3,8,3,'#e8e0d0');P(2,10,3,2,'#3a2614');P(9,10,3,2,'#3a2614');})];
+  OBJ.helmrack.spr=[sprite(16,26,()=>{P(1,2,14,22,'#3a2614');P(2,3,12,20,'#5a3e24');for(const y of[6,14]){P(2,y+5,12,1,'#2a1a0e');ell(5,y+2,2,3,'#8a929e');ell(11,y+2,2,3,'#a8b8d0');P(4,y,2,1,'#c4ccd8');}})];}
+function buildInterior(S){const m=newMap('in_'+S.key,16,12,T.WALL);m.name=S.name;m.style='shop';m.theme=S.region;m.dark='rgba(12,8,4,.38)';m.indoor=1;
+  rectT(m,2,3,13,10,T.FLOOR);setT(m,7,11,T.FLOOR);setT(m,8,11,T.FLOOR);
+  for(let x=5;x<=10;x++)addObj(m,'counter',x,5);addObj(m,'rug',8,9);addObj(m,'iwin',4,2);addObj(m,'iwin',11,2);addObj(m,'candle',6,5);addObj(m,'candle',10,5);addObj(m,'torch',2,6);addObj(m,'torch',13,6);
+  const t=S.type,vi=Math.floor(hash(S.tx,S.ty,3)*3);
+  if(t==='pot'){addObj(m,'herbs',7,2);addObj(m,'herbs',9,2);addObj(m,'potshelf',3,3);addObj(m,'potshelf',12,3);addObj(m,'cauldron',4,8);addObj(m,'potshelf',12,8);addObj(m,'crate',11,10);addObj(m,'plant',3,10);addObj(m,'plant',12,10);}
+  if(t==='arm'){addObj(m,'shieldw',7,2,{v:0});addObj(m,'shieldw',9,2,{v:1});addObj(m,'wrack',3,3);addObj(m,'wrack',12,3);addObj(m,'forge',4,9);addObj(m,'anvil',6,10);addObj(m,'wrack',12,8);addObj(m,'abarrel',10,9);addObj(m,'abarrel',12,10);}
+  if(t==='armu'){addObj(m,'shieldw',7,2,{v:2});addObj(m,'shieldw',9,2,{v:1});addObj(m,'helmrack',3,3);addObj(m,'helmrack',12,3);addObj(m,'mannequin',3,8);addObj(m,'mannequin',5,8);addObj(m,'mannequin',12,8);addObj(m,'mannequin',10,8);addObj(m,'crate',3,10);}
+  if(t==='dye'){for(let i=0;i<4;i++)addObj(m,'drapes',6+i,2,{v:(i+vi)%5});addObj(m,'spool',3,3);addObj(m,'spool',12,3);for(const[i,x]of[3,5,10,12].entries())addObj(m,'vat',x,8,{v:i});addObj(m,'plant',3,10);}
+  if(t==='inn'){addObj(m,'painting',7,2,{v:vi});addObj(m,'fireplace',3,3);addObj(m,'istairs',12,3);addObj(m,'barrel',11,3);addObj(m,'table',3,8);addObj(m,'chair',2,8);addObj(m,'chair',5,8);addObj(m,'table',10,8);addObj(m,'chair',9,8);addObj(m,'chair',12,8);addObj(m,'candle',4,8);addObj(m,'candle',11,8);addObj(m,'plant',12,10);}
+  finishMap(m);m.exit=[S.region,S.tx*TS+8,(S.ty+1)*TS+10];return m;}
+function buildHome(H){const m=newMap(H.id,14,11,T.WALL),hs=k=>hash(H.tx,H.ty,k);m.name='Maison';m.style='shop';m.theme=H.region;m.dark='rgba(12,8,4,.45)';m.indoor=1;
+  rectT(m,2,3,11,9,T.FLOOR);setT(m,6,10,T.FLOOR);setT(m,7,10,T.FLOOR);const L=hs(1)<.5;
+  addObj(m,'iwin',L?9:4,2);addObj(m,'painting',L?6:7,2,{v:Math.floor(hs(2)*3)});
+  addObj(m,'bed',L?3:10,4,{v:Math.floor(hs(3)*3)});if(hs(4)<.55)addObj(m,'bed',L?5:8,4,{v:Math.floor(hs(5)*3)});else addObj(m,'cradle',L?5:8,4);
+  addObj(m,'fireplace',L?9:4,3);addObj(m,'kcounter',L?11:2,6);addObj(m,'kcounter',L?11:2,7);
+  addObj(m,'table',L?5:7,7);addObj(m,'chair',L?4:6,7);addObj(m,'chair',L?7:9,7);addObj(m,'candle',L?6:8,7);
+  addObj(m,'rug',7,9);addObj(m,hs(6)<.5?'wardrobe':'shelf',L?2:11,8);addObj(m,'plant',L?11:2,9);if(hs(10)<.5)addObj(m,'barrel',L?10:3,9);
+  if(hs(7)<.45)addObj(m,'chest',L?3:10,6,{cid:H.id,loot:{coins:20+Math.floor(hs(8)*40),potion:hs(9)<.4?1:0}});
+  finishMap(m);m.exit=[H.region,H.tx*TS+8,(H.ty+1)*TS+10];return m;}
+
 const HOMEINFO={};
 const HOMEL=['Fais comme chez toi… mais essuie tes bottes.','Tu as faim ? Il reste un peu de soupe sur le feu.','La nuit, je barricade la porte. On ne sait jamais ce qui rôde.','Mon grand-père disait que les sceaux tiendraient mille ans. Il se trompait, je crois.','Les marchands du village ont tout ce qu’il te faut. L’aubergiste fait la meilleure soupe de la région.','Chut… les enfants dorment.','Tu cherches quelque chose ? Je n’ai rien de valeur, je te jure.'];
 function ensureIn(id){if(maps[id])return;if(id.startsWith('home_')&&!HOMEINFO[id]){const a=id.split('_');HOMEINFO[id]={id,region:a[1],tx:+a[2],ty:+a[3]};}if(SHOPINFO[id])maps[id]=buildInterior(SHOPINFO[id]);else if(HOMEINFO[id])maps[id]=buildHome(HOMEINFO[id]);}
-function buildHome(H){const m=newMap(H.id,14,11,T.WALL),hs=k=>hash(H.tx,H.ty,k);m.name='Maison';m.style='shop';m.dark='rgba(12,8,4,.5)';m.indoor=1;
-  rectT(m,2,3,11,9,T.FLOOR);setT(m,6,10,T.FLOOR);setT(m,7,10,T.FLOOR);
-  addObj(m,'bed',hs(1)<.5?3:10,4,{v:Math.floor(hs(2)*3)});if(hs(3)<.6)addObj(m,'bed',hs(1)<.5?5:8,4,{v:Math.floor(hs(4)*3)});
-  addObj(m,'fireplace',hs(1)<.5?9:4,3);addObj(m,'table',hs(5)<.5?4:8,7);addObj(m,'chair',hs(5)<.5?3:7,7);addObj(m,'chair',hs(5)<.5?6:10,7);
-  addObj(m,'rug',7,9);addObj(m,'plant',2,9);if(hs(6)<.5)addObj(m,'barrel',11,9);else addObj(m,'shelf',10,8);addObj(m,'torch',2,3);
-  if(hs(7)<.45)addObj(m,'chest',11,6,{cid:H.id,loot:{coins:20+Math.floor(hs(8)*40),potion:hs(9)<.4?1:0}});
-  finishMap(m);m.exit=[H.region,H.tx*TS+8,(H.ty+1)*TS+10];return m;}
+
 function homeLoad(id){const H=HOMEINFO[id];if(hash(H.tx,H.ty,11)<.65){const pals=['villager','villager2','tf1','tf2','tf3','tf4','tf5'];npcs.push({name:'Habitant',id:'h_'+id,pal:pals[Math.floor(hash(H.tx,H.ty,12)*pals.length)],x:(hash(H.tx,H.ty,13)<.5?4:9)*TS+8,y:6*TS+8,dir:0,lines:HOMEL.slice(Math.floor(hash(H.tx,H.ty,14)*4)).concat(HOMEL.slice(0,2))});}}
 function shopTick(){if(S.lock)return;if(map.indoor){if(player.y>(map.h-1)*TS-2)enterMap(map.exit[0],map.exit[1],map.exit[2]);return;}
   for(const o of map.vis||[]){if(Math.abs(player.x-o.x)>=7||player.y>=o.y+3||player.y<=o.y-8)continue;
@@ -3259,7 +3304,7 @@ function frame(now){const dt=Math.min(.033,(now-last)/1000);last=now;time+=dt;
 
 /* ================= BOOT ================= */
 buildSprites();
-buildSprites2();buildSprites3();buildSprites4();maps.valdoria=buildValdoria();maps.grotte=buildGrotte();maps.ostval=buildOstval();maps.crypte=buildCrypte();maps.sylvaris=buildSylvaris();maps.racines=buildRacines();maps.marais=buildMarais();maps.collines=buildCollines();maps.kardum=buildKardum();maps.archives=buildArchives();maps.valcourt=buildValcourt();maps.desert=buildDesert();maps.coast=buildCoast();maps.pics=buildPics();maps.dragons=buildDragons();maps.neant=buildNeant();
+buildSprites2();buildSprites3();buildSprites4();buildSprites5();maps.valdoria=buildValdoria();maps.grotte=buildGrotte();maps.ostval=buildOstval();maps.crypte=buildCrypte();maps.sylvaris=buildSylvaris();maps.racines=buildRacines();maps.marais=buildMarais();maps.collines=buildCollines();maps.kardum=buildKardum();maps.archives=buildArchives();maps.valcourt=buildValcourt();maps.desert=buildDesert();maps.coast=buildCoast();maps.pics=buildPics();maps.dragons=buildDragons();maps.neant=buildNeant();
 map=maps.valdoria;cam.x=40*TS;cam.y=36*TS;
 buildSelect();
 if(loadSave())$('#bCont').classList.remove('hidden');
