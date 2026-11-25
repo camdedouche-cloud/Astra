@@ -260,6 +260,18 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
   .mtab{min-height:38px;min-width:52px;font-size:10px}.mtab svg{width:16px;height:16px}.dname{font-size:16px}.ddesc{font-size:11.5px}.slot2{min-height:38px}#menu{font-size:12px}
   .irow b{font-size:12px}.irow small{font-size:10px}#bagBox h2{font-size:16px}#bagBox .btn{min-height:32px;font-size:12px}#bagBox p{font-size:11px}}
 
+
+#choice{position:fixed;left:50%;bottom:calc(max(12px,env(safe-area-inset-bottom)) + 4px);transform:translateX(-50%);width:min(92vw,560px);z-index:11;padding:12px 14px 14px;border:3px solid #c9a24a;background:linear-gradient(180deg,rgba(26,22,34,.98),rgba(12,10,18,.98));box-shadow:inset 0 0 0 2px #2a1c0c,0 0 0 2px #05070d,0 6px 0 rgba(0,0,0,.4);pointer-events:auto}
+#choice .cwho{color:var(--gold);font-size:13px;letter-spacing:.06em;text-transform:uppercase;font-weight:700}#choice .ctxt{font-size:15px;line-height:1.4;margin:4px 0 10px}#choice .ctxt b{color:#fff3cf}
+.copts{display:grid;gap:6px}.cbtn{display:grid;grid-template-columns:auto 1fr;column-gap:10px;align-items:center;text-align:left;min-height:44px;padding:7px 12px;border:2px solid #4a3a1e;background:linear-gradient(#22202e,#14131c);color:#ece7d4;font-size:15px;transition:border-color .12s,transform .08s}
+.cbtn:hover,.cbtn:focus-visible{border-color:var(--gold);outline:none}.cbtn:active{transform:translateY(1px)}.cbtn kbd{grid-row:span 2;font:12px 'Pixelify Sans',monospace;color:#c9a24a;border:1px solid #5e4824;padding:1px 6px}.cbtn small{grid-column:2;color:#9fb0c8;font-size:12px}.cbtn.dis{opacity:.45}
+.kchip{color:var(--kc);font-weight:700}.kst{font-weight:700}
+.wmwrap{position:relative}.wmwrap .wmap{height:min(58vh,560px);display:block;cursor:grab}.wmz{position:absolute;right:8px;top:8px;display:grid;gap:4px}.wmz button{width:34px;height:34px;border:2px solid #6a5226;background:linear-gradient(#2a2c3c,#151724);color:#ffe6a0;font-size:18px;line-height:1}
+.wminfo{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-height:44px;padding:8px 2px;font-size:14px}.wminfo b{color:#fffbe8}.wminfo small{color:rgba(236,231,212,.6)}.wminfo .mbtn{margin-left:auto}
+.wstats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-bottom:10px}.wst{display:grid;justify-items:center;padding:6px 4px;border:1px solid rgba(236,231,212,.16);background:rgba(0,0,0,.3)}.wst b{font-size:17px;color:#ffe6a0}.wst span{font-size:11px;color:rgba(236,231,212,.6);text-align:center}
+@media (max-width:720px){.wmwrap .wmap{height:46vh}}
+@media (max-height:520px){#choice{bottom:6px;padding:7px 10px 9px;width:min(84vw,680px)}#choice .cwho{font-size:10px}#choice .ctxt{font-size:12px;margin:2px 0 6px}.copts{grid-template-columns:1fr 1fr;gap:4px}.cbtn{min-height:34px;padding:4px 8px;font-size:12px}.cbtn small{font-size:10px}.cbtn kbd{font-size:10px;padding:0 4px}}
+@media (max-width:520px){.copts{gap:4px}.cbtn{min-height:40px;font-size:13px;padding:5px 10px}#choice .ctxt{font-size:13px}}
 </style>
 </head>
 <body>
@@ -1034,7 +1046,7 @@ function updEnemy(e,dt){
   if(ai==='sentinel'){sentinelAI(e,dt,dx,dy,d);return;}
   if(ai==='treant'){treantAI(e,dt,dx,dy,d);return;}
   if(ai==='airain'){airainAI(e,dt,dx,dy,d);return;}
-  if(ai==='gboss'){gbossAI(e,dt,dx,dy,d);return;}if(ai==='wdrag'){wdAI(e,dt,dx,dy,d);return;}
+  if(ai==='gboss'){gbossAI(e,dt,dx,dy,d);return;}if(ai==='wdrag'){wdAI(e,dt,dx,dy,d);return;}if(ai==='wboss'){wbAI(e,dt,dx,dy,d);return;}if(ai==='cible'){e.aggro=false;return;}
   if(ai==='heart'){heartAI(e,dt,d);return;}
   if(ai==='ronce'){ronceAI(e,dt,dx,dy,d);if(d<e.r+6)hurtPlayer(e.atk,dx/d,dy/d);return;}
   if(!e.aggro&&ai!=='hop'){wander(e,dt);return;}
@@ -1097,7 +1109,7 @@ function killEnemy(e){
   if(e.d.void&&stage===4){flags.shadows=(flags.shadows||0)+1;updQuest();if(flags.shadows>=3){setStage(5);toast('Les ombres se dissipent… Retourne voir Maëlle.');}}
   sqKill(e.type);if(e.type==='spectre'){const sl=sqS('lune');if(sl&&!sl.done&&sl.s===0&&Math.random()<.6)pickups.push({k:'qitem',item:'eclat',x:e.x,y:e.y,t:0});}
   if(e.type==='heart'){hearts();(flags.hearts=flags.hearts||{})[e.hid]=1;updQuest();toast(`Cœur de ronces détruit (${heartCount()}/3)`,'#a66bff');if(stage===22&&heartCount()>=3){setStage(23);toast('Le Bosquet Gris est purifié. Retourne voir Caelan.');}save();}
-  if(e.d.boss)heartUp(e);invKill(e);if(e.d.wd)wdKill(e);
+  if(e.d.boss)heartUp(e);invKill(e);if(e.d.wd)wdKill(e);w2Kill(e);
   if(e.d.gb)gbossDown(e);else if(e.d.boss)(e.type==='boss'?bossDown:e.type==='sentinel'?sentinelDown:e.type==='airain'?airainDown:treantDown)(e);
   else{hitstop=Math.max(hitstop,.05);}
 }
@@ -1713,7 +1725,7 @@ function render(){
   for(const e of enemies)list.push({y:e.y,f:drawEnemy,a:e});
   for(const n of npcs)list.push({y:n.y,f:drawNPC,a:n});
   for(const k of pickups)if(k.k!=='xp'&&k.k!=='coin')list.push({y:k.y,f:drawPickup,a:k});
-  if(player)list.push({y:player.y,f:drawPlayer,a:null});if(PET.on)list.push({y:PET.y,f:drawPet,a:null});if(FISH)list.push({y:player.y+.5,f:drawFishing,a:null});if(PETP.length)list.push({y:1e9,f:drawPetP,a:null});
+  if(player)list.push({y:player.y,f:drawPlayer,a:null});if(PET.on)list.push({y:PET.y,f:drawPet,a:null});for(const a of allies)list.push({y:a.y,f:drawAlly,a});if(APR.length)list.push({y:1e9,f:drawAPR,a:null});if(FISH)list.push({y:player.y+.5,f:drawFishing,a:null});if(PETP.length)list.push({y:1e9,f:drawPetP,a:null});
   list.sort((a,b)=>a.y-b.y);for(const it of list)it.f(it.a);
   for(const q of projs)drawProj(q);
   for(const e of fx)if(!'tele teleLine cone bolt impact slash ring thrustfx'.split(' ').includes(e.k))drawFx(e);
@@ -1789,7 +1801,7 @@ function update(dt){
    const sn=sqS('nom');if(map.id==='ostval'&&sn&&!sn.done&&sn.s===0&&Math.hypot(8*TS+8-player.x,34*TS+14-player.y)<24)interT={kind:'grave',label:'Lire l’inscription de la tombe'};
    for(const o of map.vis||[])if(o.type==='sign'&&Math.hypot(o.x-player.x,o.y-4-player.y)<20){interT={kind:'sign',o,label:'Lire le panneau'};break;}
    if(map.id==='dragons'&&stage===42)for(const o of map.vis||[])if(o.type==='dbraz'&&Math.hypot(o.x-player.x,o.y-4-player.y)<26){interT={kind:'dbraz',o,label:'Allumer le brasero'};break;}
-   if(map.id==='kardum'&&stage===33&&!flags.portal&&Math.hypot(40*TS+8-player.x,19*TS+14-player.y)<34)interT={kind:'pillar',label:'Poser les pierres runiques'};}wdInter();
+   if(map.id==='kardum'&&stage===33&&!flags.portal&&Math.hypot(40*TS+8-player.x,19*TS+14-player.y)<34)interT={kind:'pillar',label:'Poser les pierres runiques'};}wdInter();w2Inter();
   // triggers
   if(!S.lock&&!S.dead){
     if(map.id==='valdoria'){const c=map.cave;if(Math.abs(player.x-c.x)<10&&player.y<c.y+2&&player.y>c.y-14)enterMap('grotte',7*TS+8,34*TS);
@@ -1803,7 +1815,7 @@ function update(dt){
       if(stage===26&&player.y<10*TS+4&&!flags.bossOn)treantStart();}
     else if(map.id==='crypte'){const s=map.stairs;if(Math.hypot(player.x-s.x,player.y-s.y)<9)enterMap('ostval',32*TS+8,20*TS+8);
       if(stage===16&&player.y<8*TS+4&&!flags.bossOn)sentinelStart();}
-    dayTick(dt);updAmmo();ch3Tick();ch4Tick(dt);wdTick(dt);shopTick();worldCross();ambient(dt);
+    dayTick(dt);updAmmo();ch3Tick();ch4Tick(dt);wdTick(dt);w2Tick(dt);shopTick();worldCross();ambient(dt);
     if(stage===1&&map.id==='valdoria'&&Math.hypot(player.x-26*TS,player.y-42*TS)<120){setStage(2);}
   }
   zoneT-=dt;if(zoneT<=0){zoneT=.4;checkZone();}
@@ -1868,7 +1880,7 @@ function loadMap(id,px,py){ensureIn(id);if(!maps[id]){id='valdoria';px=40*TS;py=
     if(stage===9&&flags.sealPos)pickups.push({k:'seal',x:flags.sealPos[0],y:flags.sealPos[1],t:1});
     setMusic('dun');
   }
-  ch4Load(id);wdLoad(id);updGate();
+  ch4Load(id);wdLoad(id);w2Load(id);updGate();
 }
 function updGate(){const m=maps.grotte;const has=m.objs.find(o=>o.type==='gate');if(flags.gate&&!has){addObj(m,'gate',37,13);for(let y=11;y<=13;y++)setSolid(m,37,y,1);}else if(!flags.gate&&has){m.objs.splice(m.objs.indexOf(has),1);for(let y=11;y<=13;y++)setSolid(m,37,y,0);}}
 async function enterMap(id,px,py){S.lock=true;sfx('door');await fadeQ(1);loadMap(id,px,py);ch3Enter(id);if(id==='grotte'&&stage===6)setStage(7);if(id==='crypte'&&stage===15)setStage(16);if(id==='racines'&&stage===25)setStage(26);const first2=id==='sylvaris'&&stage===20;if(first2){setStage(21);setTimeout(()=>zoneTitle('Chapitre 2 · Les secrets de Sylvaris','Sylvaris'),700);}const first=id==='ostval'&&stage===11;if(first)setStage(12);save();if(first)setTimeout(()=>zoneTitle('Chapitre 1 · Le village oublié','Ostval'),700);await wait(30);await fadeQ(0);S.lock=false;checkZone();}
@@ -1886,6 +1898,7 @@ async function interact(t){
   else if(t.kind==='dbraz')lightBraz(t.o);
   else if(t.kind==='fish')fishStart(t);
   else if(t.kind==='pet'){const i=(flags.drags||[]).indexOf(petCur());petFeed(i);}
+  else if(t.kind==='w2')w2Act(t);
   else if(t.kind==='grave'){S.lock=true;await talk([{who:ME,text:'(La pierre est usée, mais on lit encore : « À Aldwin, de son fils Edwin. »)'}]);S.lock=false;sqAdvance('nom');}
 }
 async function crystalSeq(){S.lock=true;held.delete('attack');sfx('void');shake=8;
@@ -2034,7 +2047,7 @@ function syncWorld(){
 }
 const litCount=()=>Object.keys(flags.lit||{}).length;
 const VILL=['On dit qu’Ostval avait une fête des lanternes… Je ne m’en souviens plus.','J’ai l’impression d’attendre quelqu’un. Mais qui ?','La brume entre dans les maisons la nuit. Elle murmure des noms.','Mon reflet dans le puits… je ne le reconnais pas toujours.'];
-async function talkNPC(n,noSq){const id=n.id;if(!noSq&&await sqTalk(n))return;if(['bryn','gilda','thorek','odric','hal'].includes(id))return talkCh3(n);if(n.shop)return keeperTalk(n);if(CH4T[id])return CH4T[id](n);if(n.lines)return talk([{who:n.name,text:n.lines[(n.c=(n.c||0)+1)%n.lines.length]}]);if(['caelan','lyssara','faelan','e1','e2'].includes(id))return talkCh2(n);
+async function talkNPC(n,noSq){if(n.w2)return w2Talk(n);const id=n.id;if(!noSq&&await sqTalk(n))return;if(['bryn','gilda','thorek','odric','hal'].includes(id))return talkCh3(n);if(n.shop)return keeperTalk(n);if(CH4T[id])return CH4T[id](n);if(n.lines)return talk([{who:n.name,text:n.lines[(n.c=(n.c||0)+1)%n.lines.length]}]);if(['caelan','lyssara','faelan','e1','e2'].includes(id))return talkCh2(n);
   if(id==='maelle'){
     if(stage<=2){await talk([{who:'Maëlle',text:'Par les dieux… un survivant ? Non… tu n’es pas d’ici.'},{who:ME,text:'Je me suis réveillé dans la clairière. Je ne me souviens de rien.'},{who:'Maëlle',text:'Brumeval a brûlé il y a trois nuits. Des gobelins… et des ombres qui marchaient avec eux.'},{who:'Maëlle',text:'Montre-moi ta main. Cette marque… elle ressemble aux gravures du cristal noir, au centre du village.'},{who:'Maëlle',text:'Va le voir. Si la marque réagit, nous saurons ce que tu es.'}]);addTitle('Survivant de Brumeval');setStage(3);}
     else if(stage===5){await talk([{who:'Maëlle',text:'Des Ombres rampantes… des créatures du Néant. Elles te cherchaient, toi.'},{who:'Maëlle',text:'Les gobelins ont arraché un éclat du cristal. Il porte le même symbole que ta marque.'},{who:'Maëlle',text:'Leur roi se terre dans la Grotte des Crocs, à l’est, de l’autre côté de la rivière.'},{who:'Maëlle',text:'Prends ces fioles. Et reviens vivant, porteur.'}]);player.potions+=2;toast('Potions de soin <b style="color:#ff8a9a">+2</b>');sfx('pick');setStage(6);}
@@ -2349,7 +2362,11 @@ const CHQ=[['Prologue — Le réveil',0,10,'Tu t’es réveillé sans souvenirs 
   ['Chapitre 4 — Le royaume des dragons',40,48,'Ton sang descend des Tueurs de dragons. Au-delà des Pics Cendrés, Drakhaven garde le secret d’Aeris… et Ignarok, le dragon déchu.'],
   ['Chapitre 5 — Sables et marées',48,50,'Kharzan dans le désert, Nerys sous les flots : deux Élus gardent encore des fragments de ton sceau.'],
   ['Chapitre 6 — La chute de Valcourt',50,55,'Les ombres de Morvaine envahissent la dernière cité libre de l’ouest.'],
-  ['Épilogue — Le dernier sceau',55,58,'Huit fragments réunis. Vael t’attend à la Faille du Néant.']];
+  ['Chapitre 7 — La guerre des couronnes',55,56,'Morvaine tombée, sa couronne d’ombre corrompt Mog’thar et lance la Horde de Grakkar sur Nordheim.'],
+  ['Chapitre 8 — Le tombeau de Varn',55,56,'Le cri de la couronne mène au tombeau du dernier Tueur de dragons, au Glacier des Anciens.'],
+  ['Chapitre 9 — La forêt qui respire',55,56,'Le Cœur de givre pointe vers la Forêt des Spores, où l’ombre a planté ses racines.'],
+  ['Chapitre 10 — Le Concile des Huit',55,56,'Réunir les royaumes et tenir le Seuil de la Faille avant l’épilogue.'],
+  ['Épilogue — Le dernier sceau',56,58,'Huit fragments réunis. Vael t’attend à la Faille du Néant.']];
 let mTab='w',mSel=0;
 function openMenu(tab){S.screen='menu';if(tab)mTab=tab;mSel=0;$('#miniwrap').classList.remove('big');renderMenu();$('#menu').classList.remove('hidden');sfx('pick');}
 function closeMenu(){S.screen='play';$('#menu').classList.add('hidden');}
@@ -2382,8 +2399,8 @@ function renderMenu(){const p=player,items=menuItems();if(mSel>=items.length)mSe
     const it=items[mSel];if(it){const a=it.a,r=RAR[a.rar],cur=(flags.eq||{})[a.slot],d=a.def-(cur&&!it.eq?cur.def:0);
       R=`<img class="dicon" src="${icon('a:'+a.slot+':'+a.t)}" alt=""><div class="dname" style="color:${r.c}">${esc(a.name)}</div><div class="dsub">${r.n} · ${a.slot==='head'?'Casque':'Armure'}</div><div class="dstat"><span>Défense <b>${a.def}</b></span>${it.eq?'<span class="eqt">Équipée</span>':`<span class="${d>0?'up':d<0?'dn':''}">${d>0?'+':''}${d}</span>`}</div><p class="ddesc">${a.slot==='head'?'Protège la tête. Les casques de métal changent l’apparence de ton héros.':'Protège le corps. Sa couleur se voit sur ton héros, sauf si tu portes une teinture.'}</p>
       <div class="mrow">${it.eq?'<button class="mbtn" data-a="aun">Retirer</button>':`<button class="mbtn pri" data-a="aequip">Équiper</button><button class="mbtn" data-a="asell">Vendre · ${aValue(a)} pièces</button>`}</div>`;}
-  }else if(mTab==='m'){L='<h3 class="mh">Carte d’Eldoria</h3><canvas id="wmap" class="wmap"></canvas>';const seen=flags.seen||{};
-    R=`<div class="dsub">Régions découvertes · ${Object.keys(WORLD).filter(k=>seen[k]).length} / ${Object.keys(WORLD).length}</div>${Object.keys(WORLD).map(k=>`<div class="wreg${seen[k]?'':' un'}${map.id===k?' here':''}"><b>${seen[k]?WORLDNAMES[k]:'Région inconnue'}</b><small>${seen[k]&&MOBS[k]?'Niveau '+MOBS[k].l+'+':''}</small></div>`).join('')}<p class="ddesc small">${isNight()?'Il fait nuit : les monstres sont plus nombreux et plus forts.':'Il fait jour : les routes sont plus sûres.'}</p>`;
+  }else if(mTab==='m'){L='<h3 class="mh">Carte du monde</h3><div class="wmwrap"><canvas id="wmap" class="wmap"></canvas><div class="wmz"><button id="wmzi" aria-label="Zoomer">+</button><button id="wmzo" aria-label="Dézoomer">−</button><button id="wmzc" aria-label="Centrer">◎</button></div></div><div id="wminfo" class="wminfo"></div>';const seen=flags.seen||{};
+    R=w2MapSide();
   }else if(mTab==='q'){
     const tr=flags.track&&flags.track!=='main'&&sqS(flags.track)&&!sqS(flags.track).done?flags.track:'main';
     const row=(it,i)=>`<button class="qrow${i===mSel?' sel':''}${it.done?' done':''}" data-i="${i}"><i class="qi ${it.main?'qm':'qs'}"></i><span>${esc(it.n)}</span>${it.done?'<span class="trk">Terminée</span>':(it.main&&tr==='main')||(it.side&&tr===it.id)?'<span class="trk">Suivie</span>':''}</button>`;
@@ -3408,7 +3425,7 @@ async function gfragSeq(gid){S.lock=true;held.delete('attack');sfx('void');playe
     await talk([{who:'???',v:1,text:'Tu as abattu Ignarok. Dorgath avait raison, tu es plus fort qu’il n’y paraît.'},{who:ME,text:'Qui es-tu ?'},{who:'Vael',v:1,text:'Vael. Le premier des Élus. Celui qui a gravé ton nom avant ta naissance.'},{who:'Vael',v:1,text:'Encore trois fragments, enfant d’Aeris. Ensuite, nous nous verrons pour de vrai.'}]);
     npcs.splice(npcs.indexOf(ill),1);setStage(47);}
   else if(gid==='kharzan'||gid==='nerys'){flags[gid==='kharzan'?'k5':'n5']=1;await talk(gid==='kharzan'?[{who:'Kharzan',v:1,text:'Le sable… me libère enfin…'},{who:ME,text:'(Le sixième fragment. Ma marque brûle comme un soleil.)'}]:[{who:'Nerys',v:1,text:'La marée… se retire…'},{who:ME,text:'(Encore un fragment. Ma mémoire revient par vagues.)'}]);
-    if(flags.k5&&flags.n5){await talk([{who:'Corbeau messager',text:'CROA ! Message de Valcourt : « La cité est attaquée par les ombres. Venez vite ! » — Garde Aubin'}]);S.lock=false;setStage(50);save();showEnd(5);return;}updQuest();}
+    if(flags.k5&&flags.n5&&w2Crow()){await talk([{who:'Corbeau messager',text:'CROA ! Message de Valcourt : « La cité est attaquée par les ombres. Venez vite ! » — Garde Aubin'}]);S.lock=false;setStage(50);save();showEnd(5);return;}updQuest();}
   else if(gid==='vael'){S.lock=false;player.items.frag--;return finalSeq();}
   else if(gid==='morvaine'){const sy={name:'Sylthar',id:'sylthar',pal:'sylthar',x:player.x+28,y:player.y-6,dir:2};npcs.push(sy);
     await talk([{who:'Sylthar',text:'Attends. Je ne viens pas me battre.'},{who:ME,text:'Sylthar… Tu oses te montrer ?'},{who:'Sylthar',text:'Vael m’a promis de rendre la vie à Sylvaris. Il a menti. Il veut tout dévorer, les elfes comme les autres.'},
@@ -3435,7 +3452,7 @@ function invKill(e){if(!e.inv||stage!==50)return;flags.invK=(flags.invK||0)+1;up
 function ch4Tick(dt){if(S.lock)return;invTick(dt);
   const near=(t)=>{const I=GBINFO[t];return map.id===I.map&&Math.hypot(player.x-(I.at[0]*TS+8),player.y-(I.at[1]*TS+8))<90;};
   if(!flags.bossOn){if(stage===44&&near('ignarok'))gbossStart('ignarok');else if(stage===48&&!flags.k5&&near('kharzan'))gbossStart('kharzan');else if(stage===48&&!flags.n5&&near('nerys'))gbossStart('nerys');
-    else if(stage===52&&near('morvaine'))gbossStart('morvaine');else if(stage===56&&near('vael'))gbossStart('vael');}}
+    else if(stage===52&&near('morvaine')&&w2Gate6())gbossStart('morvaine');else if(stage===56&&near('vael'))gbossStart('vael');}}
 function ch4Load(id){if(stage===45||stage===53||stage===57)setStage(stage-1);flags.bossOn=false;
   for(const gid in flags.gfp||{})if(!(flags.gfg||{})[gid]&&GBINFO[gid].map===id){const pp=flags.gfp[gid];pickups.push({k:'seal4',gid,x:pp[0],y:pp[1],t:1});}
   if(id==='dragons')syncDragons();}
@@ -3783,6 +3800,1018 @@ function wdLights(L){for(const e of enemies)if(e.d.wd&&!e.dead){const E=WEL[e.d.
   if(PET.on){const d=petCur();if(d)L.push({x:PET.x,y:PET.y-PET.alt-10,r:22,c:WEL[d.el].br[0],ga:.25});}
   for(const q of PETP)L.push({x:q.x,y:q.y,r:18,c:q.col[0],ga:.5});for(const k of pickups)if(k.k==='egg')L.push({x:k.x,y:k.y-10,r:34,c:WEL[k.el].br[0],ga:.5});}
 
+/* ================= MONDE ÉTENDU : BIOMES ================= */
+T.DIRT=7;
+const W2STY={
+  meadow:{g:['#28462c','#305234','#3a5e3c','#203a24'],acc:['#ffd166','#e86a8a','#b8d8ff','#ffffff'],dirt:['#4e4030','#40342a','#5e4e38'],cliff:['#3a3a44','#4a4a56','#26262e','#6a6a78'],top:'#1a2a1c',water:['#16304e','#1e406a','#0e2238'],mini:'#335a3a',kind:'meadow'},
+  autumn:{g:['#3a3020','#463a24','#524428','#2c2418'],acc:['#e86a2a','#ffb84a','#c83a2a','#f4d070'],dirt:['#504030','#42342a','#62503a'],cliff:['#3a3028','#4c4034','#2a221c','#6a5a48'],top:'#1e1810',water:['#1c3046','#26405a','#142434'],mini:'#5a4628',kind:'autumn'},
+  lake:{g:['#244634','#2a523c','#336044','#1c3a2a'],acc:['#b8d8ff','#ffffff','#e8a0e0','#ffd166'],dirt:['#4a4434','#3e382c','#5a5440'],cliff:['#34404a','#44525e','#242e36','#62727e'],top:'#16241c',water:['#183a5a','#24507a','#102a44'],mini:'#2e5a44',kind:'meadow'},
+  steppe:{g:['#4a5232','#565e38','#626a40','#3e452a'],acc:['#d8d070','#b8c8e8','#e8a0c0','#f0e8b0'],dirt:['#5e5238','#4e442e','#6e6244'],cliff:['#4a4436','#5c5644','#363226','#7a7462'],top:'#2a2a1c',water:['#20405a','#2c5676','#162e42'],mini:'#5a6238',kind:'steppe'},
+  canyon:{g:['#6a3624','#783e2a','#864a32','#5a2e1e'],acc:['#e8a060','#4a2216','#c8784a','#f0c890'],dirt:['#8a5434','#764628','#9c6644'],cliff:['#7a3420','#94442a','#5a2416','#c06a40'],top:'#4a2214',water:['#2a4a5a','#36607a','#1e3a48'],mini:'#7a3e28',kind:'canyon'},
+  savanna:{g:['#5e5630','#6a6236','#78703e','#504a28'],acc:['#e8c060','#c86a3a','#f4e0a0','#ffffff'],dirt:['#7a5e3c','#6a5034','#8a6e4a'],cliff:['#6a4a32','#80583a','#523826','#a07850'],top:'#3a2a1a',water:['#244456','#305a72','#1a3442'],mini:'#6e6838',kind:'savanna'},
+  jungle:{g:['#16351f','#1d4227','#24502e','#102a18'],acc:['#e05a8a','#ffd166','#5ae0c8','#ff8a3a'],dirt:['#463624','#3a2c1c','#56442e'],cliff:['#24302a','#34443a','#1a221e','#4a5e50'],top:'#0e1a12',water:['#123c36','#1a564a','#0c2c28'],mini:'#1e4a2a',kind:'jungle'},
+  snow:{g:['#7c889c','#8894a8','#96a2b6','#6e7a8e'],acc:['#e8f0fa','#b8d4ff','#ffffff','#9fb6d8'],dirt:['#5e6474','#525868','#6c7282'],cliff:['#4a566c','#5c6a82','#3a4456','#c8d4e8'],top:'#a8b6ca',water:['#6a8cac','#8eb0cc','#56789a'],mini:'#9aa6ba',kind:'snow',ice:1},
+  emerald:{g:['#143426','#1a3e2e','#204a36','#0e2a1e'],acc:['#7affc0','#e8f0a0','#b0ffe0','#ffd166'],dirt:['#3a3424','#30281c','#4a4230'],cliff:['#1e3028','#2a4036','#14201a','#3e5a4c'],top:'#0a1610',water:['#103a36','#18524a','#0a2a26'],mini:'#1c4a34',kind:'emerald'},
+  mush:{g:['#1e1a2e','#262038','#2e2644','#161224'],acc:['#7affd8','#ff7ae0','#b07aff','#ffe08a'],dirt:['#382c44','#2c2238','#483a56'],cliff:['#2a2238','#3a3050','#1c1628','#5a4a78'],top:'#100c1a',water:['#1a2a4a','#24386a','#121e36'],mini:'#3a2e52',kind:'mush'},
+  crystal:{g:['#1c2232','#242c40','#2c364e','#141a28'],acc:['#8ae8ff','#e08aff','#ffffff','#a0ffd8'],dirt:['#363e52','#2c3244','#465064'],cliff:['#2a3450','#3a4870','#1c2438','#8ae8ff'],top:'#0e1222',water:['#1a3a5a','#2a5a80','#102640'],mini:'#2e3a58',kind:'crystal'}
+};
+Object.assign(GSTY,Object.fromEntries(Object.entries(W2STY).map(([k,s])=>[k,[s.g[0],s.g[1],s.g[2],s.g[3],s.acc[0]]])));
+function w2Ground(m,x,y,S){const ox=x*TS,oy=y*TS,h=i=>hash(x,y,i),G0=S.g,A=S.acc,k=S.kind;P(ox,oy,16,16,G0[0]);
+  for(let i=0;i<22;i++){const r=h(i+100);P(ox+Math.floor(h(i)*16),oy+Math.floor(h(i+50)*16),1,r<.5?2:1,r<.5?G0[1]:r<.82?G0[2]:G0[3]);}
+  const n=vnoise(x/5,y/5,m.seed||7);
+  if(k==='snow'){if(n>.6)P(ox,oy,16,16,'rgba(255,255,255,.08)');for(let i=0;i<3;i++)if(h(230+i)<.35)P(ox+Math.floor(h(240+i)*15),oy+Math.floor(h(250+i)*15),1,1,A[i%2?2:0]);
+    if(h(260)<.06){const fx=ox+2+Math.floor(h(261)*10),fy=oy+3+Math.floor(h(262)*10);P(fx,fy,5,1,'#6a7690');P(fx+1,fy-1,3,1,'#aab8cc');}}
+  else if(k==='autumn'){const c=n>.5?3:1;for(let i=0;i<c+2;i++){if(h(230+i)<.55){const lx=ox+Math.floor(h(240+i)*14),ly=oy+Math.floor(h(250+i)*14);P(lx,ly,2,1,A[Math.floor(h(270+i)*4)]);P(lx+1,ly+1,1,1,'#2a1a0e');}}}
+  else if(k==='savanna'||k==='steppe'){for(let i=0;i<5;i++){if(h(230+i)<.6){const lx=ox+Math.floor(h(240+i)*15),ly=oy+3+Math.floor(h(250+i)*12),c=h(260+i)<.5?G0[2]:(k==='savanna'?'#9a8a4a':'#7a8a4e');P(lx,ly-2,1,3,c);if(k==='steppe')P(lx+1,ly-3,1,1,c);}}
+    if(h(280)<.04){const fx=ox+4+Math.floor(h(281)*8),fy=oy+4+Math.floor(h(282)*8);P(fx,fy,1,1,A[Math.floor(h(283)*3)]);P(fx-1,fy+1,3,1,G0[3]);}}
+  else if(k==='canyon'){if(h(230)<.18){let cx=ox+Math.floor(h(231)*12),cy=oy+2+Math.floor(h(232)*10);for(let i=0;i<5;i++){P(cx,cy,1,1,'#3a1a10');cx+=h(233+i)<.5?1:0;cy+=1;}}
+    for(let i=0;i<2;i++)if(h(240+i)<.25)P(ox+Math.floor(h(245+i)*14),oy+Math.floor(h(248+i)*14),2,1,A[3]);if(n>.62)P(ox,oy,16,16,'rgba(255,160,90,.06)');}
+  else if(k==='jungle'||k==='emerald'){if(n>.55){P(ox,oy,16,16,'rgba(60,140,80,.10)');}for(let i=0;i<3;i++)if(h(230+i)<.4){const lx=ox+Math.floor(h(240+i)*13),ly=oy+Math.floor(h(250+i)*13);P(lx,ly,3,1,G0[2]);P(lx+1,ly-1,1,1,G0[2]);}
+    if(h(270)<(k==='emerald'?.05:.04)){const fx=ox+3+Math.floor(h(271)*10),fy=oy+3+Math.floor(h(272)*10),c=A[Math.floor(h(273)*4)];P(fx,fy,1,1,c);P(fx-1,fy+1,1,1,c);P(fx+1,fy+1,1,1,c);P(fx,fy+2,1,1,'#0a1a0e');}}
+  else if(k==='mush'){if(h(230)<.12){const fx=ox+Math.floor(h(231)*15),fy=oy+Math.floor(h(232)*15);P(fx,fy,1,1,A[Math.floor(h(233)*3)]);}
+    if(h(240)<.2){let cx=ox+Math.floor(h(241)*8),cy=oy+Math.floor(h(242)*12);for(let i=0;i<7;i++){P(cx,cy,1,1,'#3c3256');cx+=1;cy+=h(243+i)<.5?1:-1;}}}
+  else if(k==='crystal'){if(h(230)<.1){const fx=ox+2+Math.floor(h(231)*12),fy=oy+2+Math.floor(h(232)*12),c=A[Math.floor(h(233)*4)];P(fx,fy,1,2,c);P(fx+1,fy+1,1,1,'#ffffff');}
+    if(n>.6)P(ox,oy,16,16,'rgba(140,200,255,.05)');}
+  else{if(h(200)<.07){const fx=ox+3+Math.floor(h(201)*10),fy=oy+3+Math.floor(h(202)*10),c=A[Math.floor(h(203)*4)];P(fx,fy+1,1,2,G0[1]);P(fx-1,fy,3,1,c);P(fx,fy-1,1,3,c);P(fx,fy,1,1,'#fff6e0');}
+    if(h(220)<.06){const fx=ox+2+Math.floor(h(221)*12),fy=oy+2+Math.floor(h(222)*12);P(fx,fy,3,1,G0[2]);P(fx+1,fy-1,1,1,G0[2]);}}
+  if(isWater(m,x,y+1)&&!isWater(m,x,y))P(ox,oy+14,16,2,'rgba(0,0,0,.35)');
+  if(tAt(m,x,y-1)===T.WALL)P(ox,oy,16,3,'rgba(0,0,0,.28)');}
+function w2Dirt(m,x,y,S){const ox=x*TS,oy=y*TS,h=i=>hash(x,y,i),D=S.dirt,G0=S.g;P(ox,oy,16,16,D[0]);
+  for(let i=0;i<14;i++){const r=h(i+300);P(ox+Math.floor(h(i+310)*15),oy+Math.floor(h(i+330)*15),r<.3?2:1,1,r<.6?D[1]:D[2]);}
+  if(h(350)<.3){const px=ox+Math.floor(h(351)*13),py=oy+Math.floor(h(352)*13);P(px,py,3,2,D[1]);P(px,py,2,1,D[2]);}
+  const edge=(dx,dy)=>{const q=tAt(m,x+dx,y+dy);return q!==T.DIRT&&q!==T.PATH&&q!==T.BRIDGE&&q!==-1;};
+  for(let i=0;i<16;i++){const j=h(400+i);if(edge(0,-1)&&j<.7)P(ox+i,oy,1,1+Math.floor(j*3),G0[j<.35?1:0]);if(edge(0,1)&&h(420+i)<.7)P(ox+i,oy+15-Math.floor(h(440+i)*2),1,1+Math.floor(h(440+i)*2),G0[0]);
+    if(edge(-1,0)&&h(460+i)<.7)P(ox,oy+i,1+Math.floor(h(480+i)*3),1,G0[0]);if(edge(1,0)&&h(500+i)<.7)P(ox+15-Math.floor(h(520+i)*2),oy+i,1+Math.floor(h(520+i)*2),1,G0[1]);}
+  if(S.kind==='snow'&&h(540)<.5)P(ox+Math.floor(h(541)*12),oy+Math.floor(h(542)*12),3,2,'#8a96aa');}
+function w2Water(m,x,y,S){const ox=x*TS,oy=y*TS,h=i=>hash(x,y,i),W=S.water;
+  if(S.ice){P(ox,oy,16,16,W[0]);for(let i=0;i<4;i++)P(ox+Math.floor(h(i+400)*12),oy+Math.floor(h(i+410)*14),4,1,W[1]);if(h(430)<.35){let cx=ox+Math.floor(h(431)*10),cy=oy+Math.floor(h(432)*10);for(let i=0;i<6;i++){P(cx,cy,1,1,'#dbe8f6');cx+=1;cy+=h(433+i)<.5?1:0;}}
+    if(!isWater(m,x,y-1)){P(ox,oy,16,2,'#4a6684');P(ox,oy+2,16,1,'#c8dcf0');}return;}
+  P(ox,oy,16,16,W[0]);for(let i=0;i<5;i++)P(ox+Math.floor(h(i+400)*12),oy+Math.floor(h(i+410)*15),3+Math.floor(h(i+420)*3),1,W[1]);
+  if(h(440)<.12)P(ox+Math.floor(h(441)*13),oy+Math.floor(h(442)*13),2,1,'rgba(220,240,255,.35)');
+  if(!isWater(m,x,y-1)){P(ox,oy,16,2,'rgba(0,0,0,.4)');P(ox,oy+2,16,1,W[1]);}}
+function inCastle(m,x,y){return m.castles&&m.castles.some(c=>x>=c[0]&&x<=c[2]&&y>=c[1]&&y<=c[3]);}
+function w2Wall(m,x,y,S){const ox=x*TS,oy=y*TS,h=i=>hash(x,y,i),face=y+1<m.h&&tAt(m,x,y+1)!==T.WALL,topEdge=tAt(m,x,y-1)!==T.WALL;
+  if(inCastle(m,x,y)){const C=m.cstone||['#4a4e5c','#5e6272','#363a46','#7a7e8e','#2a2c36'];
+    if(face){P(ox,oy,16,16,C[2]);for(let r=0;r<3;r++){const off=r%2?4:0;for(let c=-1;c<3;c++){const bx=ox+c*8+off,x0=Math.max(bx,ox),x1=Math.min(bx+7,ox+16);if(x1>x0){P(x0,oy+1+r*5,x1-x0,4,h(r*5+c+600)<.5?C[0]:C[1]);P(x0,oy+1+r*5,x1-x0,1,C[3]);}}}P(ox,oy+15,16,1,'#0c0c12');
+      if(topEdge){P(ox,oy,16,4,C[4]);for(let i=0;i<16;i+=8){P(ox+i,oy-1,5,5,C[1]);P(ox+i,oy-1,5,1,C[3]);}}}
+    else{P(ox,oy,16,16,C[4]);P(ox+1,oy+1,14,14,'#3c404c');P(ox+1,oy+7,14,1,'#30333d');P(ox+7,oy+1,1,6,'#30333d');P(ox+3,oy+8,1,7,'#30333d');
+      if(topEdge){for(let i=0;i<16;i+=8){P(ox+i,oy,5,4,C[1]);P(ox+i,oy,5,1,C[3]);}}
+      if(tAt(m,x-1,y)!==T.WALL)P(ox,oy,2,16,C[1]);if(tAt(m,x+1,y)!==T.WALL)P(ox+14,oy,2,16,C[2]);}
+    return;}
+  const Cf=S.cliff;
+  if(face){P(ox,oy,16,16,Cf[0]);for(let r=0;r<4;r++){const yy=oy+r*4+Math.floor(h(r+610)*2);P(ox,yy,16,1,Cf[2]);for(let i=0;i<3;i++){const bx=ox+Math.floor(h(r*7+i+620)*13);P(bx,yy+1,3,2,Cf[1]);}}
+    P(ox,oy,16,2,Cf[3]);P(ox,oy+14,16,2,'rgba(0,0,0,.45)');if(S.kind==='snow')for(let i=0;i<16;i+=2)if(h(i+650)<.6)P(ox+i,oy,2,1+Math.floor(h(i+660)*3),'#e8f0fa');
+    if(S.kind==='crystal'&&h(670)<.3){const cx=ox+3+Math.floor(h(671)*9);P(cx,oy+5,2,6,'#8ae8ff');P(cx,oy+5,1,6,'#e0faff');}}
+  else{P(ox,oy,16,16,S.top);for(let i=0;i<10;i++)P(ox+Math.floor(h(i+700)*15),oy+Math.floor(h(i+710)*15),2,1,h(i+720)<.5?Cf[1]:Cf[2]);
+    if(!(tAt(m,x,y-1)===T.WALL))P(ox,oy,16,1,Cf[3]);if(tAt(m,x-1,y)!==T.WALL)P(ox,oy,1,16,Cf[2]);if(tAt(m,x+1,y)!==T.WALL)P(ox+15,oy,1,16,Cf[2]);}}
+const _paintTile=paintTile;
+paintTile=function(m,x,y){const S=W2STY[m.style];if(!S||m.indoor)return _paintTile(m,x,y);const t=m.t[y*m.w+x];
+  if(t===T.GRASS)return w2Ground(m,x,y,S);if(t===T.DIRT)return w2Dirt(m,x,y,S);if(t===T.WATER)return w2Water(m,x,y,S);if(t===T.WALL)return w2Wall(m,x,y,S);return _paintTile(m,x,y);};
+const _miniThumb=miniThumb;
+miniThumb=function(m){const S=W2STY[m.style];if(!S)return _miniThumb(m);if(MM[m.id])return MM[m.id];const [c,g]=mk(m.w*2,m.h*2);
+  for(let y=0;y<m.h;y++)for(let x=0;x<m.w;x++){const i=y*m.w+x,t=m.t[i];let cc=t===T.GRASS?S.mini:t===T.DIRT?S.dirt[2]:t===T.PATH||t===T.RUIN?'#6a7486':t===T.WATER?S.water[1]:t===T.BRIDGE?'#6a5038':t===T.WALL?(inCastle(m,x,y)?'#8a8e9c':S.cliff[1]):t===6?'#c8482a':'#000';
+    if(m.solid[i]&&t===T.GRASS)cc=S.g[3];g.fillStyle=cc;g.fillRect(x*2,y*2,2,2);}
+  for(const o of m.objs){const d=OBJ[o.type];if(!d.bld)continue;for(const[dx,dy]of d.solid||[[0,0]]){g.fillStyle=d.bld===2?'#e8d8a8':'#a89678';g.fillRect((o.tx+dx)*2,(o.ty+dy)*2,2,2);}}
+  return MM[m.id]=c;};
+
+/* ---------- sprites du monde étendu ---------- */
+const KORD=['valcourt','aldmoor','sylvaris','kardum','nordheim','grakkar','tzalan','sablerouge'];
+const KPAL={valcourt:{st:['#5a6274','#6e778a','#424a5a','#8a94a8'],roof:['#2a3a7a','#3a4e9a','#1c2856'],ban:'#2a4a9a',ban2:'#e8c060'},
+  aldmoor:{st:['#6a5e58','#7e7268','#4e4440','#9a8c80'],roof:['#7a2a22','#9a3a2e','#561c16'],ban:'#a8322a',ban2:'#f0d080'},
+  sylvaris:{st:['#7a8a86','#8e9e98','#5e6c68','#b8c8c0'],roof:['#2a6a4a','#3a8a5e','#1c4a34'],ban:'#3aa86a',ban2:'#e8f0ff'},
+  kardum:{st:['#5a4e40','#6e6050','#42382e','#8a7a64'],roof:['#6a4a24','#8a6230','#4a3218'],ban:'#c8863a',ban2:'#2a1a10'},
+  nordheim:{st:['#5a646e','#6c7884','#444c56','#a8b6c4'],roof:['#3a4a5a','#4a5e72','#2a3644'],ban:'#4a8ad0',ban2:'#ffffff',snow:1},
+  grakkar:{st:['#4a3a30','#5c483a','#34281e','#7a6250'],roof:['#5a2a1a','#7a3a22','#3a1a10'],ban:'#9a2a1a',ban2:'#e8d8a8'},
+  tzalan:{st:['#5a6a54','#6e7e66','#42503e','#8aa080'],roof:['#1a6a5a','#2a8a74','#0e4a3e'],ban:'#2ac0a0',ban2:'#ffd166'},
+  sablerouge:{st:['#8a7450','#a08860','#6a5638','#c8ae80'],roof:['#c8882a','#e0a040','#8a5a18'],ban:'#e8b84a',ban2:'#7a1a2a'}};
+function blocks(x,y,w,h,st,seed,bh){bh=bh||5;P(x,y,w,h,st[2]);for(let r=0;r*bh<h;r++){const off=r%2?4:0;for(let c=-1;c*8<w;c++){const bx=x+c*8+off,x0=Math.max(bx,x),x1=Math.min(bx+7,x+w),yy=y+r*bh,hh=Math.min(bh-1,y+h-yy);if(x1>x0&&hh>0){P(x0,yy,x1-x0,hh,hash(r,c,seed)<.5?st[0]:st[1]);P(x0,yy,x1-x0,1,st[3]);}}}}
+function cone(cx,top,bot,hw,R,snow){const h=bot-top;for(let r=0;r<h;r++){const w=Math.max(1,Math.round(hw*(r+1)/h));P(cx-w-1,top+r,w*2+2,1,'#0a0a10');P(cx-w,top+r,w*2,1,R[0]);P(cx-w,top+r,Math.max(1,Math.round(w*.55)),1,R[2]);P(cx+Math.round(w*.4),top+r,Math.max(1,Math.round(w*.35)),1,R[1]);if(r%3===2)P(cx-w,top+r,w*2,1,'rgba(0,0,0,.22)');if(snow&&r<Math.round(h*.35))P(cx-w,top+r,w*2,1,r%2?'#dfe8f4':'#ffffff');}}
+function crenel(x,y,w,st,snow){P(x,y+3,w,3,st[2]);for(let i=0;i<w;i+=7){P(x+i,y,4,6,st[1]);P(x+i,y,4,1,snow?'#ffffff':st[3]);}}
+function win(x,y,lit){P(x-1,y-1,5,7,'#0a0a10');P(x,y,3,5,lit?'#ffc24a':'#1a1c26');if(lit){P(x,y,3,1,'#fff2b0');P(x+1,y,1,5,'#c88a2a');}P(x,y-1,3,1,'#0a0a10');}
+function canopyT(cl,p,seed){for(const[a,b,r]of cl)circ(a,b+1,r+1,p[0]);for(const[a,b,r]of cl)circ(a,b,r,p[1]);for(const[a,b,r]of cl)circ(a-1,b-2,r-2,p[2]);for(const[a,b,r]of cl)circ(a-2,b-4,Math.max(1,r-6),p[3]);
+  for(let i=0;i<40;i++){const c=cl[i%cl.length],ang=hash(i,seed,3)*TAU,rr=hash(i,seed,4)*(c[2]-3);const px=c[0]-2+Math.cos(ang)*rr,py=c[1]-3+Math.sin(ang)*rr*.8;P(px,py,1,1,py<c[1]-1?p[4]:p[1]);}}
+function trunk(cx,top,base,w,c){P(cx-(w>>1)-1,top,w+2,base-top,'#120c0a');P(cx-(w>>1),top,w,base-top,c[0]);P(cx-(w>>1),top,1,base-top,c[1]);P(cx-(w>>1)-4,base-2,w+8,2,'#120c0a');P(cx-(w>>1)-3,base-3,3,2,c[0]);P(cx+(w>>1),base-3,3,2,c[0]);}
+const ATP=[['#1a0c08','#7a2e14','#b8501e','#e07a2a','#ffc070'],['#160808','#6a1a1a','#a02a22','#d0462e','#ff9a7a'],['#181208','#7a5a14','#b08a24','#e0b83a','#fff0a0']];
+const TGP=[['#2a4a2e','#3e6a42','#5a8a56'],['#46502c','#626e3a','#8a9650'],['#6a5a2a','#8a7834','#b8a050'],['#14361c','#226030','#3a8a46'],['#5a3a1a','#8a5424','#c07a34'],['#5a6a7e','#8a98ae','#dfe8f4'],['#2a1e3e','#4a3266','#7a5aa0'],['#28344e','#3e5070','#6a8ab8']];
+function buildSprites8(){
+  OBJ.snowpine.spr=[0,1].map(v=>sprite(30,48,()=>{P(13,37,4,9,'#1c140e');P(14,37,1,9,'#4a3424');P(8,45,14,2,'#0e0a08');
+    const tiers=[[15,6,5],[15,13,8],[15,21,11],[15,29,13]];
+    for(let t=0;t<4;t++){const[cx,ty,hw]=tiers[t],hg=10;for(let r=0;r<hg;r++){const w=Math.round(1+(hw-1)*r/(hg-1));P(cx-w-1,ty+r,w*2+2,1,'#0a1412');P(cx-w,ty+r,w*2,1,r<3?'#2e5048':r<7?'#24403a':'#1a2e2a');P(cx-w,ty+r,Math.max(1,w>>1),1,'#142624');P(cx+Math.round(w*.5),ty+r,1,1,'#3a6056');}
+      const sn=v?5:3;for(let r=0;r<sn;r++){const w=Math.round(1+(hw-1)*r/9);P(cx-w,ty+r,w*2,1,r===0?'#ffffff':'#dfe8f4');}
+      for(let i=0;i<hw;i++)if(hash(i,t,v+3)<.55)P(cx-hw+i*2,ty+hg-2-Math.floor(hash(i,t,9)*2),2,1,'#c8d4e6');}
+    P(15,4,1,3,'#ffffff');}));
+  OBJ.atree.spr=[0,1,2].map(v=>sprite(36,44,()=>{const p=ATP[v];trunk(18,26,42,5,['#3b2a1e','#5a4030']);P(13,30,3,1,'#3b2a1e');P(21,32,4,1,'#3b2a1e');
+    canopyT([[18,19,12],[9,23,8],[27,23,8],[18,10,10],[11,14,7],[25,14,7]],p,v+40);for(let i=0;i<6;i++)P(6+hash(i,v,7)*24,38+hash(i,v,8)*4,2,1,p[2+i%2]);}));
+  OBJ.etree.spr=[0,1].map(v=>sprite(60,72,()=>{const p=v?['#06140e','#12402a','#1c5a3a','#2e7a4e','#9affc8']:['#061410','#0e3a2c','#16523e','#227056','#b8ffe0'];
+    P(22,40,16,30,'#0e0a08');P(23,40,14,30,'#3a2e22');P(24,40,3,30,'#5a4a36');P(31,44,2,22,'#2a2018');for(const[x,d]of[[14,1],[40,-1]]){for(let i=0;i<8;i++)P(x+i*d*(d>0?1:0)+(d<0?i:0),62+Math.floor(i/3),4,8-Math.floor(i/3),'#3a2e22');}P(10,68,40,3,'#0e0a08');
+    P(26,52,6,8,'#120c08');P(27,53,4,6,'#06040a');
+    canopyT([[30,24,17],[14,30,11],[46,30,11],[30,12,13],[18,16,9],[42,16,9],[30,34,10]],p,v+60);
+    for(let i=0;i<9;i++){const x=10+hash(i,v,9)*40,y=26+hash(i,v,10)*10;for(let k=0;k<4+hash(i,v,11)*8;k++)P(x,y+k,1,1,k%3?p[2]:p[3]);}
+    for(let i=0;i<7;i++)P(12+hash(i,v,12)*36,10+hash(i,v,13)*26,1,1,'#e8ffb0');}));
+  OBJ.jtree.spr=[0,1].map(v=>sprite(48,56,()=>{const lean=v?3:-2;for(let y=18;y<54;y++){const x=24+Math.round(lean*(54-y)/36);P(x-2,y,6,1,'#140e08');P(x-1,y,4,1,'#4a3a26');P(x-1,y,1,1,'#6a5636');if(y%5===0)P(x-1,y,4,1,'#2e2416');}P(16,53,18,2,'#0c0806');
+    const tx=24+lean,ty=18,L=[['#0a1e10','#1a4a24','#2a6a34','#4a9a4e'],['#0a1e10','#164020','#24602e','#3a8a42']][v];
+    const fr=[[-1,-.15,22],[1,-.1,22],[-.8,-.7,18],[.8,-.75,18],[0,-1,14],[-.95,.35,17],[.95,.4,17]];
+    for(const[dx,dy,len]of fr){const a=Math.atan2(dy,dx);for(let s=0;s<3;s++){const pts=[];const W=[3,5,6,5,3,1];for(let i=0;i<=5;i++){const t=i/5,px=tx+Math.cos(a)*len*t,py=ty+Math.sin(a)*len*t+t*t*6;pts.push([px-Math.sin(a)*W[i]*(s===0?1.2:s===1?.9:.4),py+Math.cos(a)*W[i]*(s===0?1.2:s===1?.9:.4)]);}
+        for(let i=5;i>=0;i--){const t=i/5,px=tx+Math.cos(a)*len*t,py=ty+Math.sin(a)*len*t+t*t*6;pts.push([px+Math.sin(a)*W[i]*(s===0?1.2:s===1?.9:.4),py-Math.cos(a)*W[i]*(s===0?1.2:s===1?.9:.4)]);}
+        polyF(pts,L[s===0?0:s===1?1:3]);}
+      for(let i=1;i<6;i++){const t=i/6;P(tx+Math.cos(a)*len*t,ty+Math.sin(a)*len*t+t*t*6,1,1,L[2]);}}
+    circ(tx,ty+1,4,'#2a1a10');circ(tx-1,ty,2,'#5a3a20');
+    for(let i=0;i<4;i++){const x=tx-14+hash(i,v,5)*28;for(let k=0;k<8+hash(i,v,6)*12;k++)P(x+Math.round(Math.sin(k*.5)),ty+4+k,1,1,k%4?'#1a4a24':'#3a8a42');}
+    if(!v){P(tx+8,ty+12,2,2,'#e05a8a');P(tx-10,ty+9,2,2,'#ffd166');}}));
+  OBJ.acacia.spr=[sprite(52,44,()=>{P(24,22,4,20,'#120c08');P(25,22,2,20,'#5a4228');lineF(26,26,14,14,'#3a2a18',3);lineF(26,24,38,13,'#3a2a18',3);lineF(25,30,8,22,'#3a2a18',2);P(18,41,16,2,'#0c0806');
+    for(const[cx,cy,rx,ry]of[[26,12,24,6],[12,15,10,4],[40,14,11,4]]){ell(cx,cy+1,rx+1,ry+1,'#141a0a');ell(cx,cy,rx,ry,'#3e4a1e');ell(cx-2,cy-1,rx-3,ry-2,'#566426');ell(cx-4,cy-2,Math.max(2,rx-9),Math.max(1,ry-3),'#76843a');}
+    for(let i=0;i<30;i++)P(4+hash(i,1,9)*44,8+hash(i,2,9)*10,1,1,hash(i,3,9)<.5?'#9aa850':'#2a3412');})];
+  const mush=(cap,spot)=>sprite(34,42,()=>{P(14,20,7,20,'#0c0a12');P(15,20,5,20,'#d8d0c0');P(15,20,1,20,'#ffffff');P(19,22,1,16,'#a89e90');P(10,39,15,2,'#0c0a12');
+    ell(17,16,16,9,'#0a0812');ell(17,15,15,8,cap[0]);ell(15,13,12,6,cap[1]);ell(13,11,7,3,cap[2]);P(4,17,27,3,'#0a0812');P(5,17,25,2,cap[3]);for(let i=6;i<29;i+=3)P(i,18,1,2,'#0a0812');
+    for(const[x,y,r]of[[10,12,2],[20,9,2],[25,14,1],[15,15,1],[7,15,1]]){circ(x,y,r,spot);P(x-1,y-1,1,1,'#ffffff');}});
+  OBJ.gmush.spr=[mush(['#1a6a6a','#2a9a90','#6ae8d0','#0e3a3a'],'#c8fff4'),mush(['#1a5a7a','#2a7aa0','#7ad0ff','#0e2e44'],'#e0f6ff')];
+  OBJ.gmushp.spr=[mush(['#7a1a5a','#a82a7a','#ff7ae0','#4a0e36'],'#ffe0f6'),mush(['#4a1a7a','#6a2aa8','#b07aff','#2a0e4a'],'#f0e0ff')];
+  OBJ.smush.spr=[0,1].map(v=>sprite(14,10,()=>{const c=v?['#ff7ae0','#ffd0f4']:['#7affd8','#e0fff6'];for(const[x,y,s]of[[3,7,2],[8,8,3],[11,6,2]]){P(x,y-s,1,s,'#d8d0c0');ell(x,y-s,s,1,c[0]);P(x-1,y-s-1,1,1,c[1]);}}));
+  const crys=(C)=>sprite(24,30,()=>{const shards=[[12,2,4,26],[6,10,3,18],[18,8,3,20],[9,16,2,12],[16,15,2,13]];
+    for(const[x,y,w,h]of shards){polyF([[x,y],[x+w,y+3],[x+w,y+h],[x,y+h+2],[x-w,y+h],[x-w,y+3]],'#0a0c18');polyF([[x,y+1],[x+w-1,y+3],[x+w-1,y+h-1],[x,y+h+1],[x-w+1,y+h-1],[x-w+1,y+3]],C[0]);polyF([[x,y+1],[x+w-1,y+3],[x+w-1,y+h-1],[x,y+h+1]],C[1]);P(x-w+2,y+4,1,h-6,C[2]);P(x,y+2,1,2,'#ffffff');}
+    ell(12,28,10,2,'#0a0c18');});
+  OBJ.ccr.spr=[crys(['#1a6a9a','#3aa8d8','#c8f4ff']),crys(['#2a4a8a','#4a7ad0','#e0ecff'])];OBJ.ccrm.spr=[crys(['#7a1a8a','#b03ad0','#ffd0ff']),crys(['#6a2a9a','#9a4ad8','#f0d8ff'])];
+  OBJ.gmushd.spr=OBJ.gmush.spr;OBJ.gmushpd.spr=OBJ.gmushp.spr;OBJ.ccrd.spr=OBJ.ccr.spr;OBJ.ccrmd.spr=OBJ.ccrm.spr;
+  OBJ.mesa.spr=[0,1].map(v=>sprite(28,36,()=>{const C=['#7a3420','#94442a','#5a2416','#c06a40'];polyF([[4,34],[6,10],[10,4],[20,3],[24,9],[25,34]],'#2a120a');polyF([[5,33],[7,11],[11,5],[19,4],[23,10],[24,33]],C[0]);polyF([[15,4],[19,4],[23,10],[24,33],[17,33]],C[2]);
+    for(let r=8;r<32;r+=5){P(6,r,18,1,C[2]);P(6,r+1,10,1,C[3]);}P(11,5,8,2,C[3]);if(v){P(9,14,3,4,'#3a160c');P(16,22,4,3,'#3a160c');}P(2,33,25,2,'#1a0a06');}));
+  OBJ.tgrass.spr=TGP.map((c,v)=>sprite(14,13,()=>{for(let i=0;i<9;i++){const x=1+Math.floor(hash(i,v,1)*12),hh=5+Math.floor(hash(i,v,2)*7),lean=hash(i,v,3)<.5?-1:1;for(let k=0;k<hh;k++)P(x+(k>hh*.6?lean:0),12-k,1,1,k>hh-3?c[2]:k>hh/2?c[1]:c[0]);}if(v===2||v===1)P(5,3,1,1,'#f0e0a0');}));
+  OBJ.flowers.spr=[['#ffd166','#fff6c8'],['#e86a8a','#ffd0dc'],['#b8d8ff','#ffffff'],['#c07aff','#f0d8ff']].map(c=>sprite(12,8,()=>{for(const[x,y]of[[2,5],[6,3],[9,6],[4,1]]){P(x,y+1,1,2,'#2a4a2a');P(x-1,y,3,1,c[0]);P(x,y-1,1,3,c[0]);P(x,y,1,1,c[1]);}}));
+  OBJ.fern.spr=[0,1].map(v=>sprite(22,16,()=>{const c=v?['#1a4a24','#2a6a34','#4a9a4e']:['#164020','#24602e','#3a8a42'];for(let i=0;i<5;i++){const a=-Math.PI*.95+i*Math.PI*.22;for(let k=0;k<9;k++){const x=11+Math.cos(a)*k,y=14+Math.sin(a)*k*.8+k*k*.04;P(x,y,1,1,c[k<3?0:1]);if(k%2)P(x+Math.sin(a),y-Math.cos(a)*.6,1,1,c[2]);}}}));
+  OBJ.leafpile.spr=[0,1].map(v=>sprite(18,8,()=>{for(let i=0;i<22;i++){const x=1+hash(i,v,1)*15,y=1+hash(i,v,2)*6;P(x,y,2,1,ATP[Math.floor(hash(i,v,3)*3)][2+Math.floor(hash(i,v,4)*2)]);}}));
+  OBJ.snowrock.spr=[0,1].map(v=>sprite(22,16,()=>{ell(11,10,10,6,'#141820');ell(11,9,9,5,'#4a566c');ell(10,8,7,4,'#5c6a82');ell(10,6,7,2,'#dfe8f4');P(6,5,6,1,'#ffffff');if(v)P(15,9,3,1,'#7a8aa0');P(2,14,18,2,'rgba(0,0,0,.35)');}));
+  OBJ.icecr.spr=[sprite(16,24,()=>{polyF([[8,1],[12,6],[12,20],[8,23],[4,20],[4,6]],'#0a1424');polyF([[8,2],[11,6],[11,19],[8,22],[5,19],[5,6]],'#6ab0e0');polyF([[8,2],[11,6],[11,19],[8,22]],'#a8dcff');P(6,7,1,10,'#e8f8ff');P(8,3,1,2,'#ffffff');})];
+  OBJ.reedw.spr=[sprite(14,16,()=>{for(let i=0;i<7;i++){const x=2+i*1.6,hh=8+hash(i,1,4)*6;P(x,15-hh,1,hh,'#3a5a3a');P(x,15-hh,1,2,'#7a5a3a');}})];
+  /* --- châteaux --- */
+  const keepEU=(K,snow,dw)=>sprite(104,118,()=>{const S=KPAL[K].st,R=KPAL[K].roof,B=KPAL[K].ban,B2=KPAL[K].ban2;
+    P(4,112,96,4,'rgba(0,0,0,.4)');
+    for(const tx of[8,74]){blocks(tx,46,22,66,S,tx);P(tx,46,3,66,'rgba(0,0,0,.25)');P(tx+19,46,3,66,'rgba(255,255,255,.06)');if(dw)crenel(tx-2,40,26,S,snow);else cone(tx+11,10,46,15,R,snow);win(tx+9,64,1);win(tx+9,86,0);P(tx+10,98,2,5,'#0a0a10');}
+    blocks(28,36,48,76,S,9);P(28,36,48,2,S[3]);crenel(26,30,52,S,snow);
+    blocks(42,16,20,20,S,13);if(dw){crenel(40,10,24,S,snow);}else cone(52,0,18,13,R,snow);crenel(40,12,24,S,snow);win(50,22,1);
+    for(const wx of[34,48,62])win(wx,46,wx!==48);win(36,66,1);win(64,66,0);
+    P(40,84,24,28,'#0a0a10');P(42,86,20,26,'#2a1e14');for(let r=0;r<4;r++){const w=10-r*2;P(52-w,84-r,w*2,1,'#0a0a10');}P(42,86,20,2,'#4a3422');for(let i=44;i<62;i+=4)P(i,86,1,26,'#1a120c');for(const y of[92,102])for(let i=45;i<61;i+=5)P(i,y,2,2,'#8a8e9a');
+    P(38,110,28,3,S[1]);P(36,112,32,2,S[2]);
+    for(const bx of[31,67]){P(bx,48,8,26,'#0a0a10');P(bx+1,48,6,24,B);P(bx+1,48,6,2,'rgba(255,255,255,.2)');P(bx+1,70,2,3,B);P(bx+5,70,2,3,B);P(bx+3,56,2,6,B2);P(bx+2,58,4,2,B2);P(bx,47,8,1,'#c9a24a');}
+    if(snow)for(let i=0;i<14;i++)P(28+hash(i,1,3)*48,36+hash(i,2,3)*70,2,1,'rgba(255,255,255,.35)');
+    P(52,0,1,1,'#0a0a10');});
+  const keepOrc=()=>sprite(104,104,()=>{const S=KPAL.grakkar.st;P(4,98,96,4,'rgba(0,0,0,.4)');
+    blocks(10,64,84,34,S,5,6);for(let x=10;x<94;x+=5){const h=34+Math.floor(hash(x,1,4)*8);P(x,98-h-6,4,h+6,'#2a1a10');P(x+1,98-h-6,2,h+6,'#5a3a22');polyF([[x,98-h-6],[x+2,98-h-12],[x+4,98-h-6]],'#c8b890');}
+    polyF([[14,58],[52,14],[90,58]],'#1a0e08');polyF([[18,56],[52,18],[86,56]],'#5a3a22');polyF([[52,18],[86,56],[60,56]],'#3a2414');for(let r=24;r<56;r+=5)P(52-(r-18),r,(r-18)*2,1,'#2a1a10');
+    for(const[x,d]of[[46,-1],[58,1]]){for(let i=0;i<14;i++)P(x+d*i,16-Math.floor(Math.sqrt(i)*4),3,3,'#e8dcc0');}
+    P(42,74,20,24,'#0a0604');P(44,76,16,22,'#1a0e08');for(let i=46;i<60;i+=4)P(i,76,1,22,'#2a1a10');
+    for(const[x,y]of[[24,70],[78,70]]){circ(x,y,5,'#0a0604');circ(x,y,4,'#e8dcc0');P(x-2,y-1,2,2,'#0a0604');P(x+1,y-1,2,2,'#0a0604');P(x-1,y+2,3,1,'#0a0604');}
+    for(const bx of[30,70]){P(bx,38,7,22,'#0a0604');P(bx+1,38,5,20,'#9a2a1a');P(bx+1,56,2,3,'#9a2a1a');P(bx+4,56,2,3,'#9a2a1a');P(bx+2,44,3,5,'#e8d8a8');}
+    win(30,82,1);win(72,82,1);});
+  const zig=()=>sprite(112,92,()=>{const S=KPAL.tzalan.st,R=KPAL.tzalan.roof;P(4,86,104,4,'rgba(0,0,0,.4)');
+    for(let t=0;t<5;t++){const w=104-t*18,x=56-w/2,y=74-t*13;blocks(x,y,w,13,S,t+20,5);P(x,y,w,2,S[3]);P(x,y+11,w,2,'rgba(0,0,0,.3)');for(let i=0;i<w;i+=9)if(hash(i,t,5)<.4)P(x+i,y+3+Math.floor(hash(i,t,6)*6),3,2,'#2a5a2a');}
+    P(48,22,16,66,'#0a0c0a');for(let y=24;y<86;y+=3){P(49,y,14,2,S[1]);P(49,y,14,1,S[3]);}
+    blocks(38,6,36,16,S,30,5);P(36,2,40,5,R[0]);P(36,2,40,2,R[1]);P(34,6,44,2,R[2]);P(50,10,12,12,'#0a0c0a');P(52,12,8,10,'#0e2a24');circ(56,15,2,'#5affd0');
+    for(const x of[40,70]){P(x,8,3,14,R[0]);P(x,8,1,14,R[1]);}
+    for(const[x,y]of[[18,64],[90,64],[28,51],[80,51]]){P(x,y,6,6,'#0a0c0a');P(x+1,y+1,4,4,'#2ac0a0');P(x+2,y+2,2,2,'#c8fff0');}});
+  OBJ.ckeep.spr=[keepEU('aldmoor',0,0),keepEU('nordheim',1,0),keepOrc(),zig()];
+  OBJ.ctower.spr=KORD.map(K=>sprite(30,62,()=>{const S=KPAL[K].st,R=KPAL[K].roof,snow=KPAL[K].snow;P(2,58,26,3,'rgba(0,0,0,.4)');
+    if(K==='grakkar'){for(let x=4;x<26;x+=4){P(x,18,3,40,'#2a1a10');P(x+1,18,1,40,'#5a3a22');}P(2,14,26,6,'#3a2414');P(2,14,26,1,'#6a4a2a');polyF([[2,14],[15,0],[28,14]],'#5a2a1a');P(14,0,2,4,'#e8dcc0');return;}
+    blocks(5,20,20,38,S,K.length);P(5,20,3,38,'rgba(0,0,0,.25)');P(22,20,3,38,'rgba(255,255,255,.06)');crenel(3,14,24,S,snow);if(K!=='tzalan'&&K!=='kardum')cone(15,0,14,12,R,snow);win(13,30,1);P(14,44,2,5,'#0a0a10');}));
+  OBJ.cgate.spr=KORD.map(K=>sprite(96,72,()=>{const S=KPAL[K].st,B=KPAL[K].ban,snow=KPAL[K].snow;P(2,68,92,3,'rgba(0,0,0,.4)');
+    blocks(0,24,96,44,S,K.length+3);crenel(-2,18,100,S,snow);P(25,32,46,36,'#0a0a10');for(let r=0;r<9;r++){const w=23-Math.round(Math.sqrt(r)*4);P(48-w,24+r,w*2,1,'#0a0a10');}P(27,34,42,34,'#16120e');
+    for(let i=29;i<68;i+=5)P(i,34,2,12,'#3a3a46');P(27,44,42,2,'#3a3a46');for(let i=29;i<68;i+=5)P(i,46,2,2,'#6a6e7a');
+    for(const tx of[0,72]){blocks(tx,8,24,60,S,tx);P(tx,8,3,60,'rgba(0,0,0,.25)');crenel(tx-2,2,28,S,snow);win(tx+10,26,1);win(tx+10,46,0);}
+    for(const bx of[26,66]){P(bx,26,5,16,'#0a0a10');P(bx+1,26,3,14,B);P(bx+1,40,1,2,B);P(bx+3,40,1,2,B);}}));
+  OBJ.kbanner.spr=KORD.map(K=>sprite(12,34,()=>{const B=KPAL[K].ban,B2=KPAL[K].ban2;P(5,0,2,33,'#2a2018');P(5,0,1,33,'#5a4a36');P(4,0,4,2,'#c9a24a');P(1,3,10,18,'#0a0a10');P(2,4,8,16,B);P(2,4,8,2,'rgba(255,255,255,.2)');P(2,20,3,3,B);P(7,20,3,3,B);P(5,9,2,6,B2);P(4,11,4,2,B2);}));
+  OBJ.lhouse.spr=[0,1].map(v=>sprite(64,54,()=>{P(4,50,56,3,'rgba(0,0,0,.4)');P(6,28,52,22,'#0c0806');P(7,29,50,20,'#5a3e26');for(let i=9;i<56;i+=5)P(i,29,1,20,'#3a2816');P(7,29,50,2,'#7a5634');
+    for(let r=0;r<22;r++){const x0=Math.max(2,30-r*1.6|0),x1=Math.min(62,34+r*1.6|0);P(x0-1,6+r,x1-x0+2,1,'#0c0806');P(x0,6+r,x1-x0,1,r%3?'#4a3420':'#5a4028');if(v===0&&r<10)P(x0,6+r,x1-x0,1,r%2?'#dfe8f4':'#ffffff');}
+    if(v===0)for(let i=4;i<60;i+=3)P(i,27,2,1+Math.floor(hash(i,1,2)*3),'#e8f0fa');
+    for(const[x,d]of[[30,-1],[33,1]]){P(x,1,2,6,'#3a2414');P(x+d*2,0,2,2,'#3a2414');}
+    P(28,36,8,13,'#0c0806');P(29,37,6,12,'#2a1a0e');win(14,36,1);win(46,36,v===1);}));
+  OBJ.ohut.spr=[0,1].map(v=>sprite(48,42,()=>{P(4,38,40,3,'rgba(0,0,0,.4)');polyF([[4,38],[24,4],[44,38]],'#120a06');polyF([[6,37],[24,7],[42,37]],v?'#6a4a32':'#7a5a3a');polyF([[24,7],[42,37],[28,37]],'#4a3020');for(let r=12;r<37;r+=6)P(24-(r-7)*.6,r,(r-7)*1.2,1,'#3a2416');
+    for(const[x,y]of[[20,2],[28,2]])P(x,y,2,8,'#e8dcc0');P(19,26,10,12,'#0a0604');P(20,27,8,11,'#1a0e08');P(10,22,4,4,'#9a2a1a');P(34,22,4,4,'#9a2a1a');circ(24,20,3,'#e8dcc0');P(23,19,1,1,'#0a0604');P(25,19,1,1,'#0a0604');}));
+  OBJ.shut.spr=[0,1].map(v=>sprite(50,54,()=>{P(6,50,38,3,'rgba(0,0,0,.4)');for(const x of[10,22,34])P(x,30,3,22,'#3a2a18');P(8,28,34,4,'#4a3a24');P(8,28,34,1,'#7a6040');
+    P(10,16,30,13,'#0c0806');P(11,17,28,11,'#5a4628');for(let i=12;i<39;i+=3)P(i,17,1,11,'#3e3018');P(20,20,8,8,'#0a0604');
+    for(let r=0;r<14;r++){const x0=25-Math.round(r*1.6)-2,w=Math.round(r*3.2)+4;P(x0-1,3+r,w+2,1,'#0c0806');P(x0,3+r,w,1,r%2?'#a08a4a':'#8a7438');}for(let i=0;i<46;i+=3)P(2+i,17+(i%2),1,2,'#6a5a2a');
+    for(let y=30;y<50;y+=4){P(36,y,8,1,'#5a4628');}P(36,30,1,20,'#3a2a18');P(43,30,1,20,'#3a2a18');if(v)P(30,8,3,3,'#e05a8a');}));
+  OBJ.shrine.spr=[0,1].map(v=>sprite(44,40,()=>{const G=v?['#ffd166','#fff2b0','#c8922a']:['#5ad8ff','#d0f6ff','#2a7aa8'];
+    ell(22,32,21,7,'#0a0c14');ell(22,31,20,6,'#3a4252');ell(22,30,18,5,'#4e586a');ell(22,30,14,3,'#2a303c');
+    for(let i=0;i<16;i++){const a=i/16*TAU;P(22+Math.cos(a)*16,30+Math.sin(a)*4.4,2,1,i%2?G[0]:G[2]);}
+    P(12,8,4,22,'#1a1e28');P(28,8,4,22,'#1a1e28');P(13,8,2,21,'#5a6478');P(29,8,2,21,'#5a6478');P(10,5,24,4,'#1a1e28');P(11,5,22,3,'#6a7488');P(11,5,22,1,'#9aa4b8');
+    for(const y of[12,18,24]){P(13,y,2,1,G[0]);P(29,y,2,1,G[0]);}
+    circ(22,18,5,'#0a0c14');circ(22,18,4,G[2]);circ(22,17,3,G[0]);P(21,15,2,2,G[1]);P(20,24,4,6,'#2a303c');P(19,29,6,2,'#3a4252');}));
+  const vt=(lit)=>sprite(40,112,()=>{P(4,108,32,3,'rgba(0,0,0,.45)');
+    for(let y=20;y<108;y++){const w=Math.round(9+(y-20)*.07);P(20-w-1,y,w*2+2,1,'#0a0c12');P(20-w,y,w*2,1,(y>>2)%2?'#4a5262':'#424a58');P(20-w,y,2,1,'#2a303c');P(20+w-2,y,2,1,'#5e6878');}
+    for(let y=24;y<104;y+=10){P(9,y,22,1,'#2a303c');}
+    for(let i=0;i<9;i++){const y=100-i*9,x=i%2?24:10;P(x,y,7,2,'#5a4028');P(x,y,7,1,'#8a6a42');}
+    P(6,12,28,8,'#0a0c12');P(7,13,26,6,'#5e6878');P(7,13,26,1,'#8a94a8');for(let i=7;i<33;i+=6)P(i,9,3,4,'#5e6878');
+    P(12,0,16,12,'#0a0c12');P(13,1,14,11,'#2a303c');
+    if(lit){circ(20,6,5,'#ff9a3a');circ(20,5,3,'#ffd166');P(19,3,2,2,'#fff6d0');}else{polyF([[20,2],[23,6],[20,10],[17,6]],'#3a7aa8');P(19,4,1,3,'#9ad8ff');}
+    P(16,92,8,14,'#0a0c12');P(17,93,6,13,'#1a1410');});
+  OBJ.vtower.spr=[vt(0)];OBJ.vtowerl.spr=[vt(1)];
+  OBJ.stele.spr=[0,1].map(v=>sprite(20,34,()=>{P(3,31,14,3,'rgba(0,0,0,.4)');polyF([[4,32],[4,6],[10,1],[16,6],[16,32]],'#0a0c12');polyF([[5,31],[5,6],[10,2],[15,6],[15,31]],'#4a4e5a');P(5,6,2,25,'#5e6272');P(13,6,2,25,'#363a44');
+    const c=v?'#ffd166':'#5ae0c8';for(let r=0;r<5;r++)for(let i=0;i<3;i++)if(hash(r,i,7)<.7)P(7+i*2,9+r*4,1+Math.floor(hash(r,i,8)*2),2,c);P(9,4,2,2,c);}));
+  OBJ.srock.spr=[0,1].map(v=>sprite(20,16,()=>{if(v){ell(10,12,6,2,'#120c08');ell(10,11,5,1.5,'#2a1e14');ell(16,9,5,4,'#121822');ell(16,8,4,3,'#46546a');return;}ell(10,10,9,5,'#121822');ell(10,9,8,4,'#46546a');ell(9,8,6,3,'#5a6a84');P(6,6,3,1,'#8094b0');ell(13,11,4,2,'#2a5a3a');P(12,5,1,1,'#ffd166');P(11,4,3,1,'#ffd166');P(12,3,1,3,'#ffd166');}));
+  OBJ.statue.spr=[sprite(36,62,()=>{P(4,58,28,3,'rgba(0,0,0,.4)');P(6,46,24,12,'#0a0c12');P(7,47,22,10,'#5a5e6a');P(7,47,22,2,'#8a8e9a');P(9,52,18,1,'#3a3e48');
+    polyF([[11,46],[13,22],[18,18],[23,22],[25,46]],'#0a0c12');polyF([[12,45],[14,22],[18,19],[22,22],[24,45]],'#8a8e9c');polyF([[18,19],[22,22],[24,45],[18,45]],'#6a6e7c');for(let y=26;y<45;y+=4)P(14,y,9,1,'#5a5e6a');
+    circ(18,14,5,'#0a0c12');circ(18,14,4,'#9a9eac');P(16,13,1,1,'#3a3e48');P(19,13,1,1,'#3a3e48');lineF(14,24,7,8,'#8a8e9c',3);lineF(22,24,29,8,'#8a8e9c',3);
+    circ(18,4,4,'#0a0c12');circ(18,4,3,'#7affd8');P(17,2,2,2,'#e0fff6');P(10,9,2,1,'#7affd8');P(25,9,2,1,'#7affd8');})];
+  OBJ.board.spr=[sprite(28,32,()=>{P(4,29,20,2,'rgba(0,0,0,.4)');P(5,10,3,20,'#2a1a0e');P(20,10,3,20,'#2a1a0e');P(2,4,24,16,'#0c0806');P(3,5,22,14,'#6a4a2a');P(3,5,22,1,'#8a6a42');for(const[x,y,w,h]of[[5,7,7,6],[14,6,8,8],[8,13,6,5]]){P(x,y,w,h,'#e8dcc0');P(x,y,w,1,'#fff6e0');P(x+1,y+2,w-2,1,'#8a7a60');P(x+1,y+4,w-3,1,'#8a7a60');P(x+w/2|0,y,1,1,'#9a2a1a');}}),];
+  OBJ.digspot.spr=[sprite(16,10,()=>{for(let i=0;i<7;i++){P(3+i*1.5,4+Math.floor(hash(i,1,3)*3),2,1,'rgba(20,12,6,.7)');}P(6,5,4,1,'rgba(20,12,6,.6)');P(7,3,1,4,'rgba(20,12,6,.6)');})];
+  OBJ.dug.spr=[sprite(16,10,()=>{ell(8,6,6,3,'#0e0804');ell(8,5,5,2,'#2a1a0e');P(1,7,3,2,'#4a3422');P(12,6,3,2,'#4a3422');})];
+  OBJ.camp2.spr=[sprite(20,12,()=>{for(let i=0;i<4;i++)lineF(4+i*3,10,10,3,'#4a3020',2);circ(10,8,3,'#ff9a3a');})];
+}
+Object.assign(OBJ,{
+  snowpine:{ax:15,ay:46,fade:1},atree:{ax:18,ay:42,fade:1},etree:{ax:30,ay:70,solid:[[-1,0],[0,0],[1,0]],fade:1},jtree:{ax:24,ay:54,fade:1},acacia:{ax:26,ay:42,fade:1},
+  gmush:{ax:17,ay:40,solid:[[0,0]],light:{r:46,c:'#5affe0',dy:-18,fl:.03,ga:.4},fade:1},gmushp:{ax:17,ay:40,solid:[[0,0]],light:{r:46,c:'#ff6ad8',dy:-18,fl:.03,ga:.4},fade:1},
+  smush:{ax:7,ay:9,flat:1},
+  ccr:{ax:12,ay:28,solid:[[0,0]],light:{r:40,c:'#6ad8ff',dy:-12,fl:.04,ga:.5}},ccrm:{ax:12,ay:28,solid:[[0,0]],light:{r:40,c:'#d07aff',dy:-12,fl:.04,ga:.5}},
+  gmushd:{ax:17,ay:40,solid:[[0,0]],fade:1},gmushpd:{ax:17,ay:40,solid:[[0,0]],fade:1},ccrd:{ax:12,ay:28,solid:[[0,0]]},ccrmd:{ax:12,ay:28,solid:[[0,0]]},
+  mesa:{ax:14,ay:34,solid:[[0,0]]},tgrass:{ax:7,ay:12},flowers:{ax:6,ay:7,flat:1},fern:{ax:11,ay:14},leafpile:{ax:9,ay:6,flat:1},snowrock:{ax:11,ay:14,solid:[[0,0]]},
+  icecr:{ax:8,ay:22,solid:[[0,0]],light:{r:30,c:'#9ad8ff',dy:-10,fl:.03,ga:.4}},reedw:{ax:7,ay:15},
+  ckeep:{ax:52,ay:114,solid:[[-2,0],[-1,0],[0,0],[1,0],[2,0],[-2,-1],[-1,-1],[0,-1],[1,-1],[2,-1],[-2,-2],[-1,-2],[0,-2],[1,-2],[2,-2],[-3,0],[3,0],[-3,-1],[3,-1]],bld:2,fade:2},
+  ctower:{ax:15,ay:59,solid:[[0,0]],bld:2},cgate:{ax:48,ay:69,solid:[[-3,0],[-2,0],[2,0],[3,0]],bld:2},kbanner:{ax:6,ay:32,solid:[[0,0]]},
+  lhouse:{ax:32,ay:51,solid:[[-1,0],[0,0],[1,0],[-1,-1],[0,-1],[1,-1]],bld:1,fade:3},ohut:{ax:24,ay:39,solid:[[-1,0],[0,0],[1,0],[0,-1]],bld:1},shut:{ax:25,ay:51,solid:[[-1,0],[0,0],[1,0]],bld:1,fade:3},
+  shrine:{ax:22,ay:33,solid:[[-1,-1],[1,-1]],light:{r:56,c:'#5ad8ff',dy:-16,fl:.03,ga:.5},bld:2},
+  vtower:{ax:20,ay:109,solid:[[-1,0],[0,0],[1,0],[0,-1]],bld:2},vtowerl:{ax:20,ay:109,solid:[[-1,0],[0,0],[1,0],[0,-1]],light:{r:90,c:'#ffa040',dy:-100,fl:.1,ga:.6},bld:2},
+  stele:{ax:10,ay:32,solid:[[0,0]],light:{r:24,c:'#5ae0c8',dy:-16,fl:.03,ga:.3}},srock:{ax:10,ay:13,solid:[[0,0]]},
+  statue:{ax:18,ay:59,solid:[[-1,0],[0,0],[1,0]],light:{r:48,c:'#7affd8',dy:-54,fl:.03,ga:.45},bld:2},board:{ax:14,ay:30,solid:[[0,0]]},
+  digspot:{ax:8,ay:6,flat:1},dug:{ax:8,ay:6,flat:1},camp2:{ax:10,ay:10,solid:[[0,0]]}});
+const _drawObj=drawObj;
+drawObj=function(o){const d=OBJ[o.type];if(!d||!d.fade||o.picked)return _drawObj(o);const spr=d.spr[o.v]||d.spr[0];let a=1;
+  if(player&&!player.hidden){const dx=player.x-o.x,dy=player.y-o.y,H=d.ay-6,Wd=d.ax*.8;if(dy<-2&&dy>-H&&Math.abs(dx)<Wd)a=d.fade===2?.6:.5;}
+  ctx.globalAlpha=a;ctx.drawImage(spr,Math.round(o.x-d.ax),Math.round(o.y-d.ay));ctx.globalAlpha=1;};
+
+/* ---------- régions du monde étendu ---------- */
+const W2R={};const W2ORDER=[];
+function w2Reg(c){W2R[c.id]=c;W2ORDER.push(c.id);}
+const FLORA=new Set(['tree','pine','bush','rock','boulder','palm','cactus','deadbush','obsidian','reed','shroom','tgrass','flowers','fern','leafpile','snowrock','snowpine','atree','jtree','acacia','gmush','gmushp','smush','ccr','ccrm','gmushd','gmushpd','ccrd','ccrmd','mesa','icecr','reedw','shell','vcryst','shard','etree']);
+function trail(m,pts,w,bridge){w=w||1;for(let i=0;i<pts.length-1;i++){const[a,b]=pts[i],[c,d]=pts[i+1],n=Math.ceil(Math.hypot(c-a,d-b)*2);
+  for(let k=0;k<=n;k++){const t=k/n,wx=(vnoise((a+(c-a)*t)*.25,(b+(d-b)*t)*.25,m.seed+3)-.5)*2.2*Math.sin(t*Math.PI);const x=Math.round(a+(c-a)*t+(Math.abs(d-b)>Math.abs(c-a)?wx:0)),y=Math.round(b+(d-b)*t+(Math.abs(d-b)>Math.abs(c-a)?0:wx));
+    for(let oy=0;oy<w+(k%3===0?1:0);oy++)for(let ox=0;ox<w;ox++){const X=x+ox-(w>>1),Y=y+oy-(w>>1),q=tAt(m,X,Y);if(q===T.WATER)setT(m,X,Y,bridge===false?T.WATER:T.BRIDGE);else if(q===T.GRASS||q===T.WALL||q===T.VOID||q===6)setT(m,X,Y,T.DIRT);}}}}
+function clearAt(m,cx,cy,r,keep){m.objs=m.objs.filter(o=>(keep&&keep.has(o.type))||!FLORA.has(o.type)||Math.hypot(o.tx-cx,o.ty-cy)>r);}
+function castle(m,C){const{x0,y0,x1,y1,k}=C,ki=KORD.indexOf(k);m.castles.push([x0-1,y0-2,x1+1,y1+1]);
+  for(let x=x0;x<=x1;x++){setT(m,x,y0,T.WALL);setT(m,x,y1,T.WALL);}for(let y=y0;y<=y1;y++){setT(m,x0,y,T.WALL);setT(m,x1,y,T.WALL);}
+  for(let y=y0+1;y<y1;y++)for(let x=x0+1;x<x1;x++){const q=tAt(m,x,y);if(q===T.WALL||q===T.WATER||q===6)setT(m,x,y,T.GRASS);}
+  const gx=(x0+x1)>>1;for(let x=gx-1;x<=gx+1;x++)setT(m,x,y1,T.PATH);addObj(m,'cgate',gx,y1,{v:ki});
+  for(const[x,y]of[[x0,y0],[x1,y0],[x0,y1],[x1,y1],[x0,(y0+y1)>>1],[x1,(y0+y1)>>1]])addObj(m,'ctower',x,y,{v:ki});
+  for(let x=x0+3;x<x1-2;x+=6)if(Math.abs(x-gx)>3)addObj(m,'kbanner',x,y1-1,{v:ki});
+  carvePath(m,[[gx,y1],[gx,C.keep[1]+2]],0);for(let x=gx-4;x<=gx+4;x++)for(let y=C.keep[1]+1;y<=C.keep[1]+4;y++)if(tAt(m,x,y)===T.GRASS)setT(m,x,y,T.PATH);
+  addObj(m,'ckeep',C.keep[0],C.keep[1],{v:C.kv});m.keep={x:C.keep[0],y:C.keep[1],k};m.gate={x:gx,y:y1};}
+function edgeOpen(m,side,i){const o=WORLD[m.id];let wx,wy;if(side==='w'){wx=o[0]-1;wy=o[1]+i;}else if(side==='e'){wx=o[0]+m.w;wy=o[1]+i;}else if(side==='n'){wx=o[0]+i;wy=o[1]-1;}else{wx=o[0]+i;wy=o[1]+m.h;}
+  for(const k in W2R){const c=W2R[k],q=WORLD[k];if(wx>=q[0]&&wx<q[0]+c.w&&wy>=q[1]&&wy<q[1]+c.h)return true;}return false;}
+function w2Flora(m,c){const W=m.w,H=m.h,occ=new Uint8Array(W*H),near=new Uint8Array(W*H);
+  for(const o of m.objs){const s=OBJ[o.type].solid||[[0,0]];for(const[dx,dy]of s){const X=o.tx+dx,Y=o.ty+dy;if(X>=0&&Y>=0&&X<W&&Y<H)occ[Y*W+X]=1;}if(o.tx>=0&&o.ty>=0&&o.tx<W&&o.ty<H)occ[o.ty*W+o.tx]=1;}
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){const q=m.t[y*W+x];if(q===T.DIRT||q===T.PATH||q===T.BRIDGE||q===T.RUIN)for(let oy=-1;oy<=1;oy++)for(let ox=-1;ox<=1;ox++){const X=x+ox,Y=y+oy;if(X>=0&&Y>=0&&X<W&&Y<H)near[Y*W+X]=1;}}
+  const R=(c.reserved||[]).concat(m.res||[]);const ow=[],oe=[],on=[],os=[];for(let y=0;y<H;y++){ow[y]=edgeOpen(m,'w',y);oe[y]=edgeOpen(m,'e',y);}for(let x=0;x<W;x++){on[x]=edgeOpen(m,'n',x);os[x]=edgeOpen(m,'s',x);}
+  for(let y=1;y<H;y++)for(let x=0;x<W;x++){const i=y*W+x,t=m.t[i];if(t!==T.GRASS||occ[i])continue;
+    const border=(x<2&&!ow[y])||(x>W-3&&!oe[y])||(y<3&&!on[x])||(y>H-2&&!os[x]);
+    if(!border&&R.some(r=>x>=r[0]&&x<=r[2]&&y>=r[1]&&y<=r[3]))continue;if(inCastle(m,x,y)){if(!near[i]&&hash(x,y,39)<.06)addObj(m,hash(x,y,38)<.5?'flowers':'tgrass',x,y,{v:0});continue;}
+    const wn=isWater(m,x+1,y)||isWater(m,x-1,y)||isWater(m,x,y+1)||isWater(m,x,y-1);
+    const p=border?.85:c.dens(x,y);
+    if(!near[i]&&hash(x,y,31)<p){if(x>0&&occ[i-1]&&hash(x,y,32)<.55&&!border)continue;const r=c.tree(x,y);if(r){addObj(m,r[0],x,y,{v:r[1],solidT:1});occ[i]=1;}}
+    else if(!border){const r=c.deco(x,y,wn,near[i]);if(r&&!(near[i]&&OBJ[r[0]].solid)){addObj(m,r[0],x,y,{v:r[1]});if(OBJ[r[0]].solid)occ[i]=1;}}}
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(m.t[y*W+x]===T.WATER&&c.lily&&hash(x,y,77)<c.lily&&isWater(m,x,y-1)&&isWater(m,x,y+1)&&isWater(m,x-1,y)&&isWater(m,x+1,y))addObj(m,'lily',x,y);}
+const BIOME={
+  meadow:{tree:(x,y)=>hash(x,y,33)<.18?['pine',hash(x,y,5)<.5?0:1]:['tree',Math.floor(hash(x,y,34)*3)],deco:(x,y,w)=>{const r=hash(x,y,40);if(w&&r<.3)return['reed',0];if(r<.07)return['tgrass',0];if(r<.1)return['flowers',Math.floor(hash(x,y,41)*3)];if(r<.125)return['bush',hash(x,y,42)<.3?1:0];if(r<.132)return['rock',0];return null;}},
+  autumn:{tree:(x,y)=>hash(x,y,33)<.06?['tree',3]:hash(x,y,33)<.16?['pine',0]:['atree',Math.floor(hash(x,y,34)*3)],deco:(x,y,w)=>{const r=hash(x,y,40);if(w&&r<.3)return['reed',0];if(r<.07)return['leafpile',hash(x,y,41)<.5?0:1];if(r<.11)return['tgrass',4];if(r<.13)return['bush',0];if(r<.14)return['boulder',0];if(r<.145)return['shroom',0];return null;}},
+  lake:{tree:(x,y)=>hash(x,y,33)<.3?['pine',0]:['tree',Math.floor(hash(x,y,34)*2)],deco:(x,y,w)=>{const r=hash(x,y,40);if(w&&r<.45)return['reedw',0];if(r<.08)return['tgrass',0];if(r<.12)return['flowers',2+Math.floor(hash(x,y,41)*2)];if(r<.14)return['bush',1];if(r<.15)return['rock',0];return null;}},
+  steppe:{tree:(x,y)=>hash(x,y,33)<.5?['pine',hash(x,y,5)<.5?0:1]:['tree',hash(x,y,34)<.5?0:2],deco:(x,y)=>{const r=hash(x,y,40);if(r<.14)return['tgrass',1];if(r<.165)return['flowers',Math.floor(hash(x,y,41)*2)];if(r<.18)return['boulder',hash(x,y,42)<.5?0:1];if(r<.19)return['deadbush',0];return null;}},
+  canyon:{tree:(x,y)=>hash(x,y,33)<.2?['boulder',0]:['mesa',hash(x,y,34)<.5?0:1],deco:(x,y)=>{const r=hash(x,y,40);if(r<.05)return['tgrass',2];if(r<.08)return['deadbush',0];if(r<.095)return['boulder',hash(x,y,42)<.5?0:1];if(r<.1)return['cactus',0];return null;}},
+  savanna:{tree:(x,y)=>hash(x,y,33)<.15?['boulder',0]:['acacia',0],deco:(x,y,w)=>{const r=hash(x,y,40);if(w&&r<.35)return['reedw',0];if(r<.16)return['tgrass',2];if(r<.18)return['deadbush',0];if(r<.19)return['boulder',hash(x,y,42)<.5?0:1];return null;}},
+  jungle:{tree:(x,y)=>hash(x,y,33)<.25?['tree',1]:['jtree',hash(x,y,34)<.5?0:1],deco:(x,y,w)=>{const r=hash(x,y,40);if(w&&r<.4)return['reedw',0];if(r<.13)return['fern',hash(x,y,41)<.5?0:1];if(r<.2)return['tgrass',3];if(r<.22)return['flowers',1];if(r<.24)return['bush',1];return null;}},
+  snow:{tree:(x,y)=>hash(x,y,33)<.08?['snowrock',0]:['snowpine',hash(x,y,34)<.6?0:1],deco:(x,y)=>{const r=hash(x,y,40);if(r<.025)return['snowrock',hash(x,y,41)<.5?0:1];if(r<.06)return['tgrass',5];if(r<.066)return['icecr',0];return null;}},
+  emerald:{tree:(x,y)=>hash(x,y,33)<.12?['etree',hash(x,y,34)<.5?0:1]:hash(x,y,33)<.3?['pine',1]:['tree',hash(x,y,34)<.5?0:1],deco:(x,y,w)=>{const r=hash(x,y,40);if(w&&r<.35)return['reedw',0];if(r<.1)return['fern',hash(x,y,41)<.5?0:1];if(r<.15)return['tgrass',3];if(r<.17)return['flowers',3];if(r<.185)return['shroom',0];if(r<.2)return['bush',1];return null;}},
+  mush:{tree:(x,y)=>[(hash(x,y,33)<.5?'gmush':'gmushp')+(hash(x,y,36)<.3?'':'d'),hash(x,y,34)<.5?0:1],deco:(x,y)=>{const r=hash(x,y,40);if(r<.07)return['smush',hash(x,y,41)<.5?0:1];if(r<.12)return['tgrass',6];if(r<.14)return['shroom',0];if(r<.15)return['boulder',0];return null;}},
+  crystal:{tree:(x,y)=>hash(x,y,33)<.25?['boulder',hash(x,y,5)<.5?0:1]:[(hash(x,y,34)<.5?'ccr':'ccrm')+(hash(x,y,36)<.35?'':'d'),hash(x,y,35)<.5?0:1],deco:(x,y)=>{const r=hash(x,y,40);if(r<.05)return['tgrass',7];if(r<.075)return['shard',0];if(r<.09)return['boulder',0];return null;}}};
+const forestD=(seed,hi,lo,sc)=>(x,y)=>{const n=vnoise(x/(sc||7),y/(sc||7),seed);return n>.58?hi:n>.5?(hi+lo)/2:lo;};
+const SSMAP={aldmoor:'valcourt',automne:'valdoria',lac:'coast',steppe:'desert',grakkar:'desert',givre:'kardum',nordheim:'kardum',glacier:'kardum',emeraude:'sylvaris',jungle:'sylvaris',savane:'desert',tzalan:'sylvaris',myco:'ostval',cristal:'ostval'};
+function genR2(c){const m=newMap(c.id,c.w,c.h,T.GRASS);Object.assign(m,{name:c.name,sub:c.sub||'Région',style:c.style,dark:c.dark||'rgba(8,14,30,.5)',seed:c.seed||7,w2:1,castles:[],res:[]});if(c.cstone)m.cstone=c.cstone;
+  for(const b of c.walls||[])blob(m,b[0],b[1],b[2],b[3],T.WALL,b[4]||41);for(const b of c.water||[])blob(m,b[0],b[1],b[2],b[3],T.WATER,b[4]||23);for(const b of c.lava||[])blob(m,b[0],b[1],b[2],b[3],6,b[4]||47);
+  if(c.pre)c.pre(m);for(const r of c.roads||[])carvePath(m,r,0);for(const t of c.trails||[])trail(m,t,1);for(const t of c.wide||[])trail(m,t,2);
+  if(c.castle)castle(m,c.castle);if(c.pois)c.pois(m);w2Std(m);
+  for(const S of SHOPLIST)if(S.region===m.id)addObj(m,'shop',S.tx,S.ty,{v:Math.max(0,SSTY.indexOf(SSMAP[m.id]||m.id))*6+['pot','arm','armu','dye','inn','pec'].indexOf(S.type),shop:S.key});
+  w2Flora(m,Object.assign({},BIOME[c.biome||c.style],c));finishMap(m);for(const o of m.objs)if(o.solidT)setSolid(m,o.tx,o.ty);return m;}
+function hamlet(m,L,type){for(const[x,y,v]of L)addObj(m,type||'house',x,y,{v:v||0});}
+function resv(m,x0,y0,x1,y1){m.res.push([x0,y0,x1,y1]);}
+/* --- liaisons avec les anciennes régions --- */
+const LINKS=[['valcourt',0,30],['desert',0,22],['desert',62,0],['ostval',32,0],['sylvaris',40,0],['kardum',40,0],['marais',48,43],['marais',95,20],['collines',36,53],['dragons',0,14],['dragons',40,59],['pics',71,30]];
+function linkOld(id,x,y){const m=maps[id];if(!m)return;let best=null,bd=1e9;for(let j=0;j<m.h;j++)for(let i=0;i<m.w;i++){const q=m.t[j*m.w+i];if(q!==T.PATH&&q!==T.RUIN&&q!==T.BRIDGE)continue;const d=Math.hypot(i-x,j-y);if(d<bd){bd=d;best=[i,j];}}
+  if(!best)return;const pts=[[x,y]];if(x===0||x===m.w-1)pts.push([x===0?Math.min(4,best[0]):Math.max(m.w-5,best[0]),y]);else pts.push([x,y===0?Math.min(4,best[1]):Math.max(m.h-5,best[1])]);pts.push(best);
+  const cells=[];for(let i=0;i<pts.length-1;i++){const[a,b]=pts[i],[c,d]=pts[i+1],n=Math.ceil(Math.hypot(c-a,d-b)*2);for(let k=0;k<=n;k++){const X=Math.round(a+(c-a)*k/n),Y=Math.round(b+(d-b)*k/n);for(const[ox,oy]of[[0,0],[1,0],[0,1],[1,1]])cells.push([X+ox,Y+oy]);}}
+  for(const[X,Y]of cells){const q=tAt(m,X,Y);if(q===T.GRASS||q===T.VOID||q===T.WALL||q===6){setT(m,X,Y,T.PATH);setSolid(m,X,Y,0);}else if(q===T.WATER){setT(m,X,Y,T.BRIDGE);setSolid(m,X,Y,0);}}
+  const kill=m.objs.filter(o=>FLORA.has(o.type)&&cells.some(([X,Y])=>Math.abs(o.tx-X)<=1&&Math.abs(o.ty-Y)<=1));
+  for(const o of kill){for(const[dx,dy]of OBJ[o.type].solid||[[0,0]])if(o.solidT||OBJ[o.type].solid){const X=o.tx+dx,Y=o.ty+dy,q=tAt(m,X,Y);if(q!==T.WALL&&q!==T.WATER&&q!==6)setSolid(m,X,Y,0);}}
+  m.objs=m.objs.filter(o=>!kill.includes(o));if(m._g)m._g=null;delete MM[id];}
+
+/* ================= ROYAUMES & DIPLOMATIE ================= */
+const KING={
+  valcourt:{n:'Royaume de Valcourt',short:'Valcourt',race:'Humains de l’Ouest',cap:'valcourt',lands:['valcourt','valdoria','coast'],rival:'aldmoor',tier:2,
+    ruler:{id:'isaure',name:'Régente Isaure',pal:'k_valcourt',r:'valcourt',x:45,y:29},capts:[['valcourt',62,30,'Capitaine Aubry'],['valdoria',60,40,'Capitaine Lenoir'],['coast',30,16,'Capitaine Morgane']],champ:'Sire Godefroy',
+    lore:'Valcourt est la dernière grande cité de l’ouest. Depuis que le roi a disparu, je tiens la couronne… et elle pèse.'},
+  aldmoor:{n:'Royaume d’Aldmoor',short:'Aldmoor',race:'Humains de la Couronne Rouge',cap:'aldmoor',lands:['aldmoor','automne','lac'],rival:'valcourt',tier:1,
+    ruler:{id:'edmond',name:'Roi Edmond III',pal:'k_aldmoor',r:'aldmoor',x:42,y:16},capts:[['aldmoor',42,46,'Capitaine Rodric'],['automne',30,30,'Capitaine Hélène'],['lac',14,22,'Capitaine Bastien']],
+    lore:'Aldmoor et Valcourt se disputent l’héritage de l’ancien empire depuis trois générations. Je préfère les épées aux traités.'},
+  sylvaris:{n:'Royaume elfe de Sylvaris',short:'Sylvaris',race:'Elfes',cap:'sylvaris',lands:['sylvaris','ostval'],rival:'kardum',tier:2,
+    ruler:{id:'thalion',name:'Émissaire Thalion',pal:'elfv',r:'sylvaris',x:54,y:32},capts:[['sylvaris',20,30,'Capitaine Aerin'],['sylvaris',60,50,'Capitaine Néria'],['ostval',50,30,'Capitaine Faelis']],champ:'Lame-Lune Saelith',
+    lore:'Les elfes n’oublient rien. Ni les amis, ni les haches naines qui ont abattu nos bois sacrés.'},
+  kardum:{n:'Royaume nain de Kar-Dûm',short:'Kar-Dûm',race:'Nains',cap:'collines',lands:['kardum','collines'],rival:'sylvaris',tier:2,
+    ruler:{id:'brokk',name:'Ambassadeur Brokk',pal:'h_kardum',r:'collines',x:18,y:46},capts:[['collines',40,30,'Capitaine Durin'],['kardum',40,50,'Capitaine Grimha'],['collines',60,40,'Capitaine Borin']],champ:'Thrain Brise-Roc',
+    lore:'Kar-Dûm ne plie devant personne. Mais un nain honnête reconnaît une dette.'},
+  nordheim:{n:'Royaume de Nordheim',short:'Nordheim',race:'Hommes du Nord',cap:'nordheim',lands:['nordheim','givre','glacier'],rival:'grakkar',tier:3,
+    ruler:{id:'hrolf',name:'Jarl Hrolf',pal:'k_nordheim',r:'nordheim',x:36,y:16},capts:[['nordheim',36,46,'Capitaine Ulfar'],['givre',40,40,'Capitaine Astrid'],['glacier',20,38,'Capitaine Halvar']],
+    lore:'Au nord, on respecte trois choses : la hache, la parole donnée et l’hydromel.'},
+  grakkar:{n:'Horde de Grakkar',short:'Grakkar',race:'Orcs',cap:'grakkar',lands:['grakkar','steppe'],rival:'nordheim',tier:3,
+    ruler:{id:'mogthar',name:'Seigneur de guerre Mog’thar',pal:'k_grakkar',r:'grakkar',x:40,y:16},capts:[['grakkar',40,46,'Chef Gorbag'],['steppe',40,30,'Chef Rakka'],['grakkar',66,48,'Chef Uzgul']],
+    lore:'GRAKKAR ! Les orcs ne demandent rien. Ils prennent. Mais un guerrier fort peut parler à Mog’thar.'},
+  tzalan:{n:'Empire de Tzalan',short:'Tzalan',race:'Hommes-lézards',cap:'tzalan',lands:['tzalan','jungle','savane'],rival:'sablerouge',tier:3,
+    ruler:{id:'ixtli',name:'Reine Ixtli',pal:'k_tzalan',r:'tzalan',x:36,y:20},capts:[['tzalan',36,50,'Garde-jade Tlaloc'],['jungle',40,42,'Garde-jade Coatl'],['savane',30,24,'Garde-jade Ixca']],
+    lore:'Tzalan était déjà vieille quand vos ancêtres taillaient des silex. Nous voyons loin, sang-chaud.'},
+  sablerouge:{n:'Sultanat de Sablerouge',short:'Sablerouge',race:'Peuple des sables',cap:'desert',lands:['desert'],rival:'tzalan',tier:2,
+    ruler:{id:'kadir',name:'Vizir Kadir',pal:'h_sable',r:'desert',x:45,y:43},capts:[['desert',26,36,'Capitaine Selim'],['desert',62,20,'Capitaine Zahra'],['desert',50,40,'Capitaine Faris']],champ:'Sabre-Rouge Hakim',
+    lore:'La Sultane Amira voit tout depuis l’oasis. Le sable garde les secrets… et les comptes.'}};
+const KBTY={valcourt:[['skeleton',8],['bandit',6],['pirate',6]],aldmoor:[['wolf',8],['bandit',6],['spectre',5]],sylvaris:[['ronce',8],['cwolf',6],['elfs',5]],kardum:[['golem',4],['skeleton',8],['boar',6]],
+  nordheim:[['frostwolf',8],['iceskel',6],['orc',6]],grakkar:[['frostwolf',6],['scorpion',6],['iceskel',6]],tzalan:[['jslime',8],['hyena',6],['panther',6]],sablerouge:[['scorpion',8],['mummy',6],['sandslime',8]]};
+function dip(k){const D=flags.dip=flags.dip||{};if(!D[k])D[k]={rep:k==='valcourt'?15:0,st:'neutre',capt:{}};if(k==='valcourt'&&stage>=54&&!D[k].saved){D[k].saved=1;if(D[k].st==='neutre'){D[k].st='allie';D[k].rep=Math.max(D[k].rep,60);}}return D[k];}
+const isAlly=k=>['allie','conquis'].includes(dip(k).st);
+function crowns(){return KORD.filter(isAlly).length;}
+function landKing(id){for(const k of KORD)if(KING[k].lands.includes(id))return k;return null;}
+function repAdd(k,n,silent){const d=dip(k);d.rep=clamp(d.rep+n,-100,100);if(!silent)toast(`<b style="color:${KPAL[k].ban}">${KING[k].short}</b> · réputation ${n>0?'+':''}${n} <small>(${d.rep})</small>`,KPAL[k].ban);}
+const DST={neutre:['Neutre','#c8d4e8'],allie:['Allié','#6fe07a'],guerre:['En guerre','#ff6a7a'],conquis:['Conquis','#ffd166']};
+/* --- choix --- */
+function choose(who,text,opts){return new Promise(res=>{let d=$('#choice');if(!d){d=document.createElement('div');d.id='choice';d.className='panel hidden';document.body.appendChild(d);}
+  S.lock=true;d.innerHTML=`<div class="cwho">${esc(who)}</div><div class="ctxt">${text}</div><div class="copts">${opts.map((o,i)=>`<button class="cbtn${o.dis?' dis':''}" data-i="${i}"${o.dis?' disabled':''}><kbd>${i+1}</kbd>${o.t}${o.s?`<small>${o.s}</small>`:''}</button>`).join('')}</div>`;d.classList.remove('hidden');
+  const done=i=>{d.classList.add('hidden');window.removeEventListener('keydown',kh,true);S.lock=false;sfx('pick');res(i);};
+  const kh=e=>{const n=parseInt(e.key,10);if(n>=1&&n<=opts.length&&!opts[n-1].dis){e.stopPropagation();e.preventDefault();done(n-1);}else if(e.key==='Escape'){e.stopPropagation();done(opts.length-1);}};
+  window.addEventListener('keydown',kh,true);d.querySelectorAll('.cbtn').forEach(b=>b.onclick=ev=>{ev.stopPropagation();done(+b.dataset.i);});});}
+/* --- soldats & personnages --- */
+const SOLDEF={valcourt:{head:'khelm',body:'plate',over:['kcape'],w:'sword',shield:1,met:['#a8b8cc','#4a5668','#eef4fc'],cape:['#2f4a8a','#1c2c5a'],cl:['#2f4a8a','#1c2c5a','#4a6ab0']},
+  aldmoor:{head:'khelm',body:'plate',over:['kcape'],w:'sword',shield:1,met:['#b0a89c','#5a524a','#f0e8dc'],cape:['#a8322a','#601a14'],cl:['#a8322a','#601a14','#c85a4a']},
+  sylvaris:{head:'elf',ears:1,body:'tunic',over:['coat'],w:'katana',met:['#c8d8d0','#5a6a64','#ffffff'],cape:['#2a6a4a','#1c4a34'],cl:['#2a6a4a','#1c4a34','#4a9a6e'],sk:3,hr:3},
+  kardum:{head:'beard',body:'plate',w:'axe',met:['#c8963a','#6a4a1a','#f0d080'],cape:['#6a3a1a','#3a200e'],cl:['#6a4a24','#4a3218','#8a6230'],hr:1},
+  nordheim:{head:'wild',body:'tunic',over:['fur'],w:'axe',met:['#a8b6c4','#4a5664','#e8f0fa'],cape:['#3a5a8a','#24385a'],cl:['#3a5a8a','#24385a','#5a7ab0'],hr:4},
+  grakkar:{head:'goblin',body:'tunic',over:['fur'],w:'axe',met:['#6a6a6a','#2a2a2a','#a0a0a0'],cape:['#7a2a1a','#4a160c'],cl:['#5a3a22','#3a2414','#7a5a34'],skin:['#6a8a4a','#4a6a32','#8aaa6a']},
+  tzalan:{head:'goblin',body:'tunic',w:'spear',met:['#5ac0a0','#2a6a5a','#c8fff0'],cape:['#1a6a5a','#0e4a3e'],cl:['#1a6a5a','#0e4a3e','#2a9a84'],skin:['#3a9a8a','#2a6a60','#5ac0aa']},
+  sablerouge:{head:'hood',body:'robe',w:'katana',met:['#e8c060','#8a6a2a','#fff0b0'],cape:['#7a1a2a','#4a0e18'],cl:['#c8a060','#8a6a3a','#e8c888'],sk:1}};
+function solPal(k,o){const D=SOLDEF[k],sk=D.skin||SK[D.sk||0],hr=HR[D.hr||0];return mkPal(sk,hr,D.cl,[D.cl[1],'#1a1410'],Object.assign({M:D.met[0],n:D.met[1],o:D.met[2],R:D.cape[0],r:D.cape[1],Q:D.cape[0],q:D.cape[1],T:'#c9a24a',t:'#7a6030',e:'#0a0d16',g:D.met[2]},o||{}));}
+function w2Chars(){
+  for(const k of KORD){const D=SOLDEF[k],sh=KING[k].short;
+    CHAR['sol_'+k]={head:D.head,ears:D.ears,body:D.body,over:D.over,w:D.w,shield:D.shield};CP['sol_'+k]=solPal(k);
+    CHAR['arc_'+k]={head:k==='grakkar'||k==='tzalan'?'goblin':k==='sylvaris'?'elf':'hood',ears:D.ears,body:'tunic',over:['quiver'],w:'bow'};CP['arc_'+k]=solPal(k);
+    CHAR['cap_'+k]={head:k==='grakkar'?'chiefh':k==='tzalan'?'goblin':k==='sylvaris'?'elf':k==='nordheim'?'wild':'khelm',ears:D.ears,body:'plate',over:['kcape'],w:k==='nordheim'||k==='grakkar'||k==='kardum'?'axe':k==='tzalan'?'spear':'sword',shield:k==='valcourt'||k==='aldmoor'?1:0};CP['cap_'+k]=solPal(k);
+    Object.assign(EN,{['sol_'+k]:{name:'Soldat · '+sh,hp:46,atk:13,def:3,spd:42,xp:26,r:5,ai:'melee',reach:21,top:28,sold:k},['arc_'+k]:{name:'Archer · '+sh,hp:30,atk:11,def:1,spd:36,xp:24,r:5,ai:'ranged',top:28,sold:k},
+      ['cap_'+k]:{name:'Capitaine · '+sh,hp:210,atk:19,def:5,spd:44,xp:150,r:6,ai:'melee',reach:24,elite:1,top:31,sold:k,capt:1}});}
+  CHAR.orc=CHAR.sol_grakkar;CP.orc=CP.sol_grakkar;CHAR.orcarc=CHAR.arc_grakkar;CP.orcarc=CP.arc_grakkar;CHAR.lizard=CHAR.sol_tzalan;CP.lizard=CP.sol_tzalan;CHAR.lizarc=CHAR.arc_tzalan;CP.lizarc=CP.arc_tzalan;
+  Object.assign(EN,{orc:{name:'Orc pillard',hp:44,atk:14,def:3,spd:42,xp:26,r:5,ai:'melee',reach:21,top:28},orcarc:{name:'Orc archer',hp:30,atk:12,def:1,spd:36,xp:24,r:5,ai:'ranged',top:28},
+    lizard:{name:'Homme-lézard',hp:42,atk:13,def:3,spd:48,xp:26,r:5,ai:'melee',reach:23,top:28},lizarc:{name:'Lézard sarbacane',hp:28,atk:12,def:1,spd:40,xp:24,r:5,ai:'ranged',top:28},
+    frostwolf:{name:'Loup des glaces',hp:34,atk:12,def:2,spd:62,xp:20,r:6,ai:'lunge',top:17,draw:'wolf',tone:{k:'frost',h:205,ms:.55,s:.5,l:1.35}},
+    snowslime:{name:'Gelée de neige',hp:30,atk:11,def:2,spd:28,xp:16,r:5,ai:'hop',contact:1,top:12,draw:'slime',tone:{k:'snow',h:210,ms:.6,s:.4,l:1.4}},
+    jslime:{name:'Gelée de jungle',hp:30,atk:11,def:1,spd:30,xp:16,r:5,ai:'hop',contact:1,top:12,draw:'slime',tone:{k:'jgl',h:110,ms:.6,s:1.1,l:1}},
+    mossslime:{name:'Gelée de mousse',hp:44,atk:16,def:3,spd:30,xp:26,r:5,ai:'hop',contact:1,top:12,draw:'slime',tone:{k:'moss',h:95,ms:.7,s:.8,l:.85}},
+    sporeslime:{name:'Gelée sporée',hp:52,atk:18,def:3,spd:30,xp:30,r:5,ai:'hop',contact:1,top:12,draw:'slime',tone:{k:'spore',h:300,ms:.7,s:1,l:1.05}},
+    cryslime:{name:'Gelée de cristal',hp:58,atk:19,def:5,spd:32,xp:32,r:5,ai:'hop',contact:1,top:12,draw:'slime',tone:{k:'cry',h:190,ms:.7,s:1.2,l:1.2}},
+    panther:{name:'Panthère',hp:36,atk:14,def:2,spd:70,xp:24,r:6,ai:'lunge',top:17,draw:'wolf',tone:{k:'panth',h:260,ms:.4,s:.4,l:.5}},
+    hyena:{name:'Hyène',hp:30,atk:12,def:1,spd:62,xp:18,r:6,ai:'lunge',top:17,draw:'wolf',tone:{k:'hyen',h:38,ms:.55,s:.9,l:1.05}},
+    iceskel:{name:'Squelette gelé',hp:54,atk:16,def:4,spd:38,xp:30,r:5,ai:'melee',reach:21,top:28,tone:{k:'iceS',h:200,ms:.45,s:.8,l:1.15}}});
+  {const base=CP.skeleton,T0=EN.iceskel.tone;TONE=T0;CP.iceskel={};for(const q in base)CP.iceskel[q]=toneC(base[q]);TONE=null;CHAR.iceskel=CHAR.skeleton;}
+  const R=(id,head,body,over,cl,sk,hr,ex,w)=>{CHAR[id]=Object.assign({head,body,over,w},ex||{});CP[id]=mkPal(sk,hr,cl,[cl[1],'#1a1410'],{R:cl[0],r:cl[1],T:'#e8c060',t:'#9a7a30',M:'#c8ccd8',n:'#5a6070',o:'#ffffff',g:'#ffd166'});};
+  R('k_valcourt','long','robe',['kcape'],['#2f4a8a','#1c2c5a','#4a6ab0'],SK[3],HR[1],{circlet:1});
+  R('k_aldmoor','beard','robe',['kcape'],['#a8322a','#601a14','#c85a4a'],SK[0],HR[3],{circlet:1});
+  R('k_nordheim','wild','tunic',['fur'],['#3a5a8a','#24385a','#5a7ab0'],SK[3],HR[4],{circlet:1},'axe');
+  R('k_grakkar','chiefh','tunic',['fur'],['#5a2a1a','#3a160c','#7a3a22'],['#5a7a3a','#3a5a26','#7a9a5a'],HR[2],{},'axe');
+  R('k_tzalan','goblin','robe',['kcape'],['#1a6a5a','#0e4a3e','#2ac0a0'],['#3a9a8a','#2a6a60','#5ac0aa'],HR[2],{circlet:1});
+  R('h_kardum','beard','tunic',['apron'],['#6a4a24','#4a3218','#8a6230'],SK[1],HR[1]);
+  R('h_sable','hood','robe',[],['#c8a060','#8a6a3a','#e8c888'],SK[1],HR[2]);
+  R('elwen','elf','tunic',['quiver'],['#3a6a3a','#244424','#5a8a5a'],SK[3],HR[1],{ears:1},'bow');
+  R('lirien','elf','robe',[],['#5a7a9a','#3a5470','#8aa8c8'],SK[3],HR[3],{ears:1});
+  R('dwalin','beard','plate',[],['#6a4a24','#4a3218','#8a6230'],SK[1],HR[0],{},'axe');
+  R('orme','beard','robe',[],['#2a5a3a','#1a3a26','#4a8a5a'],SK[0],HR[3],{},'staff');
+  R('pip','hat','robe',[],['#6a3a8a','#46245e','#9a6ab8'],SK[3],HR[1],{},'staff');
+  R('skald','long','robe',['fur'],['#4a4a6a','#2a2a44','#6a6a8a'],SK[0],HR[3]);
+  for(const k of['valcourt','aldmoor','nordheim','grakkar','tzalan','sylvaris','kardum','sablerouge']){const id='kb_'+k,src=KING[k].ruler.pal;CHAR[id]=CHAR[KING[k].champ?'cap_'+k:src];CP[id]=CP[KING[k].champ?'cap_'+k:src];}
+  CHAR.urgash=CHAR.cap_grakkar;CP.urgash=solPal('grakkar',{R:'#2a2a2a',r:'#111111'});CHAR.mogshadow=CHAR.k_grakkar;CP.mogshadow=Object.assign({},CP.k_grakkar,{R:'#2a0a3a',r:'#14061e',C:'#3a1a4a',c:'#22102e',l:'#5a2a6a',g:'#b07aff'});}
+/* --- dialogue royal --- */
+function kingOf(n){for(const k of KORD)if(KING[k].ruler.id===n.id)return k;return null;}
+async function kingTalk(n,k){const K=KING[k],d=dip(k),who=n.name,col=KPAL[k].ban;
+  if(!(flags.kmet||{})[k]){(flags.kmet=flags.kmet||{})[k]=1;await talk([{who,text:`Je suis ${K.ruler.name}, ${k==='kardum'||k==='sylvaris'||k==='sablerouge'||k==='valcourt'?'voix':'souverain'} du ${K.n}.`},{who,text:K.lore}]);}
+  for(;;){const st=DST[d.st],opts=[];
+    const head=`<span class="kchip" style="--kc:${col}">${esc(K.n)}</span> <span class="kst" style="color:${st[1]}">${st[0]}</span> · réputation <b>${d.rep}</b>`;
+    if(d.st==='neutre'){opts.push({t:'Proposer une alliance',s:d.rep>=30?'Ils sont prêts à signer.':`Réputation requise : 30 (${d.rep})`,dis:d.rep<30,a:'ally'});opts.push({t:'Offrir un présent',s:'120 pièces · +10 réputation',dis:player.coins<120,a:'gift'});opts.push({t:'Avis de recherche',a:'bty'});opts.push({t:'Déclarer la guerre',s:'Leurs soldats deviendront hostiles.',a:'war'});}
+    else if(d.st==='allie'||d.st==='conquis'){const esc0=(flags.escT||{})[k]||0,tr=(d.trib||-1e9);opts.push({t:'Demander une escorte',s:esc0>playT?`Disponible dans ${Math.ceil((esc0-playT)/60)} min`:'Deux soldats te suivent 6 minutes.',dis:esc0>playT,a:'esc'});
+      opts.push({t:d.st==='conquis'?'Percevoir le tribut':'Recevoir un présent royal',s:playT-tr<600?`Dans ${Math.ceil((600-(playT-tr))/60)} min`:'',dis:playT-tr<600,a:'trib'});opts.push({t:'Avis de recherche',a:'bty'});if(d.st==='allie')opts.push({t:'Rompre l’alliance',a:'brk'});}
+    else if(d.st==='guerre'){const c=peaceCost(k);opts.push({t:'Demander la paix',s:`${c} pièces`,dis:player.coins<c,a:'peace'});}
+    opts.push({t:'Partir',a:'bye'});
+    const i=await choose(who,head,opts),a=opts[i].a;
+    if(a==='bye')return;
+    if(a==='gift'){player.coins-=120;repAdd(k,10);sfx('coin');continue;}
+    if(a==='ally'){const R=K.rival,rd=dip(R);let warn='';if(rd.st==='allie')warn=` L’alliance avec ${KING[R].short} sera rompue.`;
+      const ok=await choose(who,`Signer l’alliance avec ${esc(K.n)} ?${warn} ${KING[R].short} n’appréciera pas.`,[{t:'Signer'},{t:'Pas maintenant'}]);if(ok)continue;
+      d.st='allie';if(rd.st==='allie'){rd.st='neutre';toast(`${KING[R].short} rompt votre alliance.`,'#ff6a7a');}repAdd(R,-20,true);
+      await talk([{who,text:pick(['Qu’il en soit ainsi. Nos bannières flotteront à tes côtés.','Notre sang est désormais lié au tien.','Les tambours de guerre sonneront pour toi.'])}]);qBanner('Alliance signée',K.n);w2Spawn(map.id,1);save();continue;}
+    if(a==='war'){const ok=await choose(who,`Déclarer la guerre au ${esc(K.n)} ? Leurs soldats t’attaqueront partout sur leurs terres. Pour les conquérir : abats leurs 3 capitaines, puis leur souverain.`,[{t:'Déclarer la guerre'},{t:'Non'}]);if(ok)continue;
+      d.st='guerre';d.rep=-50;d.capt={};repAdd(K.rival,15,true);await talk([{who,text:pick(['Alors tu mourras sur nos terres.','Gardes ! Saisissez-le !','Tu viens de signer ton arrêt de mort.'])}]);qBanner('Guerre déclarée',K.n);w2Spawn(map.id,1);save();return;}
+    if(a==='peace'){player.coins-=peaceCost(k);d.st='neutre';d.rep=-10;await talk([{who,text:'L’or apaise bien des colères. La paix… pour l’instant.'}]);for(const e of enemies)if(e.d.sold===k&&!e.dead)e.fade=1;save();continue;}
+    if(a==='brk'){d.st='neutre';d.rep=Math.max(-20,d.rep-25);toast('Alliance rompue.','#ff6a7a');save();continue;}
+    if(a==='esc'){(flags.escT=flags.escT||{})[k]=playT+900;escortSpawn(k);await talk([{who,text:'Mes meilleurs soldats t’accompagnent.'}]);return;}
+    if(a==='trib'){d.trib=playT;const c=(d.st==='conquis'?90:45)*K.tier;dropCoins(player.x,player.y-4,c,8);if(d.st==='allie')for(let i=0;i<2;i++)pickups.push({k:'potion',x:player.x+rnd(-10,10),y:player.y+8,t:0});sfx('chest');save();continue;}
+    if(a==='bty'){await bountyTalk(k,who);continue;}}}
+const peaceCost=k=>150+KING[k].tier*120;
+function bounty(k){const B=flags.bty=flags.bty||{};if(!B[k])B[k]={i:0,c:0,on:0};return B[k];}
+async function bountyTalk(k,who){const b=bounty(k),L=KBTY[k],q=L[b.i%L.length],nm=(EN[q[0]]||{}).name||q[0];
+  if(!b.on){const i=await choose(who,`Avis de recherche : élimine <b>${q[1]} × ${esc(nm)}</b>. Récompense : ${80+b.i*25} pièces et +12 réputation.`,[{t:'Accepter'},{t:'Refuser'}]);if(!i){b.on=1;b.c=0;toast('Avis accepté : '+esc(nm)+` (0/${q[1]})`,'#ffd166');save();}return;}
+  if(b.c>=q[1]){b.on=0;b.i++;dropCoins(player.x,player.y-4,80+(b.i-1)*25,8);repAdd(k,12);await talk([{who,text:'Beau travail. Voici ta récompense.'}]);save();return;}
+  await talk([{who,text:`Il en reste. (${b.c}/${q[1]} ${nm})`}]);}
+function bountyKill(e){const B=flags.bty;if(!B)return;for(const k in B){const b=B[k];if(!b.on)continue;const q=KBTY[k][b.i%KBTY[k].length];if(e.type===q[0]&&b.c<q[1]){b.c++;if(b.c>=q[1])toast(`Avis de recherche rempli : retourne voir ${KING[k].ruler.name}.`,'#ffd166');else if(b.c%2===0)toast(`${(EN[q[0]]||{}).name} (${b.c}/${q[1]})`,'#e8e2cc');}}}
+/* --- alliés --- */
+let allies=[];
+function mkAlly(k,x,y,o){return Object.assign({k,type:Math.random()<.3?'arc_'+k:'sol_'+k,x,y,hx:x,hy:y,r:5,face:1,anim:rnd(0,3),cd:rnd(0,1),moving:false,swing:0,lvl:Math.max(player.lvl,(MOBS[map.id]||{l:5}).l)},o||{});}
+function escortSpawn(k){for(let i=0;i<2;i++)allies.push(mkAlly(k,player.x+rnd(-20,20),player.y+rnd(10,20),{esc:1,ttl:360}));toast(`Escorte de ${KING[k].short} : 6 minutes.`,KPAL[k].ban);}
+function allyUpd(dt){if(!WORLD[map.id]&&!map.w2i){allies=allies.filter(a=>a.esc);return;}
+  for(const a of allies){a.anim+=dt;a.cd-=dt;a.swing=Math.max(0,a.swing-dt);a.moving=false;if(a.esc){a.ttl-=dt;}
+    let t=null,bd=a.esc?170:150;for(const e of enemies){if(e.dead||e.fade||(e.alt||0)>12||e.d.static&&e.type!=='heart')continue;if(e.d.sold&&e.d.sold===a.k)continue;const d=Math.hypot(e.x-a.x,e.y-a.y);if(d<bd){bd=d;t=e;}}
+    const rng=a.type.startsWith('arc_')?90:16;
+    if(t){if(bd>rng){steerA(a,t.x,t.y,58,dt);}else{a.face=t.x<a.x?-1:1;if(a.cd<=0){a.cd=a.type.startsWith('arc_')?1.3:.85;a.swing=.18;
+        if(a.type.startsWith('arc_')){const l=Math.hypot(t.x-a.x,t.y-a.y)||1;APR.push({x:a.x,y:a.y-10,vx:(t.x-a.x)/l*230,vy:(t.y-6-a.y+10)/l*230,life:1.2,tgt:t,dmg:a.lvl});}
+        else allyHit(a,t);}}}
+    else if(a.esc){const tx=player.x-player.fx*18+(a===allies.find(q=>q.esc)?-14:14),ty=player.y-player.fy*12+6;if(Math.hypot(tx-a.x,ty-a.y)>22)steerA(a,tx,ty,Math.hypot(tx-a.x,ty-a.y)>120?160:76,dt);if(Math.hypot(player.x-a.x,player.y-a.y)>320){a.x=player.x+rnd(-16,16);a.y=player.y+12;}}
+    else{if(!a.wt||(a.wt-=dt)<=0){a.wt=rnd(2,5);a.wx=a.hx+rnd(-60,60);a.wy=a.hy+rnd(-40,40);}if(Math.hypot(a.wx-a.x,a.wy-a.y)>8)steerA(a,a.wx,a.wy,30,dt);}}
+  if(allies.some(a=>a.esc&&a.ttl<=0)){allies=allies.filter(a=>!(a.esc&&a.ttl<=0));toast('Ton escorte rentre au royaume.','#c8d4e8');}
+  for(const q of APR){q.life-=dt;q.x+=q.vx*dt;q.y+=q.vy*dt;if(!q.tgt||q.tgt.dead){q.life=0;continue;}if(Math.hypot(q.tgt.x-q.x,q.tgt.y-6-q.y)<q.tgt.r+6){allyHit({lvl:q.dmg},q.tgt);q.life=0;}}APR=APR.filter(q=>q.life>0);}
+let APR=[];function drawAPR(){for(const q of APR){const l=Math.hypot(q.vx,q.vy)||1,ux=q.vx/l,uy=q.vy/l;for(let i=0;i<7;i++)P(Math.round(q.x-ux*i),Math.round(q.y-uy*i),1,1,i<2?'#e8eef8':'#c8a070');}}
+function steerA(a,tx,ty,spd,dt){const dx=tx-a.x,dy=ty-a.y,d=Math.hypot(dx,dy);if(d<1)return;move(a,dx/d*spd*dt,dy/d*spd*dt);a.face=dx<0?-1:1;a.moving=true;}
+function allyHit(a,e){const dmg=Math.max(1,Math.round((5+a.lvl*1.5)*rnd(.85,1.15)-e.def*.5));e.hp-=dmg;e.flash=.1;floats.push({x:e.x+rnd(-4,4),y:e.y-e.d.top+2,n:dmg,col:'#bfe0ff',t:0});if(e.state==='sleep'&&e.d.wb)e.hp=Math.max(1,e.hp);if(e.hp<=0&&!e.dead)killEnemy(e);sfx('hit');}
+function drawAlly(a){const x=Math.round(a.x),y=Math.round(a.y);ell(x,y,5,2,'rgba(0,0,0,.4)');drawHuman(x,y,a.type,{dir:a.face<0?2:3,moving:a.moving,t:a.anim+(a.swing>0?.5:0)});
+  if(a.swing>0&&!a.type.startsWith('arc_')){const s=a.face;P(x+s*6,y-14,s*8,2,'rgba(255,255,255,.7)');}
+  const c=KPAL[a.k].ban;P(x-1,y-33,3,3,'#05070d');P(x,y-32,1,1,c);if(a.esc){P(x-2,y-36,5,1,'#05070d');}}
+/* --- apparition des soldats selon la diplomatie --- */
+function solSpots(m,n,seed){const out=[];const pts=[];for(let y=2;y<m.h-2;y+=2)for(let x=2;x<m.w-2;x+=2){const t=m.t[y*m.w+x];if((t===T.DIRT||t===T.PATH)&&!m.solid[y*m.w+x])pts.push([x,y]);}
+  for(let i=0;i<n&&pts.length;i++){const p=pts[Math.floor(hash(i,seed,17)*pts.length)];if(Math.hypot(p[0]*TS-player.x,p[1]*TS-player.y)>140)out.push(p);}return out;}
+function w2Spawn(id,refresh){const k=landKing(id);if(!k)return;const d=dip(k),m=maps[id],K=KING[k],L=(MOBS[id]||{l:8}).l+2;
+  if(refresh){allies=allies.filter(a=>a.esc);for(const e of enemies)if(e.d.sold===k&&!e.dead&&!e.d.capt)e.fade=1;}
+  if(d.st==='guerre'){for(const[x,y]of solSpots(m,7,id.length*3)){spawn('sol_'+k,x,y,L,{war:1});if(hash(x,y,3)<.6)spawn('arc_'+k,x+1,y,L,{war:1});}
+    K.capts.forEach((c,i)=>{if(c[0]!==id||d.capt[i]||enemies.some(e=>e.cid===i&&e.d.sold===k&&!e.dead))return;const p=freeNear(m,c[1],c[2]);const e=spawn('cap_'+k,p[0],p[1],L+2,{cid:i,war:1});e.cname=c[3];spawn('sol_'+k,p[0]+1,p[1]+1,L,{war:1});spawn('sol_'+k,p[0]-1,p[1]+1,L,{war:1});});
+    if(id===K.ruler.r&&Object.keys(d.capt).length>=3&&!enemies.some(e=>e.type==='kb_'+k&&!e.dead)){const p=freeNear(m,K.ruler.x,K.ruler.y);spawn('kb_'+k,p[0],p[1],L+4,{wbid:'kb_'+k,state:'sleep',home:{x:p[0]*TS+8,y:p[1]*TS+12}});}}
+  else if(isAlly(k)){for(const[x,y]of solSpots(m,3,id.length*5+1))allies.push(mkAlly(k,x*TS+8,y*TS+10));}}
+function freeNear(m,x,y){for(let r=0;r<10;r++)for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){const X=x+dx,Y=y+dy;if(X<1||Y<1||X>=m.w-1||Y>=m.h-1)continue;if(!m.solid[Y*m.w+X]&&!m.solid[Y*m.w+X+1]&&!m.solid[Y*m.w+X-1]&&m.t[Y*m.w+X]!==T.WATER)return[X,Y];}return[x,y];}
+function captKill(e){const k=e.d.sold;if(!k)return;const d=dip(k);if(e.d.capt&&e.cid!==undefined&&d.st==='guerre'){d.capt[e.cid]=1;const n=Object.keys(d.capt).length;toast(`${e.cname||'Capitaine'} est tombé (${n}/3).`,KPAL[k].ban);if(n>=3){qBanner('Le souverain t’attend',KING[k].n);toast(`${KING[k].ruler.name} t’attend : ${WORLDNAMES[KING[k].ruler.r]||KING[k].ruler.r}.`,'#ffd166');if(map.id===KING[k].ruler.r)w2Spawn(map.id);}save();}
+  if(e.type==='kb_'+k&&d.st==='guerre'){d.st='conquis';d.rep=0;d.trib=-1e9;qBanner('Royaume conquis',KING[k].n);addTitle('Conquérant · '+KING[k].short);for(const o of enemies)if(o.d.sold===k&&!o.dead)o.fade=1;save();}}
+function w2KillRep(e){if(e.d.sold||!WORLD[map.id])return;const k=landKing(map.id);if(!k||dip(k).st==='guerre')return;const K=flags.kc=flags.kc||{};K[k]=(K[k]||0)+1;if(K[k]%4===0)repAdd(k,1,K[k]%20!==0);}
+
+/* ================= CONTENU ANNEXE : sanctuaires, tours, graines, stèles, grottes, colosses ================= */
+const SHR=[['aldmoor',8,30,'force','Ka’Velo'],['aldmoor',70,10,'cibles','Mira’Sol'],['automne',12,48,'runes','Ro’Hanna'],['automne',70,12,'force','Teh’Sar'],['lac',72,8,'cibles','Lu’Mira'],['lac',10,56,'runes','Ondaë'],
+  ['steppe',8,12,'force','Venta’Ka'],['steppe',70,50,'cibles','Sho’Ran'],['grakkar',8,57,'force','Gor’Ul'],['grakkar',73,6,'runes','Ash’Tor'],['givre',66,12,'runes','Hiv’Nara'],['givre',10,50,'force','Frey’Ka'],
+  ['nordheim',8,52,'cibles','Skal’Dor'],['nordheim',64,8,'force','Nor’Vik'],['glacier',12,40,'runes','Is’Mael'],['glacier',70,56,'force','Gla’Tir'],['emeraude',12,10,'cibles','Syl’Va'],['emeraude',70,50,'runes','Eme’Ra'],
+  ['jungle',8,8,'force','Tza’Mi'],['jungle',84,54,'cibles','Kua’Lo'],['savane',8,8,'runes','Om’Bu'],['savane',66,40,'force','Sava’Ra'],['tzalan',6,56,'cibles','Jad’Ix'],['tzalan',64,8,'runes','Que’Tal'],
+  ['myco',10,10,'force','Myr’Ko'],['myco',70,44,'runes','Spo’Rah'],['cristal',8,50,'cibles','Cri’Stal'],['cristal',56,10,'force','Fai’Ra']].map((a,i)=>({id:'shr'+i,r:a[0],x:a[1],y:a[2],kind:a[3],n:'Sanctuaire '+a[4]}));
+const TWR=[['aldmoor',8,18],['automne',48,34],['lac',8,30],['steppe',30,28],['grakkar',70,40],['givre',40,24],['nordheim',10,12],['glacier',24,56],['emeraude',8,46],['jungle',52,52],['savane',40,36],['tzalan',62,54],['myco',26,44],['cristal',50,50]].map((a,i)=>({id:'twr'+i,r:a[0],x:a[1],y:a[2]}));
+const STL=[['aldmoor',30,50,'automne',14,8,'Au pied du seul arbre mort du bois aux mille couleurs, au nord-ouest de Roncevaux, la terre garde un secret.'],
+  ['automne',70,30,'lac',41,32,'Sur l’île du saule, au milieu du Lac Miroir, creuse à l’ombre de l’arbre.'],
+  ['lac',72,30,'steppe',38,46,'Au cœur du Cercle des Vents, sept pierres veillent un trésor.'],
+  ['steppe',66,6,'savane',21,34,'Là où la caravane naine a péri, une bourse fut enterrée juste avant la fin.'],
+  ['savane',8,40,'givre',22,16,'Dans l’antre du Yéti, un crâne de géant regarde le sud. Creuse derrière lui.'],
+  ['givre',66,40,'glacier',40,13,'Entre les quatre piliers du Tombeau de Varn, au pied de l’autel, le héros a laissé sa part.'],
+  ['glacier',12,52,'emeraude',40,31,'Au centre du Cercle des Druides, la mousse cache une pierre creuse.'],
+  ['emeraude',66,36,'cristal',32,27,'Devant le Cœur de cristal, là où la lumière se brise, repose la Lame des Huit.']].map((a,i)=>({id:'stl'+i,r:a[0],x:a[1],y:a[2],dr:a[3],dx:a[4],dy:a[5],txt:a[6]}));
+const CAVES=[['automne',20,58,'Terrier des Ronces'],['grakkar',12,23,'Mine abandonnée'],['glacier',66,12,'Grotte de givre'],['emeraude',56,56,'Racines profondes'],['jungle',30,58,'Cénote oubliée'],['myco',60,8,'Gouffre mycélien']].map((a,i)=>({id:'cv'+i,r:a[0],x:a[1],y:a[2],n:a[3]}));
+const STATUES=[['aldmoor',36,33],['nordheim',30,33],['tzalan',30,37],['lac',22,19],['savane',40,27],['cristal',22,36],['grakkar',33,33]];
+const BOARDS=[['aldmoor',49,33,'aldmoor'],['nordheim',42,33,'nordheim'],['tzalan',42,37,'tzalan'],['grakkar',47,33,'grakkar']];
+const WB={dame:{r:'aldmoor',x:66,y:55,l:7,n:'La Dame Blanche',draw:'spectre',sc:2,tone:{k:'dame',h:200,ms:.25,s:.5,l:1.35},hp:315,mv:['volley','rain','summon','volley'],min:'spectre',col:'#c8f4ff',rad:10,top:40},
+  gorm:{r:'automne',x:62,y:46,l:9,n:'Gorm le Cyclope',draw:'giant',gv:'cyclops',hp:420,mv:['swipe','slam','charge','swipe','rock'],col:'#c8a070',rad:13,top:62},
+  mcrab:{r:'lac',x:66,y:52,l:11,n:'La Mère-Crabe',draw:'crab',sc:3,tone:{k:'mcrab',h:350,ms:.35,s:1.2,l:.9},hp:465,mv:['charge','slam','volley','summon'],min:'crab',col:'#9ad8ff',rad:15,top:40},
+  urgash:{r:'steppe',x:52,y:17,l:12,n:'Urgash Crâne-Fendu',draw:null,sc:2,hp:480,mv:['swipe','charge','slam','summon'],min:'orc',col:'#ff8a4a',rad:8,top:44},
+  scorpk:{r:'savane',x:60,y:34,l:14,n:'Le Roi Scorpion',draw:'scorpion',sc:2.5,tone:{k:'scK',h:355,ms:.5,s:1.1,l:.7},hp:540,mv:['charge','volley','rain','swipe'],col:'#b0ff5a',rad:14,top:38},
+  troll:{r:'savane',x:56,y:13,l:15,n:'Troll des gués',draw:'giant',gv:'troll',hp:615,mv:['swipe','slam','rock','charge'],col:'#9a9e88',rad:13,top:62},
+  kukul:{r:'jungle',x:70,y:19,l:17,n:'Kukul, drake d’émeraude',draw:'drake',sc:2,tone:{k:'kuk',h:130,ms:.6,s:1,l:1},hp:675,mv:['charge','volley','leap','rain'],col:'#5affa0',rad:13,top:46},
+  hronn:{r:'givre',x:18,y:18,l:18,n:'Hrönn le Yéti',draw:'giant',gv:'yeti',hp:735,mv:['swipe','slam','volley','charge'],col:'#bfe8ff',rad:13,top:62},
+  fenrir:{r:'nordheim',x:60,y:52,l:20,n:'Fenrir',draw:'wolf',sc:2.5,tone:{k:'fen',h:210,ms:.6,s:.4,l:1.5},hp:788,mv:['charge','leap','summon','slam'],min:'frostwolf',col:'#cfefff',rad:14,top:44},
+  cgivre:{r:'glacier',x:58,y:52,l:23,n:'Colosse de givre',draw:'golem',sc:2,tone:{k:'cgiv',h:205,ms:.6,s:.6,l:1.35},hp:938,mv:['slam','rain','charge','swipe'],col:'#9ad8ff',rad:15,top:72},
+  cmousse:{r:'emeraude',x:60,y:16,l:25,n:'Colosse de mousse',draw:'golem',sc:2,tone:{k:'cmou',h:110,ms:.6,s:.8,l:.9},hp:1050,mv:['slam','summon','rain','swipe'],min:'mossslime',col:'#8aff6a',rad:15,top:72},
+  spore:{r:'myco',x:50,y:29,l:27,n:'La Reine Spore',draw:'slime',sc:3.5,tone:{k:'spQ',h:310,ms:.75,s:1.1,l:1.1},hp:1125,mv:['leap','volley','summon','slam'],min:'sporeslime',col:'#ff7ae0',rad:16,top:44},
+  ccrist:{r:'cristal',x:32,y:25,l:30,n:'Colosse de cristal',draw:'golem',sc:2.2,tone:{k:'ccr',h:190,ms:.75,s:1.3,l:1.4},hp:1350,mv:['volley','rain','slam','charge'],col:'#8ae8ff',rad:16,top:78},
+  mogshadow:{r:'grakkar',x:40,y:17,l:26,n:'Mog’thar couronné d’ombre',draw:null,sc:2,hp:1125,mv:['swipe','charge','slam','summon','rain'],min:'orc',col:'#b07aff',rad:9,top:46,arc:1}};
+const GIANT={cyclops:{sk:['#8a6a4a','#6a4e34','#a8865e'],fur:['#5a3a22','#3a2414'],eye:1,horn:1,club:['#5a4028','#3a2818'],ec:'#ff5a2a'},
+  yeti:{sk:['#5a7a9a','#3e5a78','#7a9ab8'],fur:['#dfe8f4','#a8b8cc','#ffffff'],eye:2,ff:1,club:['#9ad8ff','#5a9ac8'],ec:'#7ad8ff'},
+  troll:{sk:['#5a7a5a','#3e5a40','#7a9a76'],fur:['#3a4a2a','#26301a'],eye:2,nose:1,club:['#6a6e7a','#3a3e48'],ec:'#ffd166'}};
+function w2EN(){for(const id in WB){const B=WB[id];EN['wb_'+id]=Object.assign({name:B.n,hp:B.hp,atk:16+B.l*.4,def:4+Math.floor(B.l/6),spd:B.draw==='giant'?34:44,xp:260+B.l*14,r:B.rad,ai:'wboss',elite:1,top:B.top,wb:B,draw:B.draw||undefined,sc:B.sc,tone:B.tone,gv:B.gv});
+    if(!B.draw){const src=id==='urgash'?'urgash':'mogshadow';CHAR['wb_'+id]=CHAR[src];CP['wb_'+id]=CP[src];}}
+  for(const k of KORD){const K=KING[k];EN['kb_'+k]=Object.assign({},{name:K.champ||K.ruler.name,hp:360+K.tier*80,atk:20,def:6,spd:46,xp:600,r:9,ai:'wboss',elite:1,top:56,sc:2,sold:k,kb:1,wb:{mv:['swipe','charge','slam','summon'],min:'sol_'+k,col:KPAL[k].ban}});}
+  EN.gardien={name:'Gardien ancien',hp:70,atk:14,def:4,spd:30,xp:40,r:8,ai:'melee',reach:26,elite:1,top:36,draw:'golem',tone:{k:'gard',h:200,ms:.5,s:1,l:1.1}};
+  CHAR.gardien=CHAR.golem;CP.gardien=CP.golem||CP.skeleton;
+  EN.cible={name:'Cible',hp:1,atk:0,def:0,spd:0,xp:2,r:6,ai:'cible',static:1,top:24,draw:'cible'};}
+/* --- placement dans les régions --- */
+function prep(m,x,y,rad){for(let j=y-rad;j<=y+rad;j++)for(let i=x-rad;i<=x+rad;i++){if(Math.hypot(i-x,j-y)>rad+.5)continue;if(inCastle(m,i,j))continue;const q=tAt(m,i,j);if(q===T.WALL||q===T.WATER||q===6)setT(m,i,j,T.GRASS);}m.res.push([x-rad-1,y-rad-1,x+rad+1,y+rad+1]);}
+function w2Std(m){const id=m.id;
+  for(const s of SHR)if(s.r===id){prep(m,s.x,s.y,3);addObj(m,'shrine',s.x,s.y,{shr:s.id});}
+  for(const t of TWR)if(t.r===id){prep(m,t.x,t.y,2);addObj(m,'vtower',t.x,t.y,{twr:t.id});}
+  for(const s of STL){if(s.r===id){prep(m,s.x,s.y,1);addObj(m,'stele',s.x,s.y,{stl:s.id});}if(s.dr===id){prep(m,s.dx,s.dy,1);addObj(m,'digspot',s.dx,s.dy,{dig:s.id});}}
+  if(id==='automne')addObj(m,'tree',14,7,{v:3});
+  for(const c of CAVES)if(c.r===id){prep(m,c.x,c.y-1,3);addObj(m,'cave',c.x,c.y,{cave:c.id});}
+  for(const[r,x,y]of STATUES)if(r===id){prep(m,x,y,0);addObj(m,'statue',x,y);}
+  for(const[r,x,y,k]of BOARDS)if(r===id){prep(m,x,y,0);addObj(m,'board',x,y,{bk:k});}
+  for(const b in WB){const B=WB[b];if(B.r===id&&!B.arc)prep(m,B.x,B.y,4);}
+  let n=0;for(let i=0;i<400&&n<3;i++){const x=4+Math.floor(hash(i,id.length,71+id.charCodeAt(0))*(m.w-8)),y=5+Math.floor(hash(i,id.length,73+id.charCodeAt(1))*(m.h-10));
+    if(m.res.some(r=>x>=r[0]-1&&x<=r[2]+1&&y>=r[1]-1&&y<=r[3]+1))continue;if(m.castles.some(c=>x>=c[0]&&x<=c[2]&&y>=c[1]&&y<=c[3]))continue;let ok=true;for(let j=-1;j<=1&&ok;j++)for(let k=-1;k<=1;k++)if(tAt(m,x+k,y+j)!==T.GRASS){ok=false;break;}if(!ok)continue;
+    if(m.objs.some(o=>o.seed&&Math.hypot(o.tx-x,o.ty-y)<14))continue;addObj(m,'srock',x,y,{seed:'sd_'+id+'_'+n});m.res.push([x-1,y-1,x+1,y+1]);n++;}}
+function w2Sync(){const F=flags;for(const id in maps){const m=maps[id];if(!m.w2&&!m.w2i)continue;for(const o of m.objs){
+  if(o.shr)o.v=(F.shr||{})[o.shr]?1:0;else if(o.twr)o.type=(F.twr||{})[o.twr]?'vtowerl':'vtower';else if(o.seed){o.v=(F.seed||{})[o.seed]?1:0;setSolid(m,o.tx,o.ty,o.v?0:1);}
+  else if(o.stl)o.v=(F.stl||{})[o.stl]?1:0;else if(o.dig)o.type=(F.dig||{})[o.dig]?'dug':'digspot';}}}
+const cnt=k=>Object.keys(flags[k]||{}).length;
+/* --- intérieurs (sanctuaires & grottes) --- */
+const W2I={};
+Object.assign(FSTY,{shrine:['#121826','#1a2234','#1e283a','#2e3e5a'],cave2:['#1a1612','#241e18','#2a231c','#3a3026']});Object.assign(WSTY,{shrine:['#141c2a','#222e44','#1e283c','#3a4c6e'],cave2:['#201a14','#30271e','#2a2219','#4a3c2c']});
+function shrineMap(s){const m=newMap('sh_'+s.id,22,17,T.WALL);m.name=s.n;m.sub='Sanctuaire';m.style='shrine';m.dark='rgba(4,8,20,.72)';m.w2i=1;m.parent=s.r;m.ret=[s.x*TS+8,(s.y+2)*TS+4];m.shr=s;
+  for(let y=1;y<15;y++)for(let x=1;x<21;x++)setT(m,x,y,T.FLOOR);for(const[x,y]of[[1,1],[20,1],[1,14],[20,14],[2,1],[19,1]])setT(m,x,y,T.WALL);
+  m.stairs=addObj(m,'stairs',11,15);setT(m,11,15,T.FLOOR);setT(m,10,15,T.FLOOR);setT(m,12,15,T.FLOOR);
+  for(const[x,y]of[[4,4],[17,4],[4,11],[17,11]])addObj(m,'rpillar2',x,y);addObj(m,'altar',11,2);
+  if(s.kind==='runes'){m.plates=[[7,7],[15,7],[7,11],[15,11]].map(([x,y],i)=>addObj(m,'rplate',x,y,{pi:i}));}
+  finishMap(m);return m;}
+function caveMap(c){const m=newMap('cv_'+c.id,46,34,T.WALL),R=c.r,seed=c.id.length*7+R.length;m.name=c.n;m.sub='Grotte';m.style='cave2';m.dark='rgba(4,3,8,.86)';m.w2i=1;m.parent=R;m.ret=[c.x*TS+8,(c.y+1)*TS+4];m.cvd=c;
+  for(let y=1;y<m.h-1;y++)for(let x=1;x<m.w-1;x++)if(hash(x,y,seed)<.55)setT(m,x,y,T.FLOOR);
+  for(let it=0;it<4;it++){const nt=new Uint8Array(m.t);for(let y=1;y<m.h-1;y++)for(let x=1;x<m.w-1;x++){let w=0;for(let j=-1;j<=1;j++)for(let i=-1;i<=1;i++)if(tAt(m,x+i,y+j)===T.WALL)w++;nt[y*m.w+x]=w>=5?T.WALL:T.FLOOR;}m.t.set(nt);}
+  const carve=(a,b,c2,d)=>{const n=Math.ceil(Math.hypot(c2-a,d-b)*2);for(let k=0;k<=n;k++){const X=Math.round(a+(c2-a)*k/n),Y=Math.round(b+(d-b)*k/n);for(let j=-1;j<=1;j++)for(let i=-1;i<=1;i++)if(X+i>0&&Y+j>0&&X+i<m.w-1&&Y+j<m.h-1)setT(m,X+i,Y+j,T.FLOOR);}};
+  carve(22,31,22,22);carve(22,22,8,14);carve(22,22,38,12);carve(8,14,12,4);carve(38,12,40,4);carve(22,22,30,28);for(let x=20;x<=24;x++)setT(m,x,32,T.FLOOR);setT(m,22,33,T.WALL);
+  const seen=new Uint8Array(m.w*m.h),q=[[22,31]];seen[31*m.w+22]=1;let far=[22,31],fd=0;while(q.length){const[x,y]=q.shift();const d=Math.abs(x-22)+Math.abs(y-31);if(d>fd){fd=d;far=[x,y];}for(const[i,j]of[[1,0],[-1,0],[0,1],[0,-1]]){const X=x+i,Y=y+j;if(tAt(m,X,Y)===T.FLOOR&&!seen[Y*m.w+X]){seen[Y*m.w+X]=1;q.push([X,Y]);}}}
+  for(let y=0;y<m.h;y++)for(let x=0;x<m.w;x++)if(m.t[y*m.w+x]===T.FLOOR&&!seen[y*m.w+x])setT(m,x,y,T.WALL);
+  m.stairs=addObj(m,'stairs',22,32);m.far=far;addObj(m,'chest',far[0],far[1],{cid:'cv_'+c.id,loot:{coins:120+(MOBS[R]||{l:10}).l*8,potion:2,weapon:(MOBS[R]||{l:10}).l+3,armor:(MOBS[R]||{l:10}).l+2}});
+  for(let y=1;y<m.h-1;y++)for(let x=0;x<m.w;x++){if(tAt(m,x,y)===T.WALL&&tAt(m,x,y+1)===T.FLOOR&&hash(x,y,44)<.12&&x%3===0)addObj(m,'torch',x,y,{y:y*TS+15});if(tAt(m,x,y)===T.FLOOR&&hash(x,y,45)<.025&&Math.hypot(x-22,y-31)>4)addObj(m,hash(x,y,46)<.5?'shroom':'bones',x,y);}
+  finishMap(m);return m;}
+for(const s of SHR)W2I['sh_'+s.id]={b:()=>shrineMap(s)};for(const c of CAVES)W2I['cv_'+c.id]={b:()=>caveMap(c)};
+const _ensureIn=ensureIn;ensureIn=function(id){if(!maps[id]&&W2I[id]){maps[id]=W2I[id].b();REGION2[id]=1;w2Sync();}return _ensureIn(id);};
+OBJ.rplate={ax:8,ay:9,flat:1};
+function shrineEnter(){const m=map,s=m.shr;const done=(flags.shr||{})[s.id];m.trial={kind:s.kind,t:0,st:done?'done':'intro',lvl:(MOBS[s.r]||{l:8}).l};setMusic('dun');
+  if(done){if(!m.objs.some(o=>o.cid==='shc_'+s.id))return;return;}
+  setTimeout(()=>{if(map!==m)return;zoneTitle(s.kind==='force'?'Épreuve de force':s.kind==='cibles'?'Épreuve d’adresse':'Épreuve de mémoire',s.n);},200);}
+function trialTick(dt){const m=map,T0=m.trial;if(!T0||T0.st==='done'||T0.st==='won')return;T0.t+=dt;const s=m.shr,L=T0.lvl;
+  if(T0.kind==='force'){if(T0.st==='intro'&&T0.t>1.6){T0.st='run';const n=2+Math.min(3,Math.floor(L/8));for(let i=0;i<n;i++)spawn('gardien',6+i*3%12,6+(i%2)*3,L,{shr:1});toast('Vaincs les gardiens.','#5ad8ff');}
+    if(T0.st==='run'&&!enemies.some(e=>e.shr&&!e.dead))trialWin();}
+  else if(T0.kind==='cibles'){if(T0.st==='intro'&&T0.t>1.6){T0.st='run';T0.t=0;T0.lim=24-Math.min(8,Math.floor(L/5));for(const[x,y]of[[4,7],[17,7],[11,5],[6,12],[16,12],[11,9]])spawn('cible',x,y,1,{shr:1});toast(`Détruis les 6 cibles en ${T0.lim} s !`,'#5ad8ff');}
+    if(T0.st==='run'){if(!enemies.some(e=>e.type==='cible'&&!e.dead))trialWin();else if(T0.t>T0.lim){for(const e of enemies)if(e.type==='cible')e.dead=true;enemies=enemies.filter(e=>!e.dead);T0.st='intro';T0.t=0;toast('Trop lent… L’épreuve recommence.','#ff6a7a');sfx('void');}}}
+  else if(T0.kind==='runes'){const P0=m.plates;if(T0.st==='intro'&&T0.t>1.4){const n=4+Math.min(3,Math.floor(L/9));T0.seq=[];for(let i=0;i<n;i++){let v;do v=Math.floor(Math.random()*4);while(i&&v===T0.seq[i-1]);T0.seq.push(v);}T0.st='show';T0.t=0;T0.k=0;toast('Observe la séquence…','#5ad8ff');}
+    if(T0.st==='show'){const i=Math.floor(T0.t/.75);for(const p of P0)p.v=0;if(i<T0.seq.length){if(T0.t%.75<.55){P0[T0.seq[i]].v=1;if(T0.lastS!==i){T0.lastS=i;sfx('pick');}}}else{T0.st='play';T0.k=0;T0.on=-1;toast('À toi : marche sur les dalles dans le même ordre.','#5ad8ff');}}
+    if(T0.st==='play'){let on=-1;for(const p of P0){p.v=0;if(Math.hypot(player.x-p.x,player.y-p.y+4)<11)on=p.pi;}if(on>=0)P0[on].v=1;
+      if(on>=0&&on!==T0.on){if(on===T0.seq[T0.k]){T0.k++;sfx('coin');if(T0.k>=T0.seq.length)trialWin();}else{T0.st='intro';T0.t=-.6;shake=5;sfx('void');toast('Mauvaise dalle ! La séquence recommence.','#ff6a7a');spawn('gardien',11,8,L,{shr:1});}}T0.on=on;}}}
+function trialWin(){const m=map,s=m.shr;m.trial.st='won';sfx('lvl');shake=4;burst(11*TS+8,3*TS,40,'#5ad8ff');qBanner('Épreuve réussie',s.n);
+  if(!m.objs.some(o=>o.cid==='shc_'+s.id)){const L=m.trial.lvl;m.objs.push({type:'chest',tx:11,ty:4,x:11*TS+8,y:4*TS+14,v:0,cid:'shc_'+s.id,orb:s.id,loot:{coins:60+L*4,potion:1}});setSolid(m,11,4,1);}}
+function w2Orb(o){if(!o.orb||(flags.shr||{})[o.orb])return;(flags.shr=flags.shr||{})[o.orb]=1;flags.orbs=(flags.orbs||0)+1;w2Sync();
+  toast(`<b style="color:#5ad8ff">Orbe d’épreuve</b> obtenu ! (${flags.orbs} en poche · sanctuaires ${cnt('shr')}/${SHR.length})`,'#5ad8ff');
+  if(!flags.orbTip){flags.orbTip=1;setTimeout(()=>toast('Offre 4 orbes à une Statue de la Déesse pour gagner un cœur.','#7affd8'),1800);}arcCheck();save();}
+const _openChest=openChest;openChest=function(o){_openChest(o);if(o.orb)w2Orb(o);};
+/* --- colosses / IA de boss du monde --- */
+function wbBar(e){if(e){$('#bossName').textContent=`${e.d.name} · niv. ${e.lvl}`;$('#bossbar').classList.remove('hidden');}else if(!enemies.some(o=>o.d.boss&&!o.dead))$('#bossbar').classList.add('hidden');}
+function wbWake(e){e.state='roar';e.t=1.1;shake=7;sfx('slam');wbBar(e);floats.push({x:e.x,y:e.y-e.d.top-10,n:'',txt:e.d.kb?'EN GARDE !':'GRRAAAH !',col:e.d.wb.col,t:0});}
+function wbStrike(e,r){const col=e.d.wb.col;fx.push({k:'ring',x:r.x,y:r.y,r:4,max:28,t:0,life:.35,col});for(let i=0;i<10;i++)parts.push({x:r.x+rnd(-8,8),y:r.y-rnd(0,10),vx:rnd(-30,30),vy:rnd(-60,-10),l:.6,ml:.6,c:col,s:2,g:80,glow:1});
+  const d=Math.hypot(player.x-r.x,player.y-r.y);if(d<24)hurtPlayer(e.atk*.6,(player.x-r.x)/(d||1),(player.y-r.y)/(d||1));sfx('slam');}
+function wbAI(e,dt,dx,dy,d){const B=e.d.wb,H=e.home||(e.home={x:e.x,y:e.y});e.kx*=.2;e.ky*=.2;e.alt=e.alt||0;const dl=Math.hypot(e.x-H.x,e.y-H.y);
+  if(e.state==='sleep'||!e.state){e.state='sleep';e.alt=0;if(!S.dead&&(d<130||e.hp<e.maxHp))wbWake(e);e.aggro=false;return;}
+  if(e.state!=='home'&&e.state!=='leap'&&(dl>400||d>440||S.dead)){e.state='home';wbBar(null);}
+  if(e.state==='home'){steer(e,H.x,H.y,e.d.spd*1.4,dt);e.hp=Math.min(e.maxHp,e.hp+e.maxHp*.12*dt);if(dl<12){e.state='sleep';e.hp=e.maxHp;e.phase=1;e.strk=null;}e.aggro=false;return;}
+  if(e.phase!==2&&e.hp<e.maxHp*.5){e.phase=2;e.state='roar';e.t=.9;shake=6;sfx('void');floats.push({x:e.x,y:e.y-e.d.top-10,n:'',txt:'FUREUR',col:B.col,t:0});}
+  if(e.strk){for(const r of e.strk){r.t-=dt;if(r.t<=0&&!r.done){r.done=1;wbStrike(e,r);}}e.strk=e.strk.filter(r=>!r.done);}
+  const sp=e.d.spd*(e.phase===2?1.25:1),cdm=e.phase===2?.72:1,reach=e.r+16,big=e.d.sc||1.6;
+  switch(e.state){
+    case 'roar':if(e.t<=0){e.state='chase';e.cd=.4;}break;
+    case 'chase':case 'wander':case 'rec2':case 'wind':case 'lunge':e.state='chase';if(d>reach-4)steer(e,player.x,player.y,sp,dt);e.face=dx<0?-1:1;
+      if(d<e.r+8&&(e.touch=(e.touch||0)-dt)<=0){e.touch=.8;hurtPlayer(e.atk*.45,dx/(d||1),dy/(d||1));}
+      if(e.cd<=0){let mv=pick(B.mv);if(mv==='swipe'&&d>reach+40)mv=pick(B.mv.filter(m=>m!=='swipe').concat(['charge']));if(mv==='summon'&&enemies.filter(o=>o.minion&&!o.dead).length>=4)mv='slam';
+        if(mv==='swipe'){e.state='swipeW';e.t=.42;e.ba=Math.atan2(dy,dx);fx.push({k:'cone',x:e.x,y:e.y-8,ang:e.ba,r:reach+18,arc:1.1,t:0,life:.42});}
+        else if(mv==='slam'){e.state='slamW';e.t=.7;e.R=40+big*14;fx.push({k:'tele',x:e.x,y:e.y,r:e.R,t:0,life:.7});}
+        else if(mv==='charge'){e.state='chargeW';e.t=.5;e.cdx=dx/(d||1);e.cdy=dy/(d||1);fx.push({k:'teleLine',x:e.x,y:e.y,dx:e.cdx,dy:e.cdy,t:0,life:.5});}
+        else if(mv==='volley'||mv==='rock'){e.state='volW';e.t=.5;e.rock=mv==='rock';}
+        else if(mv==='rain'){e.strk=e.strk||[];const n=e.phase===2?6:4;for(let i=0;i<n;i++){const x=player.x+(i?rnd(-56,56):0),y=player.y+(i?rnd(-42,42):0),t=.8+i*.09;e.strk.push({x,y,t});fx.push({k:'tele',x,y,r:22,t:0,life:t});}sfx('void');e.state='rec';e.t=.6;}
+        else if(mv==='summon'){const n=e.phase===2?3:2;for(let i=0;i<n;i++){const a=rnd(0,TAU),tx=Math.floor((e.x+Math.cos(a)*30)/TS),ty=Math.floor((e.y+Math.sin(a)*24)/TS);if(!map.solid[ty*map.w+tx]){const m=spawn(B.min||'skeleton',tx,ty,Math.max(1,e.lvl-3));m.minion=1;burst(m.x,m.y-6,10,B.col);}}sfx('void');e.state='rec';e.t=.7;}
+        else if(mv==='leap'){e.state='leapW';e.t=.45;e.tx=player.x;e.ty=player.y;fx.push({k:'tele',x:e.tx,y:e.ty,r:46,t:0,life:.95});}
+        e.cd=rnd(1.1,1.8)*cdm;}break;
+    case 'swipeW':if(e.t<=0){e.state='rec';e.t=.5;sfx('slash');shake=3;const a=Math.atan2(player.y-e.y,player.x-e.x);let df=a-e.ba;while(df>Math.PI)df-=TAU;while(df<-Math.PI)df+=TAU;if(d<reach+20&&Math.abs(df)<.6)hurtPlayer(e.atk*.9,dx/(d||1),dy/(d||1));}break;
+    case 'slamW':if(e.t<=0){e.state='rec';e.t=.75;shake=9;sfx('slam');fx.push({k:'ring',x:e.x,y:e.y,r:6,max:e.R,t:0,life:.4,col:B.col});for(let i=0;i<18;i++)dust(e.x+rnd(-e.R*.6,e.R*.6),e.y+rnd(-6,6));if(d<e.R)hurtPlayer(e.atk*1.05,dx/(d||1),dy/(d||1));}break;
+    case 'chargeW':if(e.t<=0){e.state='charge';e.t=.5;e.hitDone=0;sfx('slam');}break;
+    case 'charge':move(e,e.cdx*240*dt,e.cdy*240*dt);e.moving=true;if(Math.random()<.6)dust(e.x,e.y);if(!e.hitDone&&d<e.r+12){e.hitDone=1;hurtPlayer(e.atk*1.05,dx/(d||1),dy/(d||1));}if(e.t<=0){e.state='rec';e.t=.6;}break;
+    case 'volW':if(e.t<=0){const a=Math.atan2(player.y-7-(e.y-12),player.x-e.x),n=e.rock?1:e.phase===2?5:3;for(let i=0;i<n;i++){const b=a+(i-(n-1)/2)*.22;projs.push({o:'e',k:'borb',col:B.col,x:e.x,y:e.y-12,vx:Math.cos(b)*(e.rock?130:160),vy:Math.sin(b)*(e.rock?130:160),life:2.4,dmg:e.atk*(e.rock?1:.6),r:e.rock?7:4});}sfx('shoot');e.state='rec';e.t=.5;}break;
+    case 'leapW':if(e.t<=0){e.state='leap';e.t=.5;e.lx=e.x;e.ly=e.y;sfx('slam');}break;
+    case 'leap':{const k=1-Math.max(0,e.t)/.5;e.x=e.lx+(e.tx-e.lx)*k;e.y=e.ly+(e.ty-e.ly)*k;e.alt=Math.sin(k*Math.PI)*60;if(e.t<=0){e.alt=0;shake=10;sfx('slam');fx.push({k:'ring',x:e.x,y:e.y,r:6,max:50,t:0,life:.4,col:B.col});const pd=Math.hypot(player.x-e.x,player.y-e.y);if(pd<50)hurtPlayer(e.atk*1.1,(player.x-e.x)/(pd||1),(player.y-e.y)/(pd||1));wdUnstuck(e);e.state='rec';e.t=.7;}}break;
+    default:if(e.t<=0)e.state='chase';}
+  e.aggro=false;}
+function wbKill(e){const id=e.wbid;if(!id)return;wbBar(null);shake=12;hitstop=.3;sfx('lvl');const B=e.d.wb,col=B.col;
+  for(let i=0;i<40;i++){const a=rnd(0,TAU),v=rnd(40,150);parts.push({x:e.x,y:e.y-20,vx:Math.cos(a)*v,vy:Math.sin(a)*v-30,l:rnd(.5,1),ml:1,c:col,s:2,g:60,glow:1});}
+  if(e.d.kb)return;(flags.wb=flags.wb||{})[id]=1;dropCoins(e.x,e.y,120+e.lvl*7,10);
+  pickups.push({k:'weapon',w:makeWeapon(player.c.key,e.lvl+2,Math.random()<.35?4:3),x:e.x-10,y:e.y+4,t:0});pickups.push({k:'armor',a:makeArmor(Math.random()<.5?'head':'body',e.lvl+1,3),x:e.x+10,y:e.y+4,t:0});
+  const n=cnt('wb');qBanner('Légende vaincue',e.d.name);if(n===1)addTitle('Chasseur de légendes');if(n===7)addTitle('Fléau des colosses');if(n>=Object.keys(WB).length-1)addTitle('Mythe vivant');save();}
+function drawGiant(e){TONE=null;const G=GIANT[e.d.gv],x=Math.round(e.x),y=Math.round(e.y-(e.alt||0)),f=e.flash>0,W=c=>f?'#ffffff':c,s=e.face<0?-1:1,st=e.state,wk=e.moving?Math.sin(e.anim*7):0,br=Math.round(Math.sin(e.anim*2.5));
+  const raise=st==='swipeW'||st==='slamW'?1:st==='roar'?1:0,slam=st==='rec'&&e.t>.3;ell(x,Math.round(e.y),19,5,'rgba(0,0,0,.45)');
+  for(const[lx,ph]of[[-8,wk],[8,-wk]]){const ly=Math.round(ph*2);P(x+lx-6,y-16-Math.max(0,ly),12,16+Math.max(0,ly)-Math.max(0,-ly),W('#0c0a08'));P(x+lx-5,y-15-Math.max(0,ly),10,14,W(G.sk[1]));P(x+lx-5,y-15-Math.max(0,ly),3,14,W(G.sk[0]));P(x+lx-6,y-3,13,3,W('#0c0a08'));P(x+lx-5,y-3,11,2,W(G.sk[1]));}
+  const by=y-16-br,bk=x-s*14;
+  {const ax=bk,ay=by-26;lineF(ax,ay,ax-s*3,ay+16,W('#0c0a08'),7);lineF(ax,ay,ax-s*3,ay+15,W(G.sk[1]),5);circ(ax-s*3,ay+17,3,W(G.sk[1]));}
+  ell(x,by-16,18,16,W('#0c0a08'));ell(x,by-16,17,15,W(G.sk[0]));ell(x-4*s,by-20,11,9,W(G.sk[2]));ell(x+3*s,by-9,12,8,W(G.sk[1]));ell(x+2*s,by-11,10,6,W(G.sk[2]));P(x+s*2-1,by-13,2,2,W(G.sk[1]));
+  if(G.ff)for(let i=0;i<46;i++){const a=hash(i,3,5)*TAU,r=hash(i,4,5)*15;const px=x+Math.cos(a)*r,py=by-16+Math.sin(a)*r*.9;P(px,py,2,3,W(G.fur[i%3]));}
+  P(x-15,by-4,30,8,W('#0c0a08'));P(x-14,by-3,28,6,W(G.fur[0]));for(let i=-13;i<14;i+=3)P(x+i,by+3,2,2,W(G.fur[1]));
+  const hx=x+s*4,hy=by-34;ell(hx,hy,10,9,W('#0c0a08'));ell(hx,hy,9,8,W(G.ff?G.fur[0]:G.sk[0]));if(G.ff)ell(hx+s*2,hy+1,6,5,W(G.sk[0]));else ell(hx-2*s,hy-3,5,4,W(G.sk[2]));
+  if(G.horn)polyF([[hx-2,hy-7],[hx+1,hy-17],[hx+3,hy-7]],W('#e8dcc0'));
+  const ec=st==='roar'||raise?'#ffffff':G.ec;
+  if(G.eye===1){ell(hx+s*2,hy-1,4,3,'#0c0a08');ell(hx+s*2,hy-1,3,2,W('#f4ecd8'));P(hx+s*3-1,hy-2,2,2,W(ec));P(hx+s*2-3,hy-4,7,1,W(G.sk[1]));}
+  else{P(hx+s*1-3,hy-2,2,2,W(ec));P(hx+s*1+2,hy-2,2,2,W(ec));P(hx-4+s,hy-4,9,1,W(G.ff?G.fur[1]:G.sk[1]));}
+  if(G.nose)P(hx+s*7-(s<0?3:0),hy,4,3,W(G.sk[1]));
+  P(hx-4+s*2,hy+3,8,2,'#1a0806');P(hx-3+s*2,hy+1,1,3,W('#f4ecd8'));P(hx+3+s*2,hy+1,1,3,W('#f4ecd8'));
+  const sx=x+s*15,sy=by-26,ang=raise?-2.3:slam?.4:1.15+Math.sin(e.anim*2)*.06,ca=Math.cos(ang)*s,sa=Math.sin(ang),hx2=sx+ca*14,hy2=sy+sa*14;
+  lineF(sx,sy,hx2,hy2,W('#0c0a08'),7);lineF(sx,sy,hx2,hy2,W(G.sk[0]),5);const ex=hx2+ca*24,ey=hy2+sa*24;lineF(hx2,hy2,ex,ey,W('#0c0a08'),8);lineF(hx2,hy2,ex,ey,W(G.club[0]),6);lineF(hx2+ca*8,hy2+sa*8,ex,ey,W(G.club[1]),3);
+  for(let i=0;i<3;i++){const t=.5+i*.2;P(hx2+ca*24*t-sa*4,hy2+sa*24*t+ca*4,2,2,W('#e8dcc0'));}circ(hx2,hy2,3,W(G.sk[1]));}
+function drawCible(e){const x=Math.round(e.x),y=Math.round(e.y);P(x-1,y-14,3,14,'#3a2a1a');circ(x,y-18,7,'#0a0c14');circ(x,y-18,6,'#e8e2cc');circ(x,y-18,4,'#c83a3a');circ(x,y-18,2,'#e8e2cc');P(x,y-18,1,1,'#c83a3a');}
+const _drawEnemy=drawEnemy;
+drawEnemy=function(e){const dr=e.d.draw;if(dr==='giant'){drawGiant(e);return;}if(dr==='cible'){drawCible(e);return;}const s=e.d.sc;if(!s)return _drawEnemy(e);
+  const a=e.alt||0;G.save();G.translate(e.x,e.y-a);G.scale(s,s);G.translate(-e.x,-e.y);_drawEnemy(e);G.restore();};
+
+/* --- boutiques des nouvelles régions --- */
+regShop('ald_arm','arm','aldmoor',32,17,'Forge royale d’Aldmoor',['Gaspard','mk_arm']);regShop('ald_pot','pot','aldmoor',52,17,'Apothicaire de la Couronne',['Iseult','mk_pot']);
+regShop('ald_inn','inn','aldmoor',52,23,'Auberge du Lion Rouge',['Bertrand','mk_inn']);regShop('ald_dye','dye','aldmoor',32,23,'Teintures royales',['Blanche','mk_dye']);
+regShop('ron_inn','inn','automne',37,26,'Auberge des Feuilles',['Mathilde','mk_inn']);
+regShop('lac_pec','pec','lac',17,15,'Pêcherie de Port-Miroir',['Yannick','mk_fle']);regShop('lac_pot','pot','lac',20,9,'Herbes du Lac',['Sœur Anne','mk_pot']);
+regShop('stp_arm','arm','steppe',25,44,'Armurerie nomade',['Temür','mk_arm2']);
+regShop('grk_arm','arm','grakkar',31,16,'Forge de guerre',['Gruk','mk_arm2']);
+regShop('giv_pot','pot','givre',40,59,'Remèdes du trappeur',['Ingrid','mk_pot']);
+regShop('nor_arm','arm','nordheim',26,16,'Forge de Hrolf',['Bjorn','mk_arm']);regShop('nor_armu','armu','nordheim',46,16,'Fourrures du Nord',['Sigrid','mk_armu']);regShop('nor_inn','inn','nordheim',46,23,'La Corne d’Hydromel',['Olaf','mk_inn']);
+regShop('jun_pot','pot','jungle',23,45,'Herboriste de l’expédition',['Amélie','mk_pot']);
+regShop('tz_pot','pot','tzalan',25,17,'Élixirs de jade',['Xoco','mk_pot']);regShop('tz_arm','arm','tzalan',47,17,'Lames d’obsidienne',['Itzal','mk_arm2']);
+Object.assign(INSTY,{aldmoor:INSTY.valcourt||INSTY.valdoria,steppe:INSTY.desert||INSTY.valdoria,grakkar:INSTY.desert||INSTY.valdoria,nordheim:INSTY.kardum||INSTY.valdoria,givre:INSTY.kardum||INSTY.valdoria,lac:INSTY.coast||INSTY.valdoria,jungle:INSTY.sylvaris||INSTY.valdoria,tzalan:INSTY.sylvaris||INSTY.valdoria,automne:INSTY.valdoria});
+const riverV=(m,x0,amp,fr,w,y0,y1)=>{for(let y=y0||0;y<(y1||m.h);y++){const c=Math.round(x0+Math.sin(y*fr)*amp+Math.sin(y*fr*2.3)*1.2);for(let x=c;x<c+w;x++)setT(m,x,y,T.WATER);}};
+const riverH=(m,y0,amp,fr,w)=>{for(let x=0;x<m.w;x++){const c=Math.round(y0+Math.sin(x*fr)*amp+Math.sin(x*fr*2.1)*1.4);for(let y=c;y<c+w;y++)setT(m,x,y,T.WATER);}};
+w2Reg({id:'aldmoor',name:'Royaume d’Aldmoor',sub:'Les terres de la Couronne Rouge',w:80,h:64,style:'meadow',seed:11,lvl:5,at:[-160,0],dark:'rgba(8,14,30,.48)',
+  water:[[64,22,4,3]],walls:[[72,40,3,3],[6,6,3,2]],castle:{x0:26,y0:8,x1:58,y1:36,k:'aldmoor',keep:[42,13],kv:0},roads:[[[42,37],[42,44]]],
+  trails:[[[42,44],[56,40],[68,32],[79,30]],[[42,44],[40,54],[40,63]],[[42,44],[26,42],[16,32],[14,18],[16,0]],[[40,54],[22,50],[12,48]],[[56,40],[64,48],[66,52]]],
+  pois:m=>{hamlet(m,[[30,30,0],[54,30,1]]);for(const[x,y,v]of[[37,27,0],[47,27,1]])addObj(m,'stall',x,y,{v});addObj(m,'well',36,32);for(const[x,y]of[[40,20],[44,20],[40,30],[44,30]])addObj(m,'lantern',x,y,{v:0});
+    hamlet(m,[[10,46,0],[17,44,1],[8,53,1]]);addObj(m,'well',13,49);addObj(m,'hay',22,47);for(let y=53;y<59;y+=2)for(let x=14;x<26;x++)if(hash(x,y,5)<.9)addObj(m,'crop',x,y,{v:y%4?0:1});for(let x=13;x<27;x++){addObj(m,'fence',x,52);addObj(m,'fence',x,59);}
+    for(const[x,y]of[[62,50],[64,53],[68,51],[70,55],[62,56],[67,57]])addObj(m,'grave',x,y);addObj(m,'tree',70,49,{v:3});addObj(m,'tree',60,58,{v:3});
+    addObj(m,'sign',45,45,{txt:'↑ Château d’Aldmoor   → Valcourt   ↓ Bois de Roncevaux   ↖ Steppe des Cavaliers'});
+    chests(m,[['al1',4,4,50,1,4,0],['al2',76,61,60,1,0,4],['al3',75,4,55,1,4,0]]);resv(m,6,42,27,60);resv(m,60,47,73,59);resv(m,60,20,68,25);},
+  dens:forestD(11,.34,.04)});
+w2Reg({id:'automne',name:'Bois de Roncevaux',sub:'La forêt aux mille couleurs',w:80,h:64,style:'autumn',seed:13,lvl:8,at:[-160,64],dark:'rgba(14,10,20,.5)',
+  pre:m=>riverV(m,58,4,.12,3),
+  trails:[[[40,0],[36,10],[30,20]],[[30,20],[46,22],[58,22],[79,20]],[[46,22],[50,38],[62,46]],[[50,38],[60,50],[79,54]],[[30,20],[18,34],[12,48]],[[36,10],[66,10],[70,12]],[[50,38],[40,52]]],
+  pois:m=>{hamlet(m,[[26,17,0],[34,15,1],[24,24,1]]);addObj(m,'campfire',30,23);for(const[x,y]of[[31,27],[33,28]])addObj(m,'crate',x,y);addObj(m,'cart',28,28);addObj(m,'sign',32,21,{txt:'Roncevaux, village des bûcherons.   ↑ Aldmoor   → Côte des Brisants   ↘ Lac Miroir'});
+    addObj(m,'bones',60,44);addObj(m,'ribs',66,48);addObj(m,'dskull',58,49);addObj(m,'campfire',63,44);
+    addObj(m,'tent',40,52);addObj(m,'campfire',43,54);
+    chests(m,[['au1',76,4,70,1,6,0],['au2',4,61,70,1,0,6],['au3',72,61,80,2,7,0]]);resv(m,22,12,40,30);resv(m,55,40,69,52);resv(m,36,48,46,57);},
+  dens:forestD(13,.44,.1)});
+w2Reg({id:'lac',name:'Lac Miroir',sub:'Les eaux qui ne mentent pas',w:80,h:64,style:'lake',seed:17,lvl:10,at:[-80,108],dark:'rgba(8,14,32,.5)',lily:.06,
+  water:[[42,32,22,13,24],[67,12,5,3]],pre:m=>{blob(m,42,31,4,3,T.GRASS,9);blob(m,30,27,2,2,T.GRASS,8);},
+  trails:[[[0,10],[14,12]],[[14,12],[26,22],[40,31]],[[40,31],[56,40],[66,50]],[[14,12],[50,8],[79,12]],[[56,40],[79,44]],[[14,12],[10,40],[10,56]]],
+  pois:m=>{hamlet(m,[[8,8,0],[11,15,1],[24,5,1]]);for(const[x,y]of[[14,18],[22,17],[6,12]])addObj(m,'lantern',x,y,{v:0});for(const[x,y]of[[24,14],[25,15]])addObj(m,'barrel',x,y);addObj(m,'sign',16,20,{txt:'Port-Miroir.   ↗ Jungle de Tzal   ← Bois de Roncevaux   ↓ Rive sud'});
+    addObj(m,'tree',43,30,{v:1});for(let i=0;i<14;i++){const x=58+Math.floor(hash(i,1,7)*16),y=48+Math.floor(hash(i,2,7)*12);if(tAt(m,x,y)===T.GRASS)addObj(m,'shell',x,y,{v:i%3?0:1});}
+    chests(m,[['lc1',44,33,90,1,0,8],['lc2',76,61,80,1,0,8],['lc3',4,61,70,1,8,0]]);resv(m,4,2,26,22);resv(m,38,28,46,35);resv(m,60,46,72,58);},
+  dens:forestD(17,.3,.05)});
+w2Reg({id:'steppe',name:'Steppe des Cavaliers',sub:'Le vent ne s’arrête jamais',w:80,h:60,style:'steppe',seed:19,lvl:11,at:[-160,-60],dark:'rgba(10,12,26,.46)',
+  walls:[[62,44,4,3],[12,8,3,2]],
+  trails:[[[16,59],[18,40]],[[18,40],[40,34],[60,24],[79,22]],[[40,34],[52,18]],[[18,40],[20,12],[24,0]],[[40,34],[38,46]],[[60,24],[70,50]]],
+  pois:m=>{for(const[x,y]of[[14,38],[22,36],[16,45]])addObj(m,'tent',x,y);addObj(m,'campfire',19,41);addObj(m,'hay',27,38);
+    hamlet(m,[[48,13,0],[56,13,1],[50,20,0]],'ohut');addObj(m,'campfire',54,18);addObj(m,'kbanner',46,22,{v:5});addObj(m,'kbanner',59,21,{v:5});addObj(m,'bones',52,22);addObj(m,'bones',45,16);
+    for(let i=0;i<7;i++){const a=i/7*TAU;addObj(m,'menhir',Math.round(38+Math.cos(a)*3.5),Math.round(46+Math.sin(a)*2.8),{v:0});}
+    addObj(m,'sign',36,36,{txt:'↖ Campement des Cavaliers   ↗ Camp orc   → Désert de Sablerouge   ↑ Terres de Grakkar'});
+    chests(m,[['st1',76,4,90,1,9,0],['st2',4,4,80,1,0,9],['st3',70,57,90,2,0,10]]);resv(m,10,32,29,48);resv(m,42,8,62,25);resv(m,33,42,43,50);},
+  dens:forestD(19,.2,.02)});
+w2Reg({id:'grakkar',name:'Terres de Grakkar',sub:'Le royaume des Orcs',w:80,h:64,style:'canyon',seed:23,lvl:20,at:[-160,-124],dark:'rgba(18,8,8,.52)',cstone:['#5a3e30','#6e4c3a','#3e2a20','#8a6650','#2a1c14'],
+  walls:[[10,44,5,7],[68,26,5,7],[30,54,7,4],[62,56,6,4],[12,10,3,3]],lava:[[70,12,3,2]],castle:{x0:24,y0:8,x1:56,y1:36,k:'grakkar',keep:[40,13],kv:2},roads:[[[40,37],[40,44]]],
+  trails:[[[40,44],[30,52],[24,63]],[[40,44],[60,46],[79,48]],[[40,44],[16,32],[12,22]],[[60,46],[66,50]]],
+  pois:m=>{hamlet(m,[[30,22,0],[50,22,1],[30,29,1],[50,29,0]],'ohut');addObj(m,'campfire',36,25);addObj(m,'campfire',45,25);for(const[x,y]of[[34,33],[46,33]])addObj(m,'bones',x,y);for(const[x,y]of[[33,19],[48,19]])addObj(m,'barrel',x,y);
+    addObj(m,'sign',43,46,{txt:'GRAKKAR. Les faibles ne passent pas.   ↓ Steppe   → Toundra de Givrebois'});chests(m,[['gk1',76,4,140,2,17,0],['gk2',4,61,130,1,0,17],['gk3',74,61,140,2,18,0]]);},
+  dens:forestD(23,.15,.03)});
+w2Reg({id:'givre',name:'Toundra de Givrebois',sub:'Le silence blanc',w:80,h:64,style:'snow',seed:29,lvl:16,at:[-80,-124],dark:'rgba(10,16,34,.5)',
+  water:[[52,38,8,5]],walls:[[14,10,5,3],[68,52,4,3],[30,6,3,2]],
+  trails:[[[62,63],[58,50],[42,48]],[[42,48],[40,30],[40,24]],[[42,48],[20,40],[0,48]],[[42,48],[60,30],[79,30]],[[20,40],[18,18]],[[60,30],[66,12]]],
+  pois:m=>{hamlet(m,[[36,53,0],[47,54,0]],'lhouse');addObj(m,'campfire',41,56);addObj(m,'sign',44,50,{txt:'Givrebois.   ← Grakkar   → Nordheim   ↓ Désert de Sablerouge'});
+    addObj(m,'bones',18,20);addObj(m,'dskull',22,18);addObj(m,'bones',14,17);
+    chests(m,[['gv1',76,4,110,1,13,0],['gv2',4,61,110,1,0,13],['gv3',4,4,100,1,13,0]]);resv(m,32,49,52,62);resv(m,12,14,26,24);},
+  dens:forestD(29,.34,.05)});
+w2Reg({id:'nordheim',name:'Nordheim',sub:'Forteresse des Hommes du Nord',w:72,h:64,style:'snow',seed:31,lvl:18,at:[0,-116],dark:'rgba(10,16,34,.5)',
+  castle:{x0:20,y0:8,x1:52,y1:36,k:'nordheim',keep:[36,13],kv:1},roads:[[[36,37],[36,44]]],
+  trails:[[[0,22],[12,30],[36,44]],[[36,44],[40,63]],[[36,44],[56,40],[71,32]],[[56,40],[60,52]],[[12,30],[8,52]],[[12,30],[10,12]]],
+  pois:m=>{hamlet(m,[[26,29,0],[46,29,0]],'lhouse');for(const[x,y]of[[33,20],[39,20],[33,30],[39,30]])addObj(m,'lantern',x,y,{v:0});addObj(m,'campfire',30,24);addObj(m,'campfire',43,24);
+    addObj(m,'sign',39,45,{txt:'Nordheim.   ← Givrebois   ↓ Ostval   → Glacier des Anciens'});chests(m,[['nh1',68,4,130,2,16,0],['nh2',4,61,120,1,0,16],['nh3',68,61,120,1,16,0]]);},
+  dens:forestD(31,.3,.05)});
+w2Reg({id:'glacier',name:'Glacier des Anciens',sub:'Là où dorment les héros',w:80,h:64,style:'snow',seed:37,lvl:22,at:[72,-118],dark:'rgba(8,14,36,.54)',
+  walls:[[20,22,6,5],[58,24,5,5],[28,48,5,3],[66,50,4,3],[68,8,3,2]],water:[[46,34,6,3]],
+  trails:[[[0,32],[20,36],[40,40]],[[40,40],[40,63]],[[40,40],[40,16]],[[40,40],[60,40],[79,30]],[[60,40],[66,12]],[[40,40],[58,54]],[[20,36],[12,40]],[[40,40],[24,56]]],
+  pois:m=>{for(let y=8;y<19;y++)for(let x=34;x<47;x++)if(tAt(m,x,y)===T.GRASS)setT(m,x,y,T.RUIN);for(const[x,y]of[[36,10],[44,10],[36,16],[44,16]])addObj(m,'pillar',x,y);addObj(m,'altar',40,11);addObj(m,'ruinwall',35,8);addObj(m,'ruinwall',45,8);
+    addObj(m,'sign',42,42,{txt:'↑ Tombeau de Varn   ← Nordheim   ↓ Sylvaris   → Forêt d’Émeraude'});chests(m,[['gl1',76,4,150,2,19,0],['gl2',4,61,140,1,0,19],['gl3',76,61,150,2,0,20]]);resv(m,32,6,48,19);},
+  dens:forestD(37,.22,.04)});
+w2Reg({id:'emeraude',name:'Forêt d’Émeraude',sub:'Le premier bois du monde',w:80,h:64,style:'emerald',seed:41,lvl:24,at:[152,-128],dark:'rgba(4,14,12,.58)',
+  water:[[58,42,5,3]],
+  trails:[[[0,40],[20,40],[40,30]],[[40,30],[40,63]],[[40,30],[60,16]],[[40,30],[56,56]],[[20,40],[22,48]],[[40,30],[12,10]],[[60,16],[70,50]]],
+  pois:m=>{for(let i=0;i<8;i++){const a=i/8*TAU;addObj(m,'menhir',Math.round(40+Math.cos(a)*4),Math.round(30+Math.sin(a)*3),{v:1});}addObj(m,'altar',40,29);addObj(m,'lhouse',24,47,{v:1});addObj(m,'campfire',28,50);
+    addObj(m,'sign',42,36,{txt:'Le Cercle des Druides.   ← Glacier   ↓ Kar-Dûm'});chests(m,[['em1',76,4,160,2,21,0],['em2',4,61,150,1,0,21],['em3',76,61,160,2,22,0]]);resv(m,34,25,46,35);resv(m,20,44,30,52);},
+  dens:forestD(41,.5,.13)});
+w2Reg({id:'jungle',name:'Jungle de Tzal',sub:'Chaude, humide, vivante',w:96,h:64,style:'jungle',seed:43,lvl:15,at:[0,108],dark:'rgba(4,16,10,.54)',lily:.05,
+  pre:m=>riverH(m,30,4,.1,3),
+  trails:[[[48,0],[46,20],[40,40]],[[0,12],[20,16],[46,20]],[[46,20],[70,20]],[[40,40],[20,40]],[[40,40],[70,46],[95,44]],[[40,40],[30,58]],[[70,46],[84,54]],[[20,16],[8,8]]],
+  pois:m=>{for(let y=12;y<28;y++)for(let x=62;x<80;x++)if(tAt(m,x,y)===T.GRASS&&hash(x,y,3)<.75)setT(m,x,y,T.RUIN);for(const[x,y]of[[64,14],[76,14],[64,24],[76,24],[70,12]])addObj(m,'pillar',x,y);addObj(m,'altar',70,16);addObj(m,'ruinwall',66,26);addObj(m,'ruinwall',74,26);
+    for(const[x,y]of[[18,38],[24,37]])addObj(m,'tent',x,y);addObj(m,'campfire',21,42);addObj(m,'crate',17,43);addObj(m,'sign',36,42,{txt:'↑ Marais des Saules   ← Lac Miroir   → Tzalan   ↗ Temple de Kukul'});
+    chests(m,[['jg1',92,4,110,1,12,0],['jg2',4,61,100,1,0,12],['jg3',92,61,110,2,13,0]]);resv(m,60,10,82,29);resv(m,14,34,28,47);},
+  dens:forestD(43,.5,.17)});
+w2Reg({id:'savane',name:'Savane d’Ombu',sub:'Les grandes plaines dorées',w:72,h:44,style:'savanna',seed:47,lvl:13,at:[96,64],dark:'rgba(14,12,22,.46)',
+  pre:m=>riverV(m,56,2,.2,2),water:[[34,24,3,2]],
+  trails:[[[36,0],[34,14],[30,20]],[[0,20],[20,24],[30,20]],[[30,20],[50,16],[71,20]],[[30,20],[36,43]],[[50,16],[60,34]],[[20,24],[20,30]],[[34,14],[8,8]],[[50,16],[66,40]]],
+  pois:m=>{addObj(m,'cart',20,31);for(const[x,y]of[[18,30],[23,32],[22,29]])addObj(m,'crate',x,y);addObj(m,'barrel',17,32);addObj(m,'bones',24,33);
+    addObj(m,'sign',32,26,{txt:'Point d’eau d’Ombu.   ↑ Collines   ← Marais   → Royaume des Dragons   ↓ Tzalan'});chests(m,[['sv1',68,4,90,1,10,0],['sv2',4,41,90,1,0,10],['sv3',68,41,100,2,11,0]]);resv(m,16,27,26,35);resv(m,56,30,64,38);},
+  dens:forestD(47,.12,.025)});
+w2Reg({id:'tzalan',name:'Tzalan',sub:'Cité-temple des Hommes-lézards',w:72,h:64,style:'jungle',seed:53,lvl:18,at:[96,108],dark:'rgba(4,16,10,.54)',cstone:['#4a5a46','#5a6c54','#34402e','#7a8c6e','#24301e'],
+  castle:{x0:18,y0:10,x1:54,y1:40,k:'tzalan',keep:[36,17],kv:3},roads:[[[36,41],[36,48]]],
+  trails:[[[36,0],[36,4],[14,6],[10,30],[14,48],[36,48]],[[0,44],[14,48]],[[36,48],[56,50],[71,40]],[[56,50],[62,54]],[[10,30],[6,56]],[[36,4],[64,8]]],
+  pois:m=>{hamlet(m,[[24,24,0],[48,24,1],[24,32,1],[48,32,0]],'shut');for(const[x,y]of[[32,28],[40,28]])addObj(m,'brazier',x,y);
+    addObj(m,'sign',39,49,{txt:'Tzalan, cité de jade.   ↑ Savane   ← Jungle   → Forêt des Spores'});chests(m,[['tz1',68,4,120,1,15,0],['tz2',4,61,110,1,0,15],['tz3',68,61,120,2,16,0]]);},
+  dens:forestD(53,.44,.14)});
+w2Reg({id:'myco',name:'Forêt des Spores',sub:'Le monde respire ici',w:80,h:56,style:'mush',seed:59,lvl:26,at:[168,130],dark:'rgba(10,6,22,.62)',
+  water:[[50,42,6,3]],
+  trails:[[[40,0],[40,20],[50,30]],[[0,18],[20,22],[40,20]],[[50,30],[26,44]],[[40,20],[60,8]],[[50,30],[70,44]],[[20,22],[10,10]]],
+  pois:m=>{addObj(m,'sign',42,22,{txt:'Respire lentement. Les spores écoutent.'});chests(m,[['my1',76,4,170,2,23,0],['my2',4,53,160,1,0,23],['my3',76,53,170,2,24,0]]);resv(m,44,24,57,35);},
+  dens:forestD(59,.46,.12)});
+w2Reg({id:'cristal',name:'Gorge de Cristal',sub:'Aux portes de la Faille',w:64,h:60,style:'crystal',seed:61,lvl:28,at:[240,10],dark:'rgba(8,8,26,.6)',
+  walls:[[12,14,4,5],[50,22,4,5],[16,46,5,3],[48,46,4,3]],
+  trails:[[[0,30],[16,30],[32,30]],[[32,30],[32,6]],[[32,30],[50,50]],[[32,30],[8,50]],[[32,30],[56,10]]],
+  pois:m=>{addObj(m,'crystal',32,22);for(const[x,y]of[[28,20],[36,20],[27,25],[37,25]])addObj(m,'vcryst',x,y);for(const[x,y]of[[28,5],[36,5],[32,3]])addObj(m,'menhir',x,y,{v:1});addObj(m,'altar',32,6);
+    addObj(m,'sign',30,33,{txt:'↑ Le Seuil de la Faille   ← Pics Cendrés'});chests(m,[['cr1',60,4,200,2,25,0],['cr2',4,57,180,1,0,25],['cr3',60,57,200,2,26,0]]);resv(m,24,16,40,28);resv(m,26,1,38,9);},
+  dens:forestD(61,.3,.06)});
+const W2MOBS={aldmoor:{l:5,d:['wolf','boar','bandit'],n:['skeleton','spectre','cwolf']},automne:{l:8,d:['boar','wolf','bandit'],n:['skeleton','spectre','cwolf']},lac:{l:10,d:['crab','slime','drowned'],n:['drowned','spectre']},
+  steppe:{l:11,d:['wolf','boar','orc'],n:['cwolf','skeleton']},grakkar:{l:20,d:['orc','orcarc','scorpion'],n:['orc','ashskel']},givre:{l:16,d:['frostwolf','snowslime'],n:['frostwolf','iceskel']},
+  nordheim:{l:18,d:['frostwolf','snowslime','bandit'],n:['iceskel','spectre']},glacier:{l:22,d:['frostwolf','iceskel','snowslime'],n:['iceskel','spectre']},emeraude:{l:24,d:['boar','mossslime','ronce'],n:['spectre','cwolf']},
+  jungle:{l:15,d:['jslime','panther','lizard'],n:['spectre','jslime']},savane:{l:13,d:['hyena','scorpion','boar'],n:['hyena','skeleton']},tzalan:{l:18,d:['lizard','lizarc','panther'],n:['spectre','lizard']},
+  myco:{l:26,d:['sporeslime','shadow'],n:['sporeslime','shadow','voidling']},cristal:{l:28,d:['cryslime','drake'],n:['shadow','voidling']}};
+const W2ZN={aldmoor:[[26,8,58,36,'Château d’Aldmoor'],[6,42,27,60,'Hameau des Chardons'],[60,47,73,59,'Cimetière des Murmures']],automne:[[22,12,40,30,'Roncevaux'],[55,40,69,52,'Antre du Cyclope']],
+  lac:[[4,2,26,22,'Port-Miroir'],[38,28,46,35,'Île du Saule'],[60,46,72,58,'Grève des Crabes']],steppe:[[10,32,29,48,'Campement des Cavaliers'],[42,8,62,25,'Camp de guerre orc'],[33,42,43,50,'Cercle des Vents']],
+  grakkar:[[24,8,56,36,'Forteresse de Grakkar']],givre:[[32,49,52,62,'Givrebois'],[12,14,26,24,'Antre de Hrönn']],nordheim:[[20,8,52,36,'Château de Nordheim']],glacier:[[32,6,48,19,'Tombeau de Varn']],
+  emeraude:[[34,25,46,35,'Cercle des Druides']],jungle:[[60,10,82,29,'Temple de Kukul'],[14,34,28,47,'Camp de l’expédition']],savane:[[16,27,26,35,'Caravane naine'],[30,18,40,28,'Point d’eau']],
+  tzalan:[[18,10,54,40,'Cité de Tzalan']],myco:[[44,24,57,35,'Clairière de la Reine']],cristal:[[24,16,40,28,'Cœur de cristal'],[26,1,38,9,'Seuil de la Faille']]};
+const W2MUS={aldmoor:'field',automne:'field',lac:'field',steppe:'field',grakkar:'fog',givre:'fog',nordheim:'fog',glacier:'fog',emeraude:'elf',jungle:'elf',savane:'field',tzalan:'elf',myco:'dun',cristal:'dun'};
+function w2Fix(m){const W=m.w,H=m.h,R=new Uint8Array(W*H),q=[];for(let i=0;i<W*H;i++){const t=m.t[i];if((t===T.DIRT||t===T.PATH)&&!m.solid[i]){R[i]=1;q.push(i);}}
+  while(q.length){const i=q.pop(),x=i%W,y=(i/W)|0;for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){const X=x+dx,Y=y+dy;if(X<0||Y<0||X>=W||Y>=H)continue;const j=Y*W+X;if(!R[j]&&!m.solid[j]){R[j]=1;q.push(j);}}}
+  for(const o of m.objs){if(!o.seed)continue;if(R[(o.ty+1)*W+o.tx]||R[o.ty*W+o.tx+1]||R[o.ty*W+o.tx-1])continue;let best=null,bd=1e9;for(let y=3;y<H-3;y++)for(let x=3;x<W-3;x++){const j=y*W+x;if(!R[j]||!R[j+W]||m.t[j]!==T.GRASS)continue;if(m.objs.some(q2=>q2.tx===x&&q2.ty===y))continue;const d=Math.hypot(x-o.tx,y-o.ty);if(d<bd){bd=d;best=[x,y];}}
+    if(best){setSolid(m,o.tx,o.ty,0);o.tx=best[0];o.ty=best[1];o.x=o.tx*TS+8;o.y=o.ty*TS+14;setSolid(m,o.tx,o.ty,1);}}}
+function w2Build(){buildSprites8();w2Chars();w2EN();for(const id of W2ORDER){const c=W2R[id];WORLD[id]=c.at;WORLDNAMES[id]=c.name;MOBS[id]=W2MOBS[id];ZN[id]=W2ZN[id]||[];REGION2[id]=1;}
+  for(const id of W2ORDER){maps[id]=genR2(W2R[id]);w2Fix(maps[id]);}for(const L of LINKS)linkOld(L[0],L[1],L[2]);for(const k in NB)delete NB[k];w2Post();}
+
+/* ================= ARCS DE L'HISTOIRE (chapitres allongés + chapitres 7 à 10) ================= */
+const ARCS={
+  a1:{ch:'Chapitre 1',t:'La brume du nord',at:11,intro:[{who:'Maëlle',text:'Attends ! Le vieux chemin d’Ostval est noyé dans une brume qui ne se lève jamais.'},{who:'Maëlle',text:'Ma grand-mère disait que seule la Corne de Vigie d’Aldmoor peut la chasser. Le roi Edmond la garde, à l’ouest de Valcourt.'}],
+    steps:[{t:'reach',r:'aldmoor',o:'Rejoins le Royaume d’Aldmoor, à l’ouest de Valcourt.',w:['aldmoor',42,44]},
+      {t:'talk',npc:'edmond',o:'Parle au roi Edmond III, dans son château.',w:['aldmoor',42,16],lines:[{who:'Roi Edmond III',text:'La Corne de Vigie ? Elle ne sort pas de ce château pour le premier vagabond venu.'},{who:'Roi Edmond III',text:'Un cyclope, Gorm, dévore mes bûcherons dans le Bois de Roncevaux, au sud. Rapporte-moi sa tête.'},{who:'Roi Edmond III',text:'Et apprends à écouter les Anciens : leurs sanctuaires et leurs tours de vigie forgent les vrais héros.'}]},
+      {t:'boss',id:'gorm',o:'Abats Gorm le Cyclope, dans le Bois de Roncevaux (au sud d’Aldmoor).',w:['automne',62,46]},
+      {t:'shr',n:1,o:'Réussis l’épreuve d’un sanctuaire des Anciens.'},
+      {t:'twr',n:1,o:'Grimpe au sommet d’une tour de vigie.'},
+      {t:'talk',npc:'edmond',o:'Retourne voir le roi Edmond.',w:['aldmoor',42,16],rep:['aldmoor',30],lines:[{who:'Roi Edmond III',text:'Par ma barbe… Tu as vraiment abattu Gorm.'},{who:'Roi Edmond III',text:'Voici la Corne de Vigie. Souffle dedans à l’orée du bois : la brume reculera.'},{who:'Roi Edmond III',text:'Aldmoor se souviendra de toi. Si tu veux une alliance, ma porte est ouverte.'}]}],
+    done:'La Corne de Vigie résonne. Au nord, la brume du Bois des Murmures recule…'},
+  a2:{ch:'Chapitre 2',t:'La sœur perdue',at:20,intro:[{who:ME,text:'(Les elfes ont fermé Sylvaris. Les ronces ne s’ouvriront que pour un ami des elfes…)'},{who:ME,text:'(On parle d’une rôdeuse elfe qui campe dans le Bois de Roncevaux.)'}],
+    steps:[{t:'talk',npc:'elwen',o:'Trouve Elwen, la rôdeuse elfe, dans le Bois de Roncevaux.',w:['automne',38,54],lines:[{who:'Elwen',text:'Un humain qui veut entrer à Sylvaris ? Hm. Les ronces t’étoufferaient.'},{who:'Elwen',text:'À moins qu’un elfe ne se porte garant de toi… Ma sœur Lirien a été enlevée par des pillards orcs, dans la Steppe des Cavaliers.'},{who:'Elwen',text:'Ramène-la, et je te donnerai la Feuille d’argent.'}]},
+      {t:'reach',r:'steppe',at:[52,17,12],o:'Trouve le camp de guerre orc dans la Steppe des Cavaliers.',w:['steppe',52,17]},
+      {t:'kill',types:['orc','orcarc'],n:6,o:'Repousse les pillards orcs'},
+      {t:'boss',id:'urgash',o:'Abats Urgash Crâne-Fendu, le chef du camp.',w:['steppe',52,17]},
+      {t:'talk',npc:'lirien',o:'Libère Lirien.',w:['steppe',52,14],lines:[{who:'Lirien',text:'Tu… tu es venu pour moi ? Elwen t’envoie ? Merci, merci !'},{who:'Lirien',text:'Je rentre au camp. Dis à ma sœur que je l’attends.'}]},
+      {t:'talk',npc:'elwen',o:'Retourne voir Elwen dans le Bois de Roncevaux.',w:['automne',38,54],rep:['sylvaris',30],lines:[{who:'Elwen',text:'Lirien est rentrée ! Je n’oublierai jamais.'},{who:'Elwen',text:'Prends cette Feuille d’argent. Les ronces de Sylvaris te reconnaîtront.'}]}],
+    done:'La Feuille d’argent brille. Les ronces de Sylvaris te laisseront passer.'},
+  a3:{ch:'Chapitre 3',t:'La caravane d’Ombu',at:30,intro:[{who:ME,text:'(Le col de Kar-Dûm est enseveli. Les nains ne le dégageront que pour un ami.)'},{who:ME,text:'(Leur ambassadeur, Brokk, campe dans les Collines.)'}],
+    steps:[{t:'talk',npc:'brokk',o:'Parle à l’ambassadeur Brokk, dans les Collines.',w:['collines',18,46],lines:[{who:'Ambassadeur Brokk',text:'Le col ? On le dégagera quand notre caravane sera rentrée. Elle a disparu dans la Savane d’Ombu, au sud.'},{who:'Ambassadeur Brokk',text:'Elle transportait le Sceau de passage. Sans lui, même un nain reste dehors.'}]},
+      {t:'reach',r:'savane',at:[21,31,8],o:'Retrouve la caravane naine dans la Savane d’Ombu.',w:['savane',21,31]},
+      {t:'talk',npc:'dwalin',o:'Parle au survivant de la caravane.',w:['savane',24,30],lines:[{who:'Dwalin',text:'Le Roi Scorpion… il a tout ravagé. Et le Troll des gués a pris le Sceau !'},{who:'Dwalin',text:'Tue ces deux monstres. Je t’en supplie.'}]},
+      {t:'boss',id:'scorpk',o:'Abats le Roi Scorpion.',w:['savane',60,34]},
+      {t:'boss',id:'troll',o:'Abats le Troll des gués et reprends le Sceau.',w:['savane',56,13]},
+      {t:'shr',n:3,o:'Accomplis 3 sanctuaires au total'},
+      {t:'talk',npc:'brokk',o:'Rapporte le Sceau de passage à Brokk.',w:['collines',18,46],rep:['kardum',30],lines:[{who:'Ambassadeur Brokk',text:'Le Sceau ! Et la caravane vengée…'},{who:'Ambassadeur Brokk',text:'J’envoie l’ordre : on dégage le col. Kar-Dûm t’ouvre ses portes.'}]}],
+    done:'Les nains dégagent le col de Kar-Dûm.'},
+  a4:{ch:'Chapitre 4',t:'La saga de Varn',at:40,intro:[{who:ME,text:'(Drakhaven… Personne ne sait plus comment les Tueurs de dragons y entraient.)'},{who:ME,text:'(On dit que le Jarl de Nordheim connaît encore la saga du dernier d’entre eux, Varn.)'}],
+    steps:[{t:'talk',npc:'hrolf',o:'Rends-toi à Nordheim et parle au Jarl Hrolf.',w:['nordheim',36,16],lines:[{who:'Jarl Hrolf',text:'La saga de Varn ? Elle ne se chante qu’aux héros. Et la Horde de Grakkar attaque mes portes en ce moment même !'},{who:'Jarl Hrolf',text:'Repousse-les, et nous parlerons.'}]},
+      {t:'wave',r:'nordheim',at:[36,46],n:14,types:['orc','orcarc'],ally:'nordheim',o:'Défends les portes de Nordheim'},
+      {t:'boss',id:'hronn',o:'Abats Hrönn le Yéti dans la Toundra de Givrebois.',w:['givre',18,18]},
+      {t:'twr',n:4,o:'Active 4 tours de vigie au total'},
+      {t:'talk',npc:'hrolf',o:'Retourne voir le Jarl Hrolf.',w:['nordheim',36,16],rep:['nordheim',30],lines:[{who:'Jarl Hrolf',text:'Le crâne de Hrönn ! Skalds, accordez vos harpes !'},{who:'Jarl Hrolf',text:'« Varn franchit les Pics Cendrés quand le sang des Tueurs chanta dans sa marque. » Ta marque chantera aussi, enfant.'},{who:'Jarl Hrolf',text:'Va. Drakhaven t’attend au-delà des Pics Cendrés.'}]}],
+    done:'La saga de Varn résonne en toi. Les Pics Cendrés t’appellent.'},
+  a5:{ch:'Chapitre 5',t:'Jade et sable',at:48,intro:[{who:ME,text:'(Kharzan et Nerys… Les Élus sont liés aux anciens empires. Tzalan et Sablerouge en savent plus.)'}],
+    steps:[{t:'reach',r:'tzalan',o:'Rends-toi à Tzalan, la cité-temple de la jungle.',w:['tzalan',36,48]},
+      {t:'talk',npc:'ixtli',o:'Parle à la Reine Ixtli.',w:['tzalan',36,20],lines:[{who:'Reine Ixtli',text:'Les Élus du sable et de la marée… Kukul, notre drake sacré, a été corrompu par le même mal.'},{who:'Reine Ixtli',text:'Abats-le, et libère la Mère-Crabe du Lac Miroir : elle garde une larme de Nerys.'}]},
+      {t:'boss',id:'kukul',o:'Libère Kukul, le drake d’émeraude, dans la Jungle de Tzal.',w:['jungle',70,19]},
+      {t:'boss',id:'mcrab',o:'Abats la Mère-Crabe au Lac Miroir.',w:['lac',66,52]},
+      {t:'talk',npc:'kadir',o:'Parle au Vizir Kadir à l’oasis de Sablerouge.',w:['desert',45,43],fn:'jade'},
+      {t:'shr',n:6,o:'Accomplis 6 sanctuaires au total'}],
+    done:'Les empires de jade et de sable ont entendu ton nom.'},
+  a6:{ch:'Chapitre 6',t:'La lumière des trois couronnes',at:52,intro:[{who:'Garde Aubin',text:'Morvaine s’est enfermée dans un voile d’ombre. Nos lames ricochent dessus.'},{who:'Garde Aubin',text:'La Régente dit que seule la lumière de trois couronnes alliées peut le percer.'}],
+    steps:[{t:'crowns',n:3,o:'Obtiens l’alliance (ou la conquête) de 3 royaumes'},
+      {t:'talk',npc:'isaure',o:'Rejoins la Régente Isaure à Valcourt.',w:['valcourt',45,29],lines:[{who:'Régente Isaure',text:'Trois couronnes… Je sens leur lumière autour de toi.'},{who:'Régente Isaure',text:'Va. Le voile de Morvaine ne t’arrêtera plus.'}]}],
+    done:'La lumière des couronnes t’entoure. Le voile de Morvaine peut être percé.'},
+  a7:{ch:'Chapitre 7',t:'La guerre des couronnes',at:55,chap:1,intro:[{who:'Régente Isaure',text:'Morvaine est tombée… mais sa couronne d’ombre a trouvé un nouveau front.'},{who:'Régente Isaure',text:'Mog’thar, le seigneur de guerre de Grakkar, la porte désormais. Sa horde marche sur Nordheim.'}],
+    steps:[{t:'talk',npc:'isaure',o:'Parle à la Régente Isaure, à Valcourt.',w:['valcourt',45,29],lines:[{who:'Régente Isaure',text:'Si Nordheim tombe, tout le nord suivra. Cours aider le Jarl.'}]},
+      {t:'wave',r:'nordheim',at:[36,46],n:22,types:['orc','orcarc','sol_grakkar'],ally:'nordheim',o:'Brise le siège de Nordheim'},
+      {t:'kill',types:['cap_grakkar'],n:3,o:'Abats les 3 chefs de guerre de Grakkar',w:['grakkar',40,46],spawnCapts:1},
+      {t:'boss',id:'mogshadow',o:'Affronte Mog’thar couronné d’ombre dans sa forteresse.',w:['grakkar',40,17]},
+      {t:'talk',npc:'isaure',o:'Rapporte la victoire à la Régente Isaure.',w:['valcourt',45,29],rep:['valcourt',20],lines:[{who:'Régente Isaure',text:'La couronne d’ombre s’est brisée… mais elle a hurlé un nom avant de mourir : Varn.'},{who:'Régente Isaure',text:'Le tombeau du dernier Tueur de dragons. Quelque chose y appelle les ombres.'}]}],
+    done:'La Horde de Grakkar est libérée de l’ombre.'},
+  a8:{ch:'Chapitre 8',t:'Le tombeau de Varn',chap:1,intro:[{who:ME,text:'(Le Glacier des Anciens. Le tombeau de Varn… et sa lame.)'}],
+    steps:[{t:'talk',npc:'hrolf',o:'Parle au Jarl Hrolf à Nordheim.',w:['nordheim',36,16],lines:[{who:'Jarl Hrolf',text:'Le tombeau de Varn est gardé par un colosse de glace depuis mille hivers.'},{who:'Jarl Hrolf',text:'Prouve ta valeur auprès des Anciens du Nord avant d’y aller.'}]},
+      {t:'shrR',rs:['givre','nordheim','glacier'],n:3,o:'Accomplis 3 sanctuaires du Nord (Givrebois, Nordheim, Glacier)'},
+      {t:'boss',id:'cgivre',o:'Abats le Colosse de givre au Glacier des Anciens.',w:['glacier',58,52]},
+      {t:'item',r:'glacier',at:[40,12],name:'Cœur de givre',o:'Récupère le Cœur de givre sur l’autel du Tombeau de Varn.',w:['glacier',40,12]},
+      {t:'talk',npc:'hrolf',o:'Rapporte le Cœur de givre au Jarl.',w:['nordheim',36,16],rep:['nordheim',20],lines:[{who:'Jarl Hrolf',text:'Le cœur de Varn bat encore… Il pointe vers le sud, vers une forêt qui respire.'},{who:'Jarl Hrolf',text:'La Reine de Tzalan connaît ces terres. Va la voir.'}]}],
+    done:'Le Cœur de givre pulse dans ta main.'},
+  a9:{ch:'Chapitre 9',t:'La forêt qui respire',chap:1,intro:[{who:ME,text:'(Une forêt qui respire… au-delà de Tzalan.)'}],
+    steps:[{t:'talk',npc:'ixtli',o:'Parle à la Reine Ixtli, à Tzalan.',w:['tzalan',36,20],lines:[{who:'Reine Ixtli',text:'La Forêt des Spores. L’ombre y a planté ses racines et sa reine s’en nourrit.'},{who:'Reine Ixtli',text:'Brûle sa racine. Et cherche le druide Orme, dans la Forêt d’Émeraude : lui seul saura purifier.'}]},
+      {t:'boss',id:'spore',o:'Abats la Reine Spore, dans la Forêt des Spores.',w:['myco',50,29]},
+      {t:'boss',id:'cmousse',o:'Abats le Colosse de mousse, gardien de la Forêt d’Émeraude.',w:['emeraude',60,16]},
+      {t:'talk',npc:'orme',o:'Trouve le druide Orme dans la Forêt d’Émeraude.',w:['emeraude',27,50],lines:[{who:'Druide Orme',text:'Tu as tranché les deux racines. La forêt respire mieux.'},{who:'Druide Orme',text:'Mais la source est là où le monde s’effrite : la Gorge de Cristal, aux portes du Néant.'},{who:'Druide Orme',text:'Tu n’y vaincras pas seul. Réunis les royaumes.'}]}],
+    done:'La forêt est purifiée. La source du mal est à la Faille.'},
+  a10:{ch:'Chapitre 10',t:'Le Concile des Huit',chap:1,intro:[{who:ME,text:'(Réunir les royaumes… même ceux qui se haïssent.)'}],
+    steps:[{t:'crowns',n:5,o:'Unis 5 royaumes sous ta bannière (alliance ou conquête)'},
+      {t:'talk',npc:'isaure',o:'Convoque le Concile auprès de la Régente Isaure.',w:['valcourt',45,29],lines:[{who:'Régente Isaure',text:'Cinq couronnes à la même table… Cela ne s’était jamais vu.'},{who:'Régente Isaure',text:'Leurs armées marchent vers la Gorge de Cristal. Ouvre-leur la voie.'}]},
+      {t:'boss',id:'ccrist',o:'Abats le Colosse de cristal, gardien de la Gorge.',w:['cristal',32,25]},
+      {t:'wave',r:'cristal',at:[32,8],n:30,types:['shadow','voidling','cwolf','cryslime'],ally:'*',o:'Tiens le Seuil de la Faille avec les armées alliées'}],
+    done:'Le Seuil tient. La Faille du Néant t’attend : l’épilogue commence.'}};
+const ARCO=['a1','a2','a3','a4','a5','a6','a7','a8','a9','a10'];
+const NEWCH=[['Chapitre 7 — La guerre des couronnes','a7','Morvaine tombée, sa couronne d’ombre corrompt Mog’thar et lance la Horde de Grakkar sur Nordheim.'],['Chapitre 8 — Le tombeau de Varn','a8','Le cri de la couronne mène au tombeau du dernier Tueur de dragons, au Glacier des Anciens.'],
+  ['Chapitre 9 — La forêt qui respire','a9','Le Cœur de givre pointe vers la Forêt des Spores, où l’ombre a planté ses racines.'],['Chapitre 10 — Le Concile des Huit','a10','Réunir les royaumes et tenir le Seuil de la Faille avant l’épilogue.']];
+const arcDone=id=>!!(flags.arcD||{})[id];
+function arcCur(){const a=flags.arc;if(!a||!ARCS[a.id])return null;const A=ARCS[a.id];return {A,S:A.steps[a.s],a};}
+function arcStart(id){const A=ARCS[id];if(arcDone(id))return;flags.arc={id,s:0,c:0};
+  setTimeout(async()=>{await w2Idle();if(A.chap)zoneTitle(A.ch,A.t);else qBanner(A.ch,A.t);await wait(900);await w2Idle();if(A.intro&&!S.dead){S.lock=true;await talk(A.intro);S.lock=false;}stepStart();updQuest();},A.chap?1400:600);save();}
+async function w2Idle(){while(dialog||S.lock||S.screen!=='play'||S.dead)await wait(300);}
+function stepStart(){const c=arcCur();if(!c)return;const S0=c.S;toast(`<b style="color:#ffd166">${esc(c.A.t)}</b> · ${esc(S0.o)}`,'#ffd166');if(S0.spawnCapts&&WORLD[map.id])w2ArcSpawn();arcCheck();}
+async function arcAdv(){const c=arcCur();if(!c)return;const S0=c.S;if(S0.rep)repAdd(S0.rep[0],S0.rep[1]);c.a.s++;c.a.c=0;wave2=null;
+  if(c.a.s>=c.A.steps.length){(flags.arcD=flags.arcD||{})[c.a.id]=1;flags.arc=null;qBanner(c.A.ch+' · '+c.A.t,'Terminé');toast(c.A.done,'#ffd166');gainXp(120+player.lvl*20);arcFinish(c.a.id);save();updQuest();return;}
+  stepStart();w2ArcSpawn();updQuest();save();}
+async function arcFinish(id){
+  if(id==='a4'&&(map.id==='pics'||map.id==='dragons')&&stage===40)setTimeout(()=>{ch4Region(map.id);},800);
+  if(id==='a5'&&flags.k5&&flags.n5&&stage<50){await wait(1200);S.lock=true;await talk([{who:'Corbeau messager',text:'CROA ! Message de Valcourt : « La cité est attaquée par les ombres. Venez vite ! » — Garde Aubin'}]);S.lock=false;setStage(50);save();showEnd(5);}
+  const nx={a7:'a8',a8:'a9',a9:'a10'}[id];if(nx)setTimeout(()=>arcStart(nx),2500);
+  if(id==='a10'&&map.id==='neant')setTimeout(()=>ch4Region('neant'),800);}
+function arcTarget(){const c=arcCur();if(!c)return null;const S0=c.S;if(S0.w)return S0.w;
+  const near=(L,ok)=>{let b=null,bd=1e9;const o=WORLD[map.id]||[0,0];const px=player.x/TS+o[0],py=player.y/TS+o[1];for(const q of L){if(!ok(q))continue;const w=WORLD[q.r];if(!w)continue;const d=Math.hypot(q.x+w[0]-px,q.y+w[1]-py);if(d<bd){bd=d;b=[q.r,q.x,q.y];}}return b;};
+  if(S0.t==='shr'||S0.t==='shrR')return near(SHR,q=>!(flags.shr||{})[q.id]&&(!S0.rs||S0.rs.includes(q.r)));if(S0.t==='twr')return near(TWR,q=>!(flags.twr||{})[q.id]);if(S0.t==='wave')return [S0.r,S0.at[0],S0.at[1]];return null;}
+function arcObj(){const c=arcCur();if(!c)return '';const S0=c.S,a=c.a;let o=S0.o;
+  if(S0.t==='kill')o+=` (${Math.min(a.c,S0.n)}/${S0.n})`;else if(S0.t==='wave')o+=` (${Math.min(a.c,S0.n)}/${S0.n})`;else if(S0.t==='shr')o+=` (${cnt('shr')}/${S0.n})`;else if(S0.t==='shrR')o+=` (${SHR.filter(q=>S0.rs.includes(q.r)&&(flags.shr||{})[q.id]).length}/${S0.n})`;
+  else if(S0.t==='twr')o+=` (${cnt('twr')}/${S0.n})`;else if(S0.t==='crowns')o+=` (${crowns()}/${S0.n})`;return o;}
+function arcCheck(){const c=arcCur();if(!c)return;const S0=c.S;let ok=false;
+  if(S0.t==='boss')ok=!!(flags.wb||{})[S0.id];else if(S0.t==='shr')ok=cnt('shr')>=S0.n;else if(S0.t==='shrR')ok=SHR.filter(q=>S0.rs.includes(q.r)&&(flags.shr||{})[q.id]).length>=S0.n;
+  else if(S0.t==='twr')ok=cnt('twr')>=S0.n;else if(S0.t==='crowns')ok=crowns()>=S0.n;else if(S0.t==='kill'||S0.t==='wave')ok=c.a.c>=S0.n;
+  else if(S0.t==='reach')ok=map.id===S0.r&&(!S0.at||Math.hypot(player.x-(S0.at[0]*TS+8),player.y-(S0.at[1]*TS+8))<S0.at[2]*TS);
+  if(ok&&!arcCheck.busy){arcCheck.busy=1;setTimeout(()=>{arcCheck.busy=0;arcAdv();},250);}updQuest();}
+function arcKill(e){const c=arcCur();if(!c)return;const S0=c.S;if(S0.t==='kill'&&S0.types.includes(e.type)&&(!S0.r||map.id===S0.r)){c.a.c++;if(c.a.c%2===0||c.a.c>=S0.n)toast(`${esc(S0.o)} (${Math.min(c.a.c,S0.n)}/${S0.n})`,'#e8e2cc');arcCheck();}
+  if(S0.t==='wave'&&e.w2wave){c.a.c++;arcCheck();}if(S0.t==='boss'||S0.t==='crowns')arcCheck();}
+let wave2=null;
+function waveTick(dt){const c=arcCur();if(!c||c.S.t!=='wave'||map.id!==c.S.r)return;const S0=c.S,cx=S0.at[0]*TS+8,cy=S0.at[1]*TS+8;
+  if(!wave2){if(Math.hypot(player.x-cx,player.y-cy)>14*TS)return;wave2={t:0,sp:0};qBanner(c.A.t,S0.o);setMusic('boss');
+    const ks=S0.ally==='*'?KORD.filter(isAlly):[S0.ally];for(const k of ks.slice(0,6))for(let i=0;i<(S0.ally==='*'?2:3);i++)allies.push(mkAlly(k,cx+rnd(-30,30),cy+rnd(-20,20),{hx:cx,hy:cy}));}
+  wave2.t+=dt;const alive=enemies.filter(e=>e.w2wave&&!e.dead).length,left=S0.n-c.a.c-alive;
+  if(left>0&&alive<6&&(wave2.sp-=dt)<=0){wave2.sp=rnd(.6,1.4);const a=rnd(0,TAU),r=rnd(150,220),tx=Math.floor((cx+Math.cos(a)*r)/TS),ty=Math.floor((cy+Math.sin(a)*r*.7)/TS);
+    if(tx>1&&ty>1&&tx<map.w-1&&ty<map.h-1&&!map.solid[ty*map.w+tx]){const e=spawn(pick(S0.types),tx,ty,(MOBS[map.id]||{l:10}).l+2,{w2wave:1});e.aggro=true;burst(e.x,e.y-6,10,'#b07aff');}}}
+function arcAuto(){const st=stage,D=flags.arcD=flags.arcD||{};
+  const pass={a1:st>=12,a2:st>=21,a3:st>=31,a4:st>=41,a5:st>=50,a6:st>=54,a7:false,a8:false,a9:false,a10:false};
+  for(const id of ARCO)if(pass[id]&&!D[id]){D[id]=1;if(flags.arc&&flags.arc.id===id)flags.arc=null;}
+  if(flags.arc)return;for(const id of ARCO){const A=ARCS[id];if(D[id])continue;if(A.at!==undefined&&st>=A.at&&!pass[id]){if(id==='a8'||id==='a9'||id==='a10')continue;arcStart(id);return;}
+    if((id==='a8'||id==='a9'||id==='a10')&&st>=55&&D[ARCO[ARCO.indexOf(id)-1]]){arcStart(id);return;}}}
+async function arcTalk(n){const c=arcCur();if(!c||c.S.t!=='talk'||c.S.npc!==n.id)return false;const S0=c.S;
+  if(S0.fn==='jade'){await talk([{who:'Vizir Kadir',text:'Tzalan t’envoie ? Les lézards mentent comme ils respirent.'},{who:'Vizir Kadir',text:'La Sultane offrira son appui à qui choisira Sablerouge. Mais Tzalan ne le pardonnera pas.'}]);
+    const i=await choose('Vizir Kadir','Tzalan et Sablerouge se disputent l’héritage des Élus. Qui soutiens-tu ?',[{t:'Soutenir Sablerouge',s:'+30 Sablerouge · −20 Tzalan'},{t:'Soutenir Tzalan',s:'+30 Tzalan · −20 Sablerouge'},{t:'Refuser de choisir',s:'+12 aux deux'}]);
+    if(i===0){repAdd('sablerouge',30);repAdd('tzalan',-20);}else if(i===1){repAdd('tzalan',30);repAdd('sablerouge',-20);}else{repAdd('tzalan',12);repAdd('sablerouge',12);}
+    await talk([{who:'Vizir Kadir',text:'Ton choix est noté. Le sable se souvient de tout.'}]);}
+  else await talk(S0.lines);arcAdv();return true;}
+const _gateOK=gateOK;gateOK=function(to){if(!_gateOK(to))return false;if(to==='ostval'&&stage>=11&&stage<12&&!arcDone('a1'))return false;if(to==='sylvaris'&&stage===20&&!arcDone('a2'))return false;if(to==='kardum'&&stage===30&&!arcDone('a3'))return false;return true;};
+const _ch4Region=ch4Region;ch4Region=function(k){if((k==='pics'||k==='dragons')&&stage===40&&!arcDone('a4'))return false;if(k==='neant'&&stage===55&&!arcDone('a10'))return false;return _ch4Region(k);};
+function w2Crow(){if(arcDone('a5'))return true;toast('Il te reste à accomplir : <b>Jade et sable</b>.','#ffd166');return false;}
+function w2Gate6(){if(arcDone('a6'))return true;if(!(flags.g6T>time)){flags.g6T=time+4;toast('Le voile d’ombre de Morvaine te repousse. Il faut la lumière de trois couronnes.','#b07aff');}return false;}
+Object.assign(GATEMSG,{ostval:'La brume barre le chemin. Il te faut la Corne de Vigie d’Aldmoor.',sylvaris:'Les ronces elfiques ne s’ouvrent que pour un ami des elfes.',kardum:'Le col est enseveli. Les nains doivent le dégager.'});
+const _GM=GATEMSG;
+const _updQuest=updQuest;updQuest=function(){_updQuest();const tr=flags.track,side=tr&&tr!=='main'&&sqS(tr)&&!sqS(tr).done;const c=arcCur();if(!c||side)return;
+  $('#qtitle').textContent=c.A.ch+' · '+c.A.t;$('#qtext').textContent=arcObj();$('#qhint').textContent='';};
+const _questGoal=questGoal;questGoal=function(){const c=arcCur();return c?arcObj():_questGoal();};
+const _questHint=questHint;questHint=function(){return arcCur()?'':_questHint();};
+questTarget=function(){const t=arcTarget();if(!t||!WORLD[map.id]||!WORLD[t[0]])return null;const o=WORLD[map.id],q=WORLD[t[0]];return {x:(t[1]+q[0]-o[0])*TS+8,y:(t[2]+q[1]-o[1])*TS+8};};
+
+/* ================= MONDE ÉTENDU : chargement, PNJ, interactions ================= */
+const W2SP={aldmoor:[['wolf',12,22,5],['wolf',14,26,5],['bandit',70,40,6],['bandit',73,42,6],['skeleton',64,52,6]],automne:[['boar',20,40,8],['wolf',52,30,8],['bandit',70,30,9],['bandit',68,33,9]],
+  lac:[['crab',60,48,10],['crab',64,46,10],['drowned',30,48,10]],steppe:[['orc',50,17,11],['orc',55,20,11],['orcarc',47,18,11],['orc',57,16,12],['orcarc',52,11,11],['wolf',30,40,10]],
+  grakkar:[['orc',40,41,20],['orcarc',43,42,20],['scorpion',14,52,20],['scorpion',66,42,20]],givre:[['frostwolf',30,30,16],['frostwolf',32,32,16],['snowslime',50,20,16]],nordheim:[['frostwolf',60,42,18],['iceskel',10,40,18]],
+  glacier:[['iceskel',30,30,22],['frostwolf',50,44,22],['iceskel',37,14,22],['iceskel',43,14,22]],emeraude:[['mossslime',30,20,24],['ronce',50,40,24],['boar',20,30,24]],
+  jungle:[['lizard',66,20,15],['lizarc',72,22,15],['panther',30,24,15],['jslime',50,50,15]],savane:[['hyena',40,30,13],['hyena',42,31,13],['scorpion',50,30,13]],tzalan:[['panther',60,30,18],['lizard',10,52,18]],
+  myco:[['sporeslime',30,30,26],['sporeslime',62,30,26],['shadow',40,44,26]],cristal:[['cryslime',20,20,28],['cryslime',44,40,28],['drake',50,30,28]]};
+const VL={aldmoor:['Le roi Edmond est dur, mais juste. Enfin… surtout dur.','Valcourt ? Ces prétentieux. Aldmoor était un royaume quand ils gardaient des chèvres.','On dit qu’une Dame Blanche erre au cimetière des Murmures. Personne n’y va la nuit.','Les tours de vigie montrent tout le pays du haut de leur sommet.'],
+  nordheim:['Skål ! Tu as l’air d’un guerrier. Ou d’un poète. Difficile à dire.','Les orcs de Grakkar viennent de l’ouest, par la toundra.','Fenrir rôde à l’est du château. Il a dévoré trois chasseurs cet hiver.','Le Glacier des Anciens cache le tombeau de Varn, le dernier Tueur de dragons.'],
+  tzalan:['Sssang-chaud. La Reine t’observe depuis le temple.','Le drake Kukul était notre protecteur… avant que l’ombre ne le touche.','Au sud-est, la Forêt des Spores. Respire peu, là-bas.','Sablerouge veut nos terres. Ils ne les auront jamais.'],
+  grakkar:['GRAKKAR ! … Quoi ? Tu veux mourir ?','Mog’thar a fendu un ogre en deux. D’un seul coup.','Les humains du nord sont mous. Mais leur hydromel est bon.']};
+const W2NPC=[{id:'pip',name:'Pip le Collectionneur',pal:'pip',r:'aldmoor',x:48,y:31},{id:'elwen',name:'Elwen',pal:'elwen',r:'automne',x:37,y:54},{id:'orme',name:'Druide Orme',pal:'orme',r:'emeraude',x:27,y:50},
+  {id:'lirien',name:'Lirien',pal:'lirien',r:'steppe',x:52,y:15,when:()=>{const c=arcCur();return c&&c.a.id==='a2'&&c.a.s>=4&&c.a.s<5;}},{id:'dwalin',name:'Dwalin',pal:'dwalin',r:'savane',x:24,y:30,when:()=>{const c=arcCur();return c&&c.a.id==='a3'&&c.a.s>=1&&c.a.s<6;}},
+  {id:'skald',name:'Skald Eirik',pal:'skald',r:'nordheim',x:30,y:26,lines:['« Varn franchit les Pics Cendrés quand le sang des Tueurs chanta dans sa marque… » C’est le début de la saga.','Hrönn le Yéti vit au nord-ouest de Givrebois. Ne le réveille pas pour rien.']},
+  {id:'cav',name:'Temür le cavalier',pal:'tf4',r:'steppe',x:20,y:39,lines:['Le vent de la steppe porte les cris des orcs. Leur camp est au nord-est.','Les sept pierres du Cercle des Vents chantent quand on s’en approche.']},
+  {id:'peche',name:'Yolande',pal:'tf1',r:'lac',x:12,y:12,lines:['Le Lac Miroir reflète ce que tu es vraiment. Regarde bien.','La Mère-Crabe garde la grève au sud-est. Elle est grosse comme une maison.']},
+  {id:'buch',name:'Bûcheron Anselme',pal:'tf3',r:'automne',x:28,y:21,lines:['Gorm le Cyclope vit à l’est de la rivière. Il a écrasé ma cabane.','Les feuilles ne tombent jamais vraiment ici. Elles changent juste de couleur.']},
+  {id:'expl',name:'Exploratrice Clémence',pal:'tf2',r:'jungle',x:22,y:40,lines:['Le Temple de Kukul est au nord-est, au-delà de la rivière.','J’ai cartographié la moitié de cette jungle. L’autre moitié a essayé de me manger.']},
+  {id:'trap',name:'Trappeur Gunnar',pal:'tf3',r:'givre',x:44,y:56,lines:['Les loups des glaces chassent en meute. Reste près du feu.','Le lac gelé tient… la plupart du temps.']}];
+function w2NpcPush(id){const m=maps[id];const add=(o,x,y)=>{const p=freeNear(m,x,y);npcs.push(Object.assign({x:p[0]*TS+8,y:p[1]*TS+10,dir:0,w2:1},o));};
+  for(const k of KORD){const R=KING[k].ruler;if(R.r!==id)continue;if(dip(k).st==='guerre'&&KING[k].ruler.r===KING[k].cap&&W2R[id])continue;add({id:R.id,name:R.name,pal:R.pal,kd:k},R.x,R.y);}
+  for(const N of W2NPC)if(N.r===id&&(!N.when||N.when()))add({id:N.id,name:N.name,pal:N.pal,lines:N.lines},N.x,N.y);
+  const m2=maps[id];if(m2.gate&&W2R[id]){const k=landKing(id);if(k&&dip(k).st!=='guerre'){add({id:'g1_'+id,name:'Garde',pal:'sol_'+k,lines:['Halte. Pas d’armes dégainées dans l’enceinte.','Le souverain reçoit dans la cour du donjon.'],dir:0},m2.gate.x-2,m2.gate.y-1);add({id:'g2_'+id,name:'Garde',pal:'sol_'+k,lines:['Bienvenue au '+KING[k].n+'.','Les avis de recherche sont affichés sur le panneau.'],dir:0},m2.gate.x+2,m2.gate.y-1);
+    const vp=['villager','villager2','tf2','tf5'],L=VL[id]||VL.aldmoor;for(let i=0;i<3;i++)add({id:'v'+i+'_'+id,name:['Habitant','Habitante','Marchand'][i],pal:k==='tzalan'?'lizard':k==='grakkar'?'orc':vp[i],lines:L},m2.gate.x-8+i*8,m2.gate.y-8);}}}
+function w2Load(id){const W=WORLD[id];
+  if(W){const keep=new Set([id,...neighbors(id)]);for(const k in maps){const m=maps[k];if(WORLD[k]&&!keep.has(k)&&m._g)m._g=null;}}
+  allies=allies.filter(a=>a.esc);for(const a of allies){a.x=player.x+rnd(-16,16);a.y=player.y+rnd(8,16);}APR=[];wave2=null;
+  w2Sync();
+  if(W2R[id]){setMusic(W2MUS[id]||'field');for(const[t,x,y,l]of W2SP[id]||[]){const p=freeNear(maps[id],x,y);spawn(t,p[0],p[1],l);}}
+  if(W){w2NpcPush(id);for(const b in WB){const B=WB[b];if(B.r!==id||B.arc||(flags.wb||{})[b])continue;const p=freeNear(maps[id],B.x,B.y);spawn('wb_'+b,p[0],p[1],B.l,{wbid:b,state:'sleep',home:{x:p[0]*TS+8,y:p[1]*TS+12},face:-1}).cd=1.2;}
+    w2Spawn(id);w2ArcSpawn();}
+  if(maps[id].shr)shrineEnter();
+  if(maps[id].cvd){const m=maps[id],R=MOBS[m.parent]||{l:10,d:['skeleton']},cv=m.cvd;setMusic('dun');let n=0;for(let i=0;i<220&&n<8;i++){const x=2+Math.floor(hash(i,7,cv.id.length)*(m.w-4)),y=2+Math.floor(hash(i,8,cv.id.length)*(m.h-4));if(m.t[y*m.w+x]!==T.FLOOR||m.solid[y*m.w+x]||Math.hypot(x-22,y-31)<9)continue;spawn(pick(R.d),x,y,R.l+2);n++;}
+    if(!(flags.chests||{})['cv_'+cv.id]){const f=m.far;spawn(R.l>18?'golem':'chief',f[0],Math.min(m.h-2,f[1]+1),R.l+3);}}}
+function w2ArcSpawn(){const c=arcCur();if(!c||!WORLD[map.id])return;const S0=c.S,m=map;
+  if(S0.t==='boss'&&S0.id==='mogshadow'&&map.id==='grakkar'&&!(flags.wb||{}).mogshadow&&!enemies.some(e=>e.wbid==='mogshadow'&&!e.dead)){const B=WB.mogshadow,p=freeNear(m,B.x,B.y);spawn('wb_mogshadow',p[0],p[1],B.l,{wbid:'mogshadow',state:'sleep',home:{x:p[0]*TS+8,y:p[1]*TS+12}});}
+  if(S0.spawnCapts&&map.id==='grakkar'&&!enemies.some(e=>e.type==='cap_grakkar'&&e.arcC&&!e.dead)){const n=S0.n-c.a.c;KING.grakkar.capts.filter(q=>q[0]==='grakkar').concat([['grakkar',56,48,'Chef Ogrim']]).slice(0,n).forEach((q,i)=>{const p=freeNear(m,q[1],q[2]);const e=spawn('cap_grakkar',p[0],p[1],27,{arcC:1});e.cname=q[3];spawn('sol_grakkar',p[0]+1,p[1],25);});}
+  if(S0.t==='item'&&map.id===S0.r&&!map.objs.some(o=>o.aitem)){map.objs.push({type:'shard',tx:S0.at[0],ty:S0.at[1],x:S0.at[0]*TS+8,y:S0.at[1]*TS+14,v:0,aitem:S0.name});}
+  if(S0.t==='talk'){for(const N of W2NPC)if(N.r===map.id&&N.when&&N.when()&&!npcs.some(n=>n.id===N.id)){const p=freeNear(m,N.x,N.y);npcs.push({id:N.id,name:N.name,pal:N.pal,x:p[0]*TS+8,y:p[1]*TS+10,dir:0,w2:1});}}}
+const _regionLoad=regionLoad;regionLoad=function(id){if(W2R[id]||W2I[id])return;return _regionLoad(id);};
+function w2Tick(dt){if(S.screen!=='play')return;w2Tick.t=(w2Tick.t||0)-dt;if(w2Tick.t<=0){w2Tick.t=.5;arcAuto();arcCheck();}
+  allyUpd(dt);waveTick(dt);if(map.shr)trialTick(dt);
+  if(!S.lock&&!S.dead){for(const o of map.vis||[])if(o.cave&&Math.abs(player.x-o.x)<10&&player.y<o.y+2&&player.y>o.y-14){enterMap('cv_'+o.cave,22*TS+8,31*TS);return;}
+    if(map.w2i&&map.stairs&&Math.hypot(player.x-map.stairs.x,player.y-map.stairs.y)<10&&!(map.trial&&map.trial.st==='run')){enterMap(map.parent,map.ret[0],map.ret[1]);return;}}}
+function w2Inter(){if(interT||S.lock)return;const p=player;let best=null,bd=1e9;
+  for(const o of map.vis||[]){const d=Math.hypot(o.x-p.x,o.y-4-p.y);let L=null,r=24;
+    if(o.shr){r=30;L=(flags.shr||{})[o.shr]?'Entrer dans le sanctuaire (réussi)':'Entrer dans le sanctuaire';}
+    else if(o.twr&&!(flags.twr||{})[o.twr]){r=34;L='Grimper à la tour de vigie';}
+    else if(o.seed&&!o.v){r=20;L='Soulever la pierre';}
+    else if(o.stl){r=22;L='Lire la stèle';}
+    else if(o.dig&&o.type==='digspot'&&(flags.stl||{})[STL.find(s=>s.id===o.dig).id]){r=18;L='Creuser ici';}
+    else if(o.type==='statue'){r=30;L='Prier la Déesse';}
+    else if(o.bk){r=24;L='Lire les avis de recherche';}
+    else if(o.aitem){r=22;L='Ramasser : '+o.aitem;}
+    if(L&&d<r&&d<bd){bd=d;best={kind:'w2',o,label:L};}}
+  if(best)interT=best;}
+async function w2Act(t){const o=t.o,F=flags;
+  if(o.shr){const s=SHR.find(q=>q.id===o.shr);enterMap('sh_'+s.id,11*TS+8,14*TS);return;}
+  if(o.twr){S.lock=true;sfx('door');await fadeQ(1);(F.twr=F.twr||{})[o.twr]=1;const T0=TWR.find(q=>q.id===o.twr),R=F.rev=F.rev||{};R[T0.r]=1;for(const k of neighbors(T0.r))R[k]=1;w2Sync();await wait(300);await fadeQ(0);S.lock=false;
+    shake=4;sfx('lvl');burst(o.x,o.y-100,40,'#ffa040');qBanner('Tour de vigie activée',WORLDNAMES[T0.r]);toast('La carte de la région est révélée. <b>Voyage rapide</b> débloqué depuis la carte.','#ffa040');arcCheck();save();return;}
+  if(o.seed){(F.seed=F.seed||{})[o.seed]=1;w2Sync();sfx('chest');burst(o.x,o.y-8,26,'#ffd166');const n=cnt('seed');toast(`<b style="color:#ffd166">Graine d’étoile !</b> (${n}/42)`,'#ffd166');
+    if(!F.seedTip){F.seedTip=1;setTimeout(()=>toast('Pip le Collectionneur, au château d’Aldmoor, récompense les graines d’étoile.','#ffd166'),1800);}save();return;}
+  if(o.stl){const s=STL.find(q=>q.id===o.stl),i=STL.indexOf(s)+1,first=!(F.stl||{})[s.id];(F.stl=F.stl||{})[s.id]=1;w2Sync();S.lock=true;await talk([{who:`Stèle ancienne (${i}/8)`,text:s.txt}]);S.lock=false;if(first){toast(`Énigme notée dans ton carnet (${cnt('stl')}/8 stèles).`,'#5ae0c8');save();}return;}
+  if(o.dig){const s=STL.find(q=>q.id===o.dig);(F.dig=F.dig||{})[s.id]=1;w2Sync();sfx('chest');shake=3;burst(o.x,o.y-4,24,'#ffd166');const L=(MOBS[map.id]||{l:10}).l,n=cnt('dig');dropCoins(o.x,o.y,120+L*8,10);
+    if(n>=8){pickups.push({k:'weapon',w:{name:'Lame des Huit',rar:4,atk:Math.round((2+(player.lvl+6)*1.3)*RAR[4].m*1.15),proc:'foudre'},x:o.x,y:o.y+10,t:0});addTitle('Déchiffreur de stèles');qBanner('Mystère résolu','La Lame des Huit');}
+    else{pickups.push({k:Math.random()<.5?'weapon':'armor',w:makeWeapon(player.c.key,L+3,3),a:makeArmor(Math.random()<.5?'head':'body',L+2,3),x:o.x,y:o.y+10,t:0});toast(`Trésor des stèles (${n}/8)`,'#ffd166');}save();return;}
+  if(o.type==='statue'){S.lock=true;const n=F.orbs||0;if(n>=4){const i=await choose('Statue de la Déesse',`Tu possèdes <b>${n}</b> Orbes d’épreuve. Offrir 4 orbes ?`,[{t:'Offrir 4 orbes',s:'+1 cœur de vie'},{t:'Plus tard'}]);if(i===0){F.orbs-=4;heartUp({x:player.x,y:player.y});qBanner('Bénédiction de la Déesse','Un cœur de plus');save();}}
+    else await talk([{who:'Statue de la Déesse',text:`Rapporte-moi 4 Orbes d’épreuve et je fortifierai ton cœur. (Orbes : ${n}/4)`}]);S.lock=false;return;}
+  if(o.bk){S.lock=true;await bountyTalk(o.bk,'Avis de recherche');S.lock=false;return;}
+  if(o.aitem){const c=arcCur();map.objs.splice(map.objs.indexOf(o),1);sfx('lvl');burst(o.x,o.y-6,30,'#9ad8ff');toast(`Obtenu : <b>${esc(o.aitem)}</b>`,'#9ad8ff');if(c&&c.S.t==='item')arcAdv();return;}}
+async function w2Talk(n){S.lock=true;try{if(await arcTalk(n))return;const k=n.kd;if(k){await kingTalk(n,k);return;}if(n.id==='pip'){await pipTalk(n);return;}
+  const L=n.lines||['…'];n.li=(n.li||0)%L.length;await talk([{who:n.name,text:L[n.li]}]);n.li++;}finally{S.lock=false;updQuest();}}
+const PIPR=[[5,'coins',150],[10,'weapon',3],[15,'armor',3],[20,'heart'],[30,'weapon',4],[42,'title']];
+async function pipTalk(n){const F=flags,c=cnt('seed'),got=F.pipR=F.pipR||{};let gave=0;
+  for(const[k,t,v]of PIPR){if(c<k||got[k])continue;got[k]=1;gave++;if(t==='coins')dropCoins(player.x,player.y-4,v,8);else if(t==='weapon')pickups.push({k:'weapon',w:makeWeapon(player.c.key,player.lvl+2,v),x:player.x,y:player.y+12,t:0});
+    else if(t==='armor')pickups.push({k:'armor',a:makeArmor('body',player.lvl+2,v),x:player.x,y:player.y+12,t:0});else if(t==='heart')heartUp({x:player.x,y:player.y});else{addTitle('Gardien des étoiles');}}
+  const nx=PIPR.find(q=>c<q[0]);await talk([{who:n.name,text:gave?'Ooooh ! Des graines d’étoile ! Tiens, tiens, une récompense pour toi !':'Les graines d’étoile tombent du ciel et se cachent sous les pierres. Soulève-les !'},{who:n.name,text:`Tu en as trouvé ${c} sur 42.${nx?` Reviens quand tu en auras ${nx[0]}.`:' Toutes ! Incroyable !'}`}]);if(gave)save();}
+function w2Kill(e){bountyKill(e);captKill(e);if(e.wbid)wbKill(e);w2KillRep(e);arcKill(e);}
+function w2Post(){OBJ.rplate.spr=[0,1].map(v=>sprite(18,12,()=>{ell(9,6,8,5,'#0a0c14');ell(9,5,7,4,v?'#5ad8ff':'#2a3446');ell(9,5,4,2,v?'#d0f6ff':'#3a4a66');P(8,3,2,1,v?'#ffffff':'#5a6a86');}));}
+
+const _menuItems=menuItems;menuItems=function(){const L=_menuItems();if(mTab!=='q')return L;return L.filter(x=>{if(!x.main)return true;const N=NEWCH.find(q=>q[0]===x.n);if(!N)return true;x.done=arcDone(N[1]);return x.done||(flags.arc&&flags.arc.id===N[1]);});};
+
+/* ================= CARTE DU MONDE ================= */
+const FTOWN=[['valdoria',40,44,'Brumeval'],['valcourt',40,40,'Valcourt'],['ostval',32,40,'Ostval'],['sylvaris',30,40,'Sylvaris'],['kardum',40,44,'Kar-Dûm'],['desert',40,47,'Oasis d’Ambre'],['coast',22,22,'Port-Sel'],['dragons',40,38,'Drakhaven'],
+  ['aldmoor',42,40,'Aldmoor'],['nordheim',36,40,'Nordheim'],['grakkar',40,40,'Grakkar'],['tzalan',36,44,'Tzalan'],['automne',30,24,'Roncevaux'],['lac',14,14,'Port-Miroir'],['givre',41,52,'Givrebois']];
+const WM={cx:null,cy:null,z:2.2,sel:null,pt:new Map(),drag:null,base:null,key:''};
+function wmBox(){let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const k in WORLD){if(!maps[k])continue;const r=wRect(k);x0=Math.min(x0,r[0]);y0=Math.min(y0,r[1]);x1=Math.max(x1,r[2]);y1=Math.max(y1,r[3]);}return[x0,y0,x1,y1];}
+const wmKnown=k=>!!((flags.seen||{})[k]||(flags.rev||{})[k]);
+function wmBase(){const seen=flags.seen||{},rev=flags.rev||{},key=Object.keys(WORLD).map(k=>(seen[k]?1:0)+(rev[k]?2:0)).join('');if(WM.base&&WM.key===key)return WM.base;WM.key=key;
+  const[x0,y0,x1,y1]=wmBox(),[c,g]=mk((x1-x0)*2,(y1-y0)*2);g.imageSmoothingEnabled=false;g.fillStyle='#070a10';g.fillRect(0,0,c.width,c.height);
+  for(let i=0;i<500;i++){g.fillStyle=i%3?'#0b1018':'#0e141e';g.fillRect(hash(i,1,5)*c.width,hash(i,2,5)*c.height,6,2);}
+  for(const k in WORLD){if(!maps[k])continue;const r=wRect(k),X=(r[0]-x0)*2,Y=(r[1]-y0)*2;g.drawImage(miniThumb(maps[k]),X,Y);
+    if(!wmKnown(k)){g.fillStyle='rgba(8,10,18,.62)';g.fillRect(X,Y,(r[2]-r[0])*2,(r[3]-r[1])*2);g.fillStyle='rgba(120,130,160,.06)';for(let i=0;i<(r[2]-r[0])*2;i+=6)g.fillRect(X+i,Y,2,(r[3]-r[1])*2);}}
+  return WM.base=c;}
+function wmIcons(){const L=[],F=flags,seen=k=>wmKnown(k);
+  for(const k of KORD){const R=KING[k].ruler,cap=KING[k].cap,m=maps[cap];if(!m||!WORLD[cap])continue;const g=m.gate||{x:Math.floor(m.w/2),y:Math.floor(m.h/2)};L.push({t:'castle',k,r:cap,x:m.keep?m.keep.x:g.x,y:m.keep?m.keep.y:g.y,n:KING[k].n,vis:seen(cap)});}
+  for(const t of TWR)L.push({t:'twr',r:t.r,x:t.x,y:t.y,on:!!(F.twr||{})[t.id],n:'Tour de vigie · '+WORLDNAMES[t.r],vis:seen(t.r),ft:!!(F.twr||{})[t.id]});
+  for(const s of SHR)L.push({t:'shr',r:s.r,x:s.x,y:s.y,on:!!(F.shr||{})[s.id],n:s.n,vis:seen(s.r),ft:!!(F.shr||{})[s.id]});
+  for(const c of CAVES)L.push({t:'cave',r:c.r,x:c.x,y:c.y,n:c.n,vis:!!(F.seen||{})[c.r]});
+  for(const b in WB){const B=WB[b];if(B.arc)continue;L.push({t:'boss',r:B.r,x:B.x,y:B.y,on:!!(F.wb||{})[b],n:B.n+' · niv. '+B.l,vis:!!(F.seen||{})[B.r]});}
+  for(const s of STL){L.push({t:'stl',r:s.r,x:s.x,y:s.y,on:!!(F.stl||{})[s.id],n:'Stèle ancienne',vis:!!(F.seen||{})[s.r]});if((F.stl||{})[s.id]&&!(F.dig||{})[s.id])L.push({t:'dig',r:s.dr,x:s.dx,y:s.dy,n:'Trésor des stèles ?',vis:1});}
+  if(typeof WLAIR!=='undefined')for(const Lr of WLAIR){const k=(F.wdK||{})[Lr.id];L.push({t:'drag',r:Lr.map,x:Lr.at[0],y:Lr.at[1],on:k!==undefined&&playT-k<WDRESP,n:WEL[Lr.el].n+' · niv. '+Lr.lvl,vis:!!(F.seen||{})[Lr.map]});}
+  for(const[r,x,y,n]of FTOWN)L.push({t:'town',r,x,y,n,vis:!!(F.seen||{})[r],ft:!!(F.seen||{})[r]});
+  return L.filter(i=>i.vis&&WORLD[i.r]);}
+function wmDraw(){const cv=$('#wmap');if(!cv)return;const dpr=Math.min(2,window.devicePixelRatio||1),W=Math.max(200,cv.clientWidth),H=Math.max(160,cv.clientHeight);if(cv.width!==Math.round(W*dpr)){cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);}
+  const g=cv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.imageSmoothingEnabled=false;g.fillStyle='#05070d';g.fillRect(0,0,W,H);const[x0,y0,x1,y1]=wmBox();let z=WM.z;
+  if(WM.cx===null){const o=WORLD[map.id]||WORLD[(SHOPINFO[map.id]||HOMEINFO[map.id]||{}).region]||WORLD[map.parent]||[0,0];WM.cx=o[0]+(WORLD[map.id]?player.x/TS:40);WM.cy=o[1]+(WORLD[map.id]?player.y/TS:30);}
+  const fz=Math.min(W/(x1-x0),H/(y1-y0))*.96;WM.min=fz;if(WM.fit){WM.fit=0;WM.z=fz;WM.cx=(x0+x1)/2;WM.cy=(y0+y1)/2;}WM.z=Math.max(WM.z,fz);z=WM.z;
+  WM.cx=clamp(WM.cx,x0,x1);WM.cy=clamp(WM.cy,y0,y1);const sx=wx=>(wx-WM.cx)*z+W/2,sy=wy=>(wy-WM.cy)*z+H/2;WM.sx=sx;WM.sy=sy;
+  g.drawImage(wmBase(),sx(x0),sy(y0),(x1-x0)*z,(y1-y0)*z);
+  for(const k of KORD){const c=KPAL[k].ban;for(const r of KING[k].lands){if(!WORLD[r]||!maps[r])continue;const R=wRect(r);g.strokeStyle=c;g.globalAlpha=wmKnown(r)?.75:.3;g.lineWidth=2;g.setLineDash([6,4]);g.strokeRect(sx(R[0])+2,sy(R[1])+2,(R[2]-R[0])*z-4,(R[3]-R[1])*z-4);g.setLineDash([]);g.globalAlpha=1;}}
+  g.textAlign='center';for(const k in WORLD){if(!maps[k])continue;const R=wRect(k),X=sx((R[0]+R[2])/2),Y=sy(R[1])+14;const kn=wmKnown(k),t=kn?WORLDNAMES[k]:'???';g.font=`bold ${Math.round(clamp(z*5,10,15))}px "Pixelify Sans",monospace`;g.fillStyle='#05070d';g.fillText(t,X+1,Y+1);g.fillStyle=kn?'#ffe6a0':'#5a6478';g.fillText(t,X,Y);}
+  const ico=wmIcons();WM.ico=ico;const pxl=(x,y,w,h,c)=>{g.fillStyle=c;g.fillRect(Math.round(x),Math.round(y),w,h);};
+  for(const i of ico){const w=WORLD[i.r],X=Math.round(sx(w[0]+i.x+.5)),Y=Math.round(sy(w[1]+i.y+.5)),sel=WM.sel===i;
+    if(sel){g.strokeStyle='#ffffff';g.lineWidth=1.5;g.strokeRect(X-8,Y-8,16,16);}
+    switch(i.t){case 'castle':{const c=KPAL[i.k].ban;pxl(X-6,Y-4,13,9,'#05070d');pxl(X-5,Y-3,11,7,c);pxl(X-5,Y-6,2,3,'#ffd166');pxl(X-1,Y-7,3,4,'#ffd166');pxl(X+4,Y-6,2,3,'#ffd166');pxl(X-4,Y-1,9,1,'#ffd166');break;}
+      case 'twr':pxl(X-3,Y-7,7,13,'#05070d');pxl(X-2,Y-6,5,11,i.on?'#ffa040':'#6a7488');pxl(X-1,Y-6,3,2,i.on?'#fff2b0':'#9aa4b8');break;
+      case 'shr':g.save();g.translate(X,Y);g.rotate(Math.PI/4);g.fillStyle='#05070d';g.fillRect(-5,-5,10,10);g.fillStyle=i.on?'#ffd166':'#5ad8ff';g.fillRect(-4,-4,8,8);g.fillStyle='#ffffff';g.fillRect(-1,-1,2,2);g.restore();break;
+      case 'cave':pxl(X-5,Y-4,10,8,'#05070d');pxl(X-4,Y-3,8,6,'#6a5a44');pxl(X-2,Y-1,4,4,'#05070d');break;
+      case 'boss':pxl(X-5,Y-5,10,10,'#05070d');pxl(X-4,Y-4,8,6,i.on?'#5a6070':'#e8e2cc');pxl(X-3,Y-2,2,2,'#05070d');pxl(X+1,Y-2,2,2,'#05070d');pxl(X-2,Y+2,4,2,i.on?'#5a6070':'#e8e2cc');if(i.on){g.strokeStyle='#ff4a5a';g.lineWidth=2;g.beginPath();g.moveTo(X-5,Y-5);g.lineTo(X+5,Y+5);g.stroke();}else pxl(X-5,Y-6,10,1,'#ff4a5a');break;
+      case 'drag':pxl(X-5,Y-4,10,8,'#05070d');pxl(X-4,Y-3,8,6,i.on?'#5a6070':'#ff6a3a');pxl(X+1,Y-2,2,1,'#ffd166');break;
+      case 'stl':pxl(X-3,Y-6,6,11,'#05070d');pxl(X-2,Y-5,4,9,i.on?'#ffd166':'#5ae0c8');break;
+      case 'dig':g.strokeStyle='#ffd166';g.lineWidth=2;g.beginPath();g.moveTo(X-4,Y-4);g.lineTo(X+4,Y+4);g.moveTo(X+4,Y-4);g.lineTo(X-4,Y+4);g.stroke();break;
+      case 'town':pxl(X-4,Y-3,9,7,'#05070d');pxl(X-3,Y-2,7,5,'#c8b890');pxl(X-2,Y-4,5,2,'#8a3a2a');break;}}
+  const t=arcTarget();if(t&&WORLD[t[0]]){const w=WORLD[t[0]],X=sx(w[0]+t[1]+.5),Y=sy(w[1]+t[2]+.5),b=(Math.sin(performance.now()/180)+1)*1.5;g.fillStyle='#05070d';g.beginPath();for(let i=0;i<10;i++){const a=i/10*TAU-Math.PI/2,r=i%2?4:9+b;g.lineTo(X+Math.cos(a)*(r+1),Y+Math.sin(a)*(r+1));}g.fill();g.fillStyle='#ffd166';g.beginPath();for(let i=0;i<10;i++){const a=i/10*TAU-Math.PI/2,r=i%2?3:8+b;g.lineTo(X+Math.cos(a)*r,Y+Math.sin(a)*r);}g.fill();}
+  const II=SHOPINFO[map.id]||HOMEINFO[map.id],pm=WORLD[map.id]?map.id:II?II.region:map.parent;if(pm&&WORLD[pm]){const o=WORLD[pm],wx=(WORLD[map.id]?player.x/TS:II?II.tx:map.ret[0]/TS)+o[0],wy=(WORLD[map.id]?player.y/TS:II?II.ty:map.ret[1]/TS)+o[1];const X=sx(wx),Y=sy(wy);pxl(X-5,Y-5,10,10,'#05070d');pxl(X-4,Y-4,8,8,'#ffffff');pxl(X-2,Y-2,4,4,'#ff4a5a');}
+  const inf=$('#wminfo');if(inf){const s=WM.sel;inf.innerHTML=s?`<b>${esc(s.n)}</b>${s.t==='shr'?`<small>${s.on?'Épreuve réussie':'Épreuve à relever'}</small>`:s.t==='twr'?`<small>${s.on?'Activée':'Pas encore grimpée'}</small>`:s.t==='boss'?`<small>${s.on?'Vaincu':'Légende redoutable'}</small>`:s.t==='castle'?`<small style="color:${DST[dip(s.k).st][1]}">${DST[dip(s.k).st][0]} · réputation ${dip(s.k).rep}</small>`:''}${s.ft||s.t==='castle'&&maps[s.r]&&(flags.seen||{})[s.r]?`<button class="mbtn pri" id="wmgo">Voyager ici</button>`:''}`:'<small>Touche une icône. Glisse pour te déplacer, pince ou molette pour zoomer.</small>';const b=$('#wmgo');if(b)b.onclick=()=>wmTravel(s);}}
+function wmTravel(s){if(enemies.some(e=>!e.dead&&(e.d.boss||e.d.wb&&e.state!=='sleep'&&e.state!=='home')))return toast('Impossible pendant un combat.','#ff6a7a');if(map.trial&&map.trial.st==='run')return toast('Termine l’épreuve d’abord.','#ff6a7a');if(!gateOK(s.r))return toast('Ce chemin t’est encore fermé.','#ff6a7a');
+  const m=maps[s.r];let x=s.x,y=s.y+(s.t==='twr'?3:s.t==='shr'?3:0);if(s.t==='castle'&&m.gate){x=m.gate.x;y=m.gate.y+3;}const p=freeNear(m,x,y);closeMenu();sfx('void');enterMap(s.r,p[0]*TS+8,p[1]*TS+10);}
+function wmBind(cv){if(cv._b)return;cv._b=1;cv.style.touchAction='none';const P2=WM.pt;
+  cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);P2.set(e.pointerId,{x:e.offsetX,y:e.offsetY,x0:e.offsetX,y0:e.offsetY});WM.pd=null;});
+  cv.addEventListener('pointermove',e=>{const p=P2.get(e.pointerId);if(!p)return;if(P2.size===1){WM.cx-=(e.offsetX-p.x)/WM.z;WM.cy-=(e.offsetY-p.y)/WM.z;}else if(P2.size===2){const[a,b]=[...P2.values()],d0=Math.hypot(a.x-b.x,a.y-b.y);p.x=e.offsetX;p.y=e.offsetY;const[c,d]=[...P2.values()],d1=Math.hypot(c.x-d.x,c.y-d.y);if(d0>0)WM.z=clamp(WM.z*d1/d0,.5,8);}p.x=e.offsetX;p.y=e.offsetY;wmDraw();});
+  const up=e=>{const p=P2.get(e.pointerId);P2.delete(e.pointerId);if(p&&Math.hypot(e.offsetX-p.x0,e.offsetY-p.y0)<7&&P2.size===0){let best=null,bd=14;for(const i of WM.ico||[]){const w=WORLD[i.r],d=Math.hypot(WM.sx(w[0]+i.x+.5)-e.offsetX,WM.sy(w[1]+i.y+.5)-e.offsetY);if(d<bd){bd=d;best=i;}}WM.sel=best;sfx('pick');wmDraw();}};
+  cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',e=>P2.delete(e.pointerId));
+  cv.addEventListener('wheel',e=>{e.preventDefault();WM.z=clamp(WM.z*(e.deltaY<0?1.15:1/1.15),.5,8);wmDraw();},{passive:false});}
+drawWorldMap=function(cv){WM.cx=null;WM.sel=null;WM.fit=1;wmBind(cv);requestAnimationFrame(wmDraw);const zi=$('#wmzi'),zo=$('#wmzo'),zc=$('#wmzc');if(zi)zi.onclick=()=>{WM.z=clamp(WM.z*1.3,.5,8);wmDraw();};if(zo)zo.onclick=()=>{WM.z=clamp(WM.z/1.3,.5,8);wmDraw();};if(zc)zc.onclick=()=>{WM.cx=null;WM.z=Math.max(WM.z,3);wmDraw();};};
+function w2MapSide(){const s=(n,t,c)=>`<div class="wst"><b>${n}</b><span>${t}</span></div>`;
+  return `<div class="wstats">${s(cnt('shr')+'/'+SHR.length,'Sanctuaires')}${s(cnt('twr')+'/'+TWR.length,'Tours')}${s(cnt('seed')+'/42','Graines d’étoile')}${s(cnt('stl')+'/8','Stèles')}${s(Object.keys(flags.wb||{}).filter(k=>!WB[k]||!WB[k].arc).length+'/'+Object.keys(WB).filter(k=>!WB[k].arc).length,'Légendes')}${s((flags.orbs||0),'Orbes')}</div>
+  <h3 class="mh">Royaumes <small>· ${crowns()} couronne${crowns()>1?'s':''} à tes côtés</small></h3>${KORD.map(k=>{const d=dip(k),st=DST[d.st];return `<div class="wreg"><b style="color:${KPAL[k].ban}">${esc(KING[k].n)}</b><small style="color:${st[1]};opacity:1">${st[0]} · ${d.rep}</small></div>`;}).join('')}
+  <p class="ddesc small">${isNight()?'Il fait nuit : les monstres sont plus nombreux et plus forts.':'Il fait jour : les routes sont plus sûres.'}</p>`;}
+
+
 /* ================= SAVE ================= */
 const SKEY='astra_demo_v1';
 function save(){if(!player||!map)return;try{localStorage.setItem(SKEY,JSON.stringify({cls:player.c.key,lvl:player.lvl,xp:player.xp,hp:player.hp,maxHp:player.maxHp,maxMp:player.maxMp,atk:player.atk,def:player.def,weapon:player.weapon,bag:player.bag,coins:player.coins,items:player.items,potions:player.potions,stage,flags:{...flags,bossOn:false,gate:false,cgate:false,wave:null},map:map.id,x:player.x,y:player.y,kills:player.kills,titles:player.titles,playT}));}catch(e){}}
@@ -3798,7 +4827,7 @@ function updHUD(){const p=player;if(!p)return;
   const cd=Math.max(0,p.skillCd/p.c.skill.cd)*100+'%';$('#hkCd').style.setProperty('--p',cd);$('#tsCd').style.setProperty('--p',cd);
   $('#mark').style.setProperty('--m',markV.toFixed(2));
   if(time-mmLast>.12){mmLast=time;drawMini();}
-  const b=enemies.find(e=>e.d.boss)||enemies.find(e=>e.d.wd&&!e.dead&&e.state!=='sleep'&&e.state!=='home');if(b)$('#bossI').style.transform=`scaleX(${Math.max(0,b.hp/b.maxHp)})`;
+  const b=enemies.find(e=>e.d.boss)||enemies.find(e=>(e.d.wd||e.d.wb)&&!e.dead&&e.state!=='sleep'&&e.state!=='home');if(b)$('#bossI').style.transform=`scaleX(${Math.max(0,b.hp/b.maxHp)})`;
   const h=$('#hint');const show=interT&&!dialog&&!S.lock;h.classList.toggle('hidden',!show||touchMode&&false);if(show)h.innerHTML=(touchMode?'':'<b>E</b> · ')+esc(interT.label);
   $('#tA').classList.toggle('talk',!!(show&&!nearestEnemy(30)));
 }
@@ -3806,7 +4835,7 @@ function showEnd(ch){ch=ch||0;S.screen='end';const p=player,w=p.weapon,r=RAR[w.r
   $('#endBox').innerHTML=`<p class="muted">ASTRA · ${['Prologue','Chapitre 1','Chapitre 2','Chapitre 3','Chapitre 4','Chapitre 5','Chapitre 6'][ch]}</p><h2 class="endt">${['Le réveil','Le village oublié','Les secrets de Sylvaris','Les archives de Kar-Dûm','Le royaume des dragons','Sables et marées','La chute de Valcourt'][ch]} — terminé</h2>
   <div class="kv"><div><span>Classe</span><b>${esc(p.c.name)}</b></div><div><span>Niveau</span><b>${p.lvl}</b></div><div><span>Ennemis vaincus</span><b>${p.kills}</b></div><div><span>Temps</span><b>${m} min ${String(s).padStart(2,'0')}</b></div></div>
   <div class="wpn"><span class="muted">Arme</span><br><b style="color:${r.c}">${esc(w.name)}</b> <span class="muted">· ${r.n}</span></div>
-  <div class="tease"><b>${['Chapitre 1 — Le village oublié','Chapitre 2 — Les secrets de Sylvaris','Chapitre 3 — Les archives de Kar-Dûm','Chapitre 4 — Le royaume des dragons','Chapitre 5 — Sables et marées','Chapitre 6 — La chute de Valcourt','Épilogue — Le dernier sceau'][ch]}</b><p class="muted" style="margin-top:4px">${['Une lignée draconique murmure dans ton sang… Une classe cachée attend d’être découverte.','Les elfes de Sylvaris savent qui tu es. Mais une partie de leur forêt est déjà corrompue par le Néant.','Sous les montagnes, les nains gardent les archives des huit sceaux. Mais Dorgath, le Forgeron du Vide, y a déjà posé les yeux.','Le sang d’Aeris descend des Tueurs de dragons. Au-delà des Pics Cendrés, un royaume en ruines attend son héritier… et Dorgath n’est que le premier des Élus à se lever.','Kharzan dort sous les sables, Nerys chante sous les flots. Deux Élus, deux fragments… et Vael qui observe.','Valcourt, la dernière cité libre, s’éveille au son des cloches d’alarme. Les ombres sont aux portes.','Huit fragments. Un seul sceau. La Faille du Néant t’attend, et Vael avec elle.'][ch]}</p></div>
+  <div class="tease"><b>${['Chapitre 1 — Le village oublié','Chapitre 2 — Les secrets de Sylvaris','Chapitre 3 — Les archives de Kar-Dûm','Chapitre 4 — Le royaume des dragons','Chapitre 5 — Sables et marées','Chapitre 6 — La chute de Valcourt','Chapitre 7 — La guerre des couronnes'][ch]}</b><p class="muted" style="margin-top:4px">${['Une lignée draconique murmure dans ton sang… Une classe cachée attend d’être découverte.','Les elfes de Sylvaris savent qui tu es. Mais une partie de leur forêt est déjà corrompue par le Néant.','Sous les montagnes, les nains gardent les archives des huit sceaux. Mais Dorgath, le Forgeron du Vide, y a déjà posé les yeux.','Le sang d’Aeris descend des Tueurs de dragons. Au-delà des Pics Cendrés, un royaume en ruines attend son héritier… et Dorgath n’est que le premier des Élus à se lever.','Kharzan dort sous les sables, Nerys chante sous les flots. Deux Élus, deux fragments… et Vael qui observe.','Valcourt, la dernière cité libre, s’éveille au son des cloches d’alarme. Les ombres sont aux portes.','Huit fragments. Un seul sceau. La Faille du Néant t’attend, et Vael avec elle.'][ch]}</p></div>
   <div class="row"><button class="btn gold" id="bFree">Continuer à explorer</button><button class="btn" id="bMenu">Menu principal</button></div>`;
   $('#end').classList.remove('hidden');$('#bFree').onclick=()=>{$('#end').classList.add('hidden');S.screen='play';};$('#bMenu').onclick=()=>location.reload();}
 
@@ -3855,7 +4884,7 @@ function frame(now){const dt=Math.min(.033,(now-last)/1000);last=now;time+=dt;
 
 /* ================= BOOT ================= */
 buildSprites();
-buildSprites2();buildSprites3();buildSprites4();buildSprites5();buildSprites6();buildSprites7();maps.valdoria=buildValdoria();maps.grotte=buildGrotte();maps.ostval=buildOstval();maps.crypte=buildCrypte();maps.sylvaris=buildSylvaris();maps.racines=buildRacines();maps.marais=buildMarais();maps.collines=buildCollines();maps.kardum=buildKardum();maps.archives=buildArchives();maps.valcourt=buildValcourt();maps.desert=buildDesert();maps.coast=buildCoast();maps.pics=buildPics();maps.dragons=buildDragons();maps.neant=buildNeant();
+buildSprites2();buildSprites3();buildSprites4();buildSprites5();buildSprites6();buildSprites7();maps.valdoria=buildValdoria();maps.grotte=buildGrotte();maps.ostval=buildOstval();maps.crypte=buildCrypte();maps.sylvaris=buildSylvaris();maps.racines=buildRacines();maps.marais=buildMarais();maps.collines=buildCollines();maps.kardum=buildKardum();maps.archives=buildArchives();maps.valcourt=buildValcourt();maps.desert=buildDesert();maps.coast=buildCoast();maps.pics=buildPics();maps.dragons=buildDragons();maps.neant=buildNeant();w2Build();
 map=maps.valdoria;cam.x=40*TS;cam.y=36*TS;
 buildSelect();
 if(loadSave())$('#bCont').classList.remove('hidden');
