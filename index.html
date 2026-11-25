@@ -207,6 +207,7 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 #ammoPill small{font-weight:400;font-size:10px;opacity:.7}#ammoPill .am{width:14px;height:3px;background:#c8a070;position:relative}#ammoPill .am:after{content:'';position:absolute;right:-2px;top:-2px;width:4px;height:7px;background:#e8eef8}#ammoPill .am.fire:after{background:#ff8a3a}#ammoPill .am.pierce:after{background:#9fd0ff}
 .dyesw{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px;border:1px solid rgba(255,255,255,.4)}
 .wmap{width:100%;image-rendering:pixelated;border:1px solid rgba(201,162,74,.35);border-radius:6px;background:#05070d}.wreg{display:flex;justify-content:space-between;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.06)}.wreg small{opacity:.6}.wreg.un{opacity:.4}.wreg.here b{color:#ffd166}
+#hearts{display:block;image-rendering:pixelated;margin:2px 0 6px;filter:drop-shadow(0 2px 0 rgba(0,0,0,.5))}
 </style>
 </head>
 <body>
@@ -216,7 +217,7 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
   <div id="pstat">
     <div id="lvl">1</div>
     <div class="bars">
-      <div class="bar hp"><i id="hpI"></i><span id="hpT"></span></div>
+      <canvas id="hearts" width="30" height="9"></canvas>
       <div class="bar mp"><i id="mpI"></i><span id="mpT"></span></div>
       <div class="bar xp"><i id="xpI"></i></div>
     </div>
@@ -1035,6 +1036,7 @@ function killEnemy(e){
   if(e.d.void&&stage===4){flags.shadows=(flags.shadows||0)+1;updQuest();if(flags.shadows>=3){setStage(5);toast('Les ombres se dissipent… Retourne voir Maëlle.');}}
   sqKill(e.type);if(e.type==='spectre'){const sl=sqS('lune');if(sl&&!sl.done&&sl.s===0&&Math.random()<.6)pickups.push({k:'qitem',item:'eclat',x:e.x,y:e.y,t:0});}
   if(e.type==='heart'){(flags.hearts=flags.hearts||{})[e.hid]=1;updQuest();toast(`Cœur de ronces détruit (${heartCount()}/3)`,'#a66bff');if(stage===22&&heartCount()>=3){setStage(23);toast('Le Bosquet Gris est purifié. Retourne voir Caelan.');}save();}
+  if(e.d.boss)heartUp(e);
   if(e.d.boss)(e.type==='boss'?bossDown:e.type==='sentinel'?sentinelDown:e.type==='airain'?airainDown:treantDown)(e);
   else{hitstop=Math.max(hitstop,.05);}
 }
@@ -1889,12 +1891,12 @@ function buildShop(){if(SHOPINFO['in_'+shopId])return buildShop2();const p=playe
 function SHOP(){if(SHOPINFO['in_'+shopId])return SHOPDEF[SHOPINFO['in_'+shopId].type].items();if(shopId==='faelan'){const lv=Math.max(13,player.lvl+2),f=flags.shop_faelan=flags.shop_faelan||{};return [
   {n:'Potion de soin',d:'Rend 45 % des PV',price:35,c:'#ff6a7a',buy:()=>{player.potions++;}},
   {n:'Arme sylvestre',d:`${FAM[AFF[player.c.key][0]].n} épique ou légendaire taillée par les elfes (niv. ${lv})`,price:320,c:'#c070ff',sold:f.w,buy:()=>{f.w=1;gainWeapon(Object.assign(makeWeapon(player.c.key,lv,Math.random()<.3?4:3),{name:FAM[AFF[player.c.key][0]].n+' sylvestre'}));}},
-  {n:'Sève d’Ancien',d:'+30 PV max, permanent',price:240,c:'#6fe07a',sold:f.hp,buy:()=>{f.hp=1;player.maxHp+=30;player.hp+=30;player.items.elixir=(player.items.elixir||0)+1;}},
+  {n:'Sève d’Ancien',d:'Cœurs plus robustes (+30 PV), permanent',price:240,c:'#6fe07a',sold:f.hp,buy:()=>{f.hp=1;player.maxHp+=30;player.hp+=30;player.items.elixir=(player.items.elixir||0)+1;}},
   {n:'Larme de lune',d:'+2 DÉF et +15 PM max, permanent',price:260,c:'#9fd0ff',sold:f.def,buy:()=>{f.def=1;player.def+=2;player.maxMp+=15;player.items.elixir=(player.items.elixir||0)+1;}}];}
   const lv=Math.max(8,player.lvl+1),f=flags.shop=flags.shop||{};return [
   {n:'Potion de soin',d:'Rend 45 % des PV',price:30,c:'#ff6a7a',buy:()=>{player.potions++;}},
   {n:'Arme forgée par Brann',d:`${FAM[AFF[player.c.key][0]].n} rare ou épique, adaptée à ta classe (niv. ${lv})`,price:180,c:'#5aa8ff',sold:f.w,buy:()=>{f.w=1;gainWeapon(makeWeapon(player.c.key,lv,Math.random()<.4?3:2));}},
-  {n:'Élixir de vigueur',d:'+20 PV max, permanent',price:150,c:'#6fe07a',sold:f.hp,buy:()=>{f.hp=1;player.maxHp+=20;player.hp+=20;player.items.elixir=(player.items.elixir||0)+1;}},
+  {n:'Élixir de vigueur',d:'Cœurs plus robustes (+20 PV), permanent',price:150,c:'#6fe07a',sold:f.hp,buy:()=>{f.hp=1;player.maxHp+=20;player.hp+=20;player.items.elixir=(player.items.elixir||0)+1;}},
   {n:'Pierre d’aiguisage',d:'+3 ATQ, permanent',price:220,c:'#ffae3c',sold:f.atk,buy:()=>{f.atk=1;player.atk+=3;player.items.elixir=(player.items.elixir||0)+1;}}];}
 $('#bagBox').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const p=player,a=b.dataset.a,i=+b.dataset.i;
   if(b.dataset.tab){bagTab=b.dataset.tab;buildBag();sfx('pick');return;}
@@ -2318,7 +2320,7 @@ function renderMenu(){const p=player,items=menuItems();if(mSel>=items.length)mSe
     else if(it){const Q=SQ[it.id],st=sqS(it.id),s=Q.steps[st.s];R=`<div class="dsub side">Quête secondaire · ${esc(Q.where)}</div><div class="dname">${esc(Q.n)}</div><p class="ddesc">${esc(Q.desc)}</p><div class="dsub">Donnée par ${esc(Q.gn)}</div>${st.done?'<div class="dobj done"><b>Terminée</b></div>':`<div class="dobj"><small>Objectif</small><b>${esc(s.o(st.c))}</b></div><div class="dsub">Récompense : ${esc(Q.rt)}</div><div class="mrow"><button class="mbtn pri" data-a="track" data-id="${it.id}"${tr===it.id?' disabled':''}>${tr===it.id?'Quête suivie':'Suivre cette quête'}</button></div>`}`;}
   }else{
     L=`<div class="cport"><canvas id="mport" width="36" height="40"></canvas><div><div class="dname">${esc(p.c.name)}</div><div class="dsub">Niveau ${p.lvl} · ${p.xp} / ${need(p.lvl)} XP</div></div></div>
-      <div class="cstats">${[['PV',`${Math.ceil(p.hp)} / ${p.maxHp}`],['PM',`${Math.floor(p.mp)} / ${p.maxMp}`],['Attaque',Math.round(pAtk())],['Défense',Math.round(pDef())],['Ennemis vaincus',p.kills],['Temps de jeu',`${Math.floor(playT/60)} min`]].map(([a,b])=>`<div><span>${a}</span><b>${b}</b></div>`).join('')}</div>`;
+      <div class="cstats">${[['Cœurs',`${Math.max(0,Math.ceil(p.hp/(p.maxHp/hearts())*4)/4)} / ${hearts()}`],['PM',`${Math.floor(p.mp)} / ${p.maxMp}`],['Attaque',Math.round(pAtk())],['Défense',Math.round(pDef())],['Ennemis vaincus',p.kills],['Temps de jeu',`${Math.floor(playT/60)} min`]].map(([a,b])=>`<div><span>${a}</span><b>${b}</b></div>`).join('')}</div>`;
     R=`<div class="dsub">Compétence</div><div class="dname" style="font-size:20px">${esc(p.c.skill.name)}</div><p class="ddesc">${esc(p.c.skill.desc)} (${p.c.skill.mp} PM)</p>
       <div class="dsub">Affinités d’armes</div><p class="ddesc">${AFF[p.c.key].map(k=>FAM[k].n).join(' · ')} — +15 % de dégâts</p>
       <div class="dsub">Titres</div><div class="tags">${p.titles.length?p.titles.map(t=>`<span>${esc(t)}</span>`).join(''):'<span>Aucun</span>'}</div>
@@ -2798,7 +2800,7 @@ const SHOPDEF={
   pot:{t:'Apothicaire',q:'« Une goutte pour le corps, deux pour l’âme. »',items:()=>{const f=flags.sp=flags.sp||{};return [
     {n:'Potion de soin',d:'Rend 45 % des PV',price:30,c:'#ff6a7a',buy:()=>{player.potions++;}},
     {n:'Trio de potions',d:'3 potions de soin, prix d’ami',price:80,c:'#ff6a7a',buy:()=>{player.potions+=3;}},
-    {n:'Tisane de vigueur',d:'+15 PV max, permanent',price:180,c:'#6fe07a',sold:f[shopId+'hp'],buy:()=>{f[shopId+'hp']=1;player.maxHp+=15;player.hp+=15;}},
+    {n:'Tisane de vigueur',d:'Cœurs plus robustes (+15 PV), permanent',price:180,c:'#6fe07a',sold:f[shopId+'hp'],buy:()=>{f[shopId+'hp']=1;player.maxHp+=15;player.hp+=15;}},
     {n:'Tonique du guerrier',d:'+2 ATQ, permanent',price:260,c:'#ffae3c',sold:f[shopId+'at'],buy:()=>{f[shopId+'at']=1;player.atk+=2;}}];}},
   arm:{t:'Armurier',q:'« Une lame bien choisie vaut dix boucliers. »',items:()=>{const st=flags.stock=flags.stock||{},k=stockKey(shopId),lv=Math.max(player.lvl,regionLvl())+1;
     if(!st[k]){const fams=Object.keys(FAM);st[k]=[0,1,2].map(i=>{const fam=i===0?AFF[player.c.key][0]:pick(fams);return makeWeapon(player.c.key,lv,i===2?3:rollRar(1),fam);});}
@@ -3140,6 +3142,17 @@ function drawWorldMap(cv){const g=cv.getContext('2d');let x0=1e9,y0=1e9,x1=-1e9,
   const II=SHOPINFO[map.id]||HOMEINFO[map.id],pm=WORLD[map.id]?map.id:(II?II.region:null);if(pm){const o=WORLD[pm],px=II||null;const wx=(px?px.tx||0:player.x/TS)+o[0],wy=(px?px.ty||0:player.y/TS)+o[1];
     const X=(wx-x0)*S,Y=(wy-y0)*S;g.fillStyle='#05070d';g.fillRect(X-5,Y-5,10,10);g.fillStyle='#ffd166';g.fillRect(X-4,Y-4,8,8);g.fillStyle='#ffffff';g.fillRect(X-2,Y-2,4,4);}}
 
+/* ================= CŒURS ================= */
+function hearts(){if(flags.hearts===undefined)flags.hearts=3+(stage>=9)+(stage>=18)+(stage>=28)+(stage>=38);return flags.hearts;}
+const HMASK=['.oo...oo.','ohho.oxxo','ohxxoxxxo','oxxxxxxxo','.oxxxxxo.','..oxxxo..','...oxo...','....o....'];
+function drawHearts(){const cv=$('#hearts');if(!cv||!player)return;const p=player,n=hearts(),per=p.maxHp/n,fill=Math.max(0,p.hp)/per,cols=Math.min(n,10),rows=Math.ceil(n/10);
+  if(cv.width!==cols*10||cv.height!==rows*9){cv.width=cols*10;cv.height=rows*9;}cv.style.width=cols*30+'px';cv.style.height=rows*27+'px';
+  const g=cv.getContext('2d');g.clearRect(0,0,cv.width,cv.height);
+  for(let i=0;i<n;i++){const x0=(i%10)*10,y0=Math.floor(i/10)*9;let q=Math.round(clamp(fill-i,0,1)*4)/4;if(i===0&&p.hp>0&&q===0)q=.25;const fc=q*9;
+    HMASK.forEach((row,y)=>{for(let x=0;x<9;x++){const ch=row[x];if(ch==='.')continue;const on=x+.5<fc;g.fillStyle=ch==='o'?'#1a0610':on?(ch==='h'?'#ffb0bc':'#e8344a'):'#3a1a26';g.fillRect(x0+x,y0+y,1,1);}});}}
+function heartUp(e){const p=player,h=hearts();p.maxHp=Math.round(p.maxHp*(h+1)/h);flags.hearts=h+1;p.hp=p.maxHp;hudCache='';
+  for(let i=0;i<40;i++)parts.push({x:e.x+rnd(-16,16),y:e.y-rnd(0,40),vx:rnd(-30,30),vy:rnd(-60,-10),l:rnd(.8,1.5),ml:1.5,c:pick(['#ff5a7a','#ffb0bc','#ffffff']),s:2,g:0,glow:1});
+  setTimeout(()=>{sfx('lvl');toast(`<b style="color:#ff6a84">♥ Réceptacle de cœur !</b> Tu as maintenant ${flags.hearts} cœurs.`,'#ff6a84');},900);save();}
 /* ================= SAVE ================= */
 const SKEY='astra_demo_v1';
 function save(){if(!player||!map)return;try{localStorage.setItem(SKEY,JSON.stringify({cls:player.c.key,lvl:player.lvl,xp:player.xp,hp:player.hp,maxHp:player.maxHp,maxMp:player.maxMp,atk:player.atk,def:player.def,weapon:player.weapon,bag:player.bag,coins:player.coins,items:player.items,potions:player.potions,stage,flags:{...flags,bossOn:false,gate:false,cgate:false,wave:null},map:map.id,x:player.x,y:player.y,kills:player.kills,titles:player.titles,playT}));}catch(e){}}
@@ -3149,7 +3162,7 @@ function loadSave(){try{return JSON.parse(localStorage.getItem(SKEY)||'null');}c
 let hudCache='';
 function updHUD(){const p=player;if(!p)return;
   const k=[p.hp|0,p.maxHp,p.mp|0,p.maxMp,p.xp,p.lvl,p.potions,p.coins].join();$('#coinN').textContent=p.coins;if(k!==hudCache){hudCache=k;
-    $('#hpI').style.transform=`scaleX(${p.hp/p.maxHp})`;$('#hpT').textContent=`${Math.ceil(p.hp)} / ${p.maxHp}`;
+    drawHearts();
     $('#mpI').style.transform=`scaleX(${p.mp/p.maxMp})`;$('#mpT').textContent=`${Math.floor(p.mp)} / ${p.maxMp}`;
     $('#xpI').style.transform=`scaleX(${p.xp/need(p.lvl)})`;$('#lvl').textContent=p.lvl;$('#hkPot').textContent=p.potions;$('#tPot').textContent=p.potions;}
   const cd=Math.max(0,p.skillCd/p.c.skill.cd)*100+'%';$('#hkCd').style.setProperty('--p',cd);$('#tsCd').style.setProperty('--p',cd);
