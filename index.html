@@ -785,7 +785,7 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 let zoneTO=null;
 function zoneTitle(sub,name){$('#zoneS').textContent=sub;$('#zoneH').textContent=name;const z=$('#zone');z.classList.add('on');clearTimeout(zoneTO);zoneTO=setTimeout(()=>z.classList.remove('on'),2600);}
 function fadeTo(v,col){const f=$('#fade');f.classList.toggle('void',col==='void');f.style.opacity=v;return wait(580);}
-function openDialog(lines,cb){dialog={lines,i:0,c:0,cb};$('#dialog').classList.remove('hidden');showLine();}
+function openDialog(lines,cb){lines=(lines||[]).filter(Boolean).map(l=>Object.assign({},l,{text:String(l.text==null?'…':l.text)}));if(!lines.length){cb&&cb();return;}dialog={lines,i:0,c:0,cb};$('#dialog').classList.remove('hidden');showLine();}
 function showLine(){const L=dialog.lines[dialog.i];const w=$('#dWho');w.textContent=L.who||'';w.className='who'+(L.v?' void':'');$('#dTxt').textContent='';}
 function updDialog(dt){const L=dialog.lines[dialog.i],prev=Math.floor(dialog.c);dialog.c=Math.min(L.text.length,dialog.c+dt*48);const n=Math.floor(dialog.c);if(n>prev&&n%3===0&&n<L.text.length)sfx('talk');$('#dTxt').textContent=L.text.slice(0,n);
   if(act('attack')||act('interact')||act('next')||act('roll')){if(dialog.c<L.text.length){dialog.c=L.text.length;$('#dTxt').textContent=L.text;}else{dialog.i++;if(dialog.i>=dialog.lines.length){const cb=dialog.cb;dialog=null;$('#dialog').classList.add('hidden');held.delete('attack');cb&&cb();}else showLine();}}}
@@ -1817,7 +1817,7 @@ function loadMap(id,px,py){ensureIn(id);if(!maps[id]){id='valdoria';px=40*TS;py=
   map=maps[id];(flags.seen=flags.seen||{})[id]=1;if(WORLD[id]){let i=0;for(const k of neighbors(id))setTimeout(()=>maps[k].ground,120+120*i++);}enemies=[];projs=[];pickups=[];fx=[];parts=[];npcs=[];floats=[];zoneName='';flags.wave=null;syncWorld();
   player.x=px;player.y=py;cam.x=px;cam.y=py;clampCam();
   if(id==='valdoria'){
-    npcs.push({name:'Maëlle',id:'maelle',pal:'maelle',x:35*TS+8,y:39*TS+10,dir:0},{name:'Tobin',id:'tobin',pal:'tobin',x:11*TS+8,y:49*TS+8,dir:3},{name:'Elsa',id:'elsa',pal:'elsa',x:20*TS+8,y:42*TS+8,dir:0});
+    npcs.push({name:'Maëlle',id:'maelle',pal:'maelle',x:35*TS+8,y:39*TS+10,dir:0},{name:'Tobin',id:'tobin',pal:'tobin',x:11*TS+8,y:49*TS+8,dir:3,lines:['Je coupe du bois pour rebâtir Brumeval. Il en faudra, des troncs…','Méfie-toi des bois au nord, la nuit. Les loups y sont de plus en plus nombreux.','Maëlle est restée près de sa maison, au milieu des ruines. Va la voir.']},{name:'Elsa',id:'elsa',pal:'elsa',x:20*TS+8,y:42*TS+8,dir:0,lines:['Tout a brûlé… Ma maison, mon jardin, tout.','Tu n’es pas d’ici, toi. Cette marque sur ta main… Maëlle saura peut-être ce que c’est.','Le cristal noir, au centre du village… Je n’ose pas m’en approcher.']});
     setTimeout(sqPlace,0);
     for(const[x,y,l]of[[14,49,1],[18,52,1],[20,49,2],[12,46,1],[17,44,2]])spawn('slime',x,y,l);
     for(const[x,y,l]of[[38,27,2],[43,25,3],[46,29,3],[35,22,3],[48,22,4],[32,14,4]])spawn('wolf',x,y,l);
@@ -1866,7 +1866,7 @@ async function enterMap(id,px,py){S.lock=true;sfx('door');await fadeQ(1);loadMap
 /* ================= STORY ================= */
 async function interact(t){
   if(t.kind==='npc'){S.lock=true;held.delete('attack');const n=t.n,dx=player.x-n.x,dy=player.y-n.y;n.dir=Math.abs(dx)>Math.abs(dy)?(dx<0?2:3):(dy<0?1:0);const l=Math.hypot(dx,dy)||1;player.fx=-dx/l;player.fy=-dy/l;player.dir=Math.abs(dx)>Math.abs(dy)?(dx>0?2:3):(dy>0?1:0);
-    await talkHint(n);S.lock=false;}
+    try{await talkHint(n);}catch(err){console.error(err);dialog=null;$('#dialog').classList.add('hidden');}S.lock=false;}
   else if(t.kind==='crystal')crystalSeq();
   else if(t.kind==='chest')openChest(t.o);
   else if(t.kind==='lantern')lightLanternWave(t.o);
@@ -2034,7 +2034,7 @@ async function talkNPC(n,noSq){const id=n.id;if(!noSq&&await sqTalk(n))return;if
     if(stage===19){await talk([{who:'Merrin',text:'Tu es revenu… Je me souviens de toi, maintenant.'},{who:'Merrin',text:'Je tiens les archives d’Ostval. Il y a quinze ans, un enfant est né ici avec la marque du huitième sceau.'},{who:'Merrin',text:'Les Sept Élus du Néant l’ont cherché pendant des mois. Sa mère l’a confié aux elfes de Sylvaris pour le cacher.'},{who:'Merrin',text:'Puis Vael est venu, et la brume a tout effacé. Même nos souvenirs de toi.'},{who:ME,text:'(Ostval… c’est ici que je suis né ?)'},{who:'Merrin',text:'Les elfes savent qui tu es vraiment. Va à Sylvaris. Et prends garde : une partie de leur forêt est déjà corrompue.'}]);addTitle('Enfant d’Ostval');setStage(20);save();showEnd(1);}
     else await talk([{who:'Merrin',text:stage<19?'Je devrais savoir des choses… J’ai des archives entières, mais leurs pages sont blanches.':'Sylvaris est à l’est d’Ostval, au-delà des champs. Les elfes sauront te répondre.'}]);
   }else if(id==='ilda')await talk([{who:'Sœur Ilda',text:stage<15?'La cloche de la chapelle ne sonne plus depuis la nuit de la brume. La porte est scellée par une magie que je ne comprends pas.':stage<19?'La porte s’est ouverte… Un froid terrible monte de la crypte.':'J’entends de nouveau la cloche dans mes souvenirs. Merci, porteur.'}]);
-  else await talk([{who:n.name,text:stage>=19?'Je me souviens de mon nom ! Je m’appelle… attends… oui, je m’en souviens !':VILL[n.v%VILL.length]}]);
+  else await talk([{who:n.name,text:stage>=19?'Je me souviens de mon nom ! Je m’appelle… attends… oui, je m’en souviens !':VILL[(n.v|0)%VILL.length]}]);
 }
 async function lightLanternWave(o){
   if(flags.wave)return;flags.wave=o.lid;S.lock=true;held.delete('attack');sfx('void');shake=4;
